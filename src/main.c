@@ -1597,9 +1597,9 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		[TOK_LCOMMENT]          = &&TOK_OPEN_BLOCK_COMMENT,
 		[TOK_COMMENT]           = &&TOK_OPEN_LINE_COMMENT,
 		[TOK_IDENTIFIER]        = &&TOK_SPARSE_IDENTIFIER,
-		[TOK_UPPER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER,
-		[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER,
-		['_']                   = &&TOK_SPARSE_IDENTIFIER,
+		[TOK_UPPER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER_BEGIN,
+		[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER_BEGIN,
+		['_']                   = &&TOK_SPARSE_IDENTIFIER_BEGIN,
 	};
 
 	/* Entry */
@@ -1623,6 +1623,10 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 	
 	step.cT = pText[0];
 	step.nd = pFrie[(u8)step.cT];
+	pMeta[0].kind = step.nd.sparse.kind;
+	pMeta[0].tok  = step.tok;
+	pMeta[0].iTokenStartOffset = 0;
+	pMeta[0].iTokenEndOffset   = 0;
 	goto TOK_SPARSE_CHAR;
 
 	/* End Of File */
@@ -1687,48 +1691,63 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		// Current
 		pMeta[step.iT].kind = step.nd.sparse.kind;
 		pMeta[step.iT].tok  = step.tok;
+		pMeta[step.iT].iTokenStartOffset = 0;
+		pMeta[step.iT].iTokenEndOffset   = 0;
 		step.iTStart   = step.iT;
 		step.startKind = step.nd.sparse.kind;
 		step.startTok  = step.nd.sparse.tok;
 		bool match     = step.nd.sparse.succ > 0;
 		// Next
 		step.cT  = pText[++step.iT]; 
+		// if (step.iT>300) goto RESULT_SUCCESS;
 		step.iN  = match ? step.nd.sparse.succ : step.cT < 0 ? TOK_ERR : step.cT;
 		step.nd  = pFrie[step.iN]; 
 		step.tok = match ? TOK_PACKED_CHAR : step.nd.sparse.tok;
 		FRIE_LOG("dispatch-->iN:%d %s %s\n", step.iN, string_TOK(step.tok), match ? "" : string_TOK_KIND(step.nd.sparse.kind));
-		goto *disp[step.tok];
+		goto *disp[step.tok]; 
 	}
-	TOK_SPARSE_IDENTIFIER: {
-		// If we start with Alpha. Assume IDENTIFIER and traverse spar chars also checking for delimiter.
-		static void *identifierDispatch[TOK_CAPACITY] = {	
-			DISPATCH_DEEFAULT
-			[TOK_SQUOTE]            = &&TOK_OPEN_SQUOTE,
-			[TOK_DQUOTE]            = &&TOK_OPEN_DQUOTE,
-			[TOK_LCOMMENT]          = &&TOK_OPEN_BLOCK_COMMENT,
-			[TOK_COMMENT]           = &&TOK_OPEN_LINE_COMMENT,
-			[TOK_IDENTIFIER]        = &&TOK_SPARSE_IDENTIFIER,
-			[TOK_UPPER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER,
-			[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER,
-			['_']                   = &&TOK_SPARSE_IDENTIFIER,
-			[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_IDENTIFIER,
-		};
-		FRIE_LOG("TOK_SPARSE_IDENTIFIER iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
-		// Current
-		pMeta[step.iT].tok  = TOK_IDENTIFIER;
-		pMeta[step.iT].kind = TOK_KIND_IDENTIFIER;
+
+	static void *identifierDispatch[TOK_CAPACITY] = {	
+		[TOK_ALL_RANGE]			= &&TOK_NONE,
+		[TOK_MUNCH]             = &&TOK_MUNCH,
+		[TOK_SPARSE_CHAR]       = &&TOK_SPARSE_CHAR,
+		[TOK_PACKED_CHAR]       = &&TOK_PACKED_CHAR,
+		[TOK_DELIMIT]           = &&TOK_DELIMIT,
+		[TOK_WHITE_RANGE]       = &&TOK_SPARSE_IDENTIFIER_END,
+		[TOK_ASCII_RANGE]       = &&TOK_SPARSE_IDENTIFIER_END,
+		[TOK_UPPER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER,
+		[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER,
+		['_']                   = &&TOK_SPARSE_IDENTIFIER,
+		[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_IDENTIFIER,
+	};
+	TOK_SPARSE_IDENTIFIER_BEGIN: {
+		FRIE_LOG("TOK_SPARSE_IDENTIFIER_BEGIN iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s\n", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
 		step.iTStart   = step.iT;
 		step.startTok  = TOK_IDENTIFIER;
 		step.startKind = TOK_KIND_IDENTIFIER;
-		bool match     = step.nd.sparse.succ > 0;
+	}
+	TOK_SPARSE_IDENTIFIER: {
+		// If we start with Alpha. Assume IDENTIFIER and traverse spar chars also checking for delimiter.
+		FRIE_LOG("TOK_SPARSE_IDENTIFIER iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
+		bool match = step.nd.sparse.succ > 0;
 		// Next
 		step.cT = pText[++step.iT];
 		bool delim = IS_DELIM_CHAR(step.cT);
 		step.iN  = match ? step.nd.sparse.succ : step.cT < 0 ? TOK_ERR : step.cT;
 		step.nd  = pFrie[step.iN]; 
-		step.tok = match ? TOK_PACKED_CHAR : delim ? step.nd.sparse.tok : TOK_IDENTIFIER;
+		step.tok = match ? TOK_PACKED_CHAR : step.nd.sparse.tok;
 		FRIE_LOG("dispatch-->iN:%d %s %s\n", step.iN, string_TOK(step.tok), match ? "" : string_TOK_KIND(step.nd.sparse.kind));
 		goto *identifierDispatch[step.tok];
+	}
+	TOK_SPARSE_IDENTIFIER_END: {
+		FRIE_LOG("TOK_SPARSE_IDENTIFIER_END start:%d iT:%d len:%d %.*s\n", step.iTStart, step.iT, step.iT - step.iTStart, step.iT - step.iTStart, pText + step.iTStart);
+		for (int i = step.iTStart; i < step.iT; ++i) { 
+			pMeta[i].tok  = TOK_IDENTIFIER; 
+			pMeta[i].kind = TOK_KIND_IDENTIFIER; 
+			pMeta[i].iTokenStartOffset = i - step.iTStart;
+			pMeta[i].iTokenEndOffset   = (step.iT-1) - i;
+		}
+		goto *disp[step.tok];
 	}
 
 	/* Packed Tokens */
@@ -1760,6 +1779,8 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		for (int i = step.iTStart; i < step.iT; ++i) { 
 			pMeta[i].tok  = step.nd.terminator.tok; // TODO memcpy?
 			pMeta[i].kind = step.nd.terminator.kind; 
+			pMeta[i].iTokenStartOffset = i - step.iTStart;
+			pMeta[i].iTokenEndOffset   = (step.iT-1) - i;
 		}
 		step.tok = step.cT < 0 ? TOK_ERR : step.cT;
 		step.nd = pFrie[step.tok];
@@ -1770,6 +1791,8 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		for (int i = step.iTStart; i < step.iT; ++i) { 
 			pMeta[i].tok  = step.startTok; 
 			pMeta[i].kind = step.startKind; 
+			pMeta[i].iTokenStartOffset = i - step.iTStart;
+			pMeta[i].iTokenEndOffset   = (step.iT-1) - i;
 		}
 		step.tok = step.cT < 0 ? TOK_ERR : step.cT;
 		step.nd = pFrie[step.tok];
@@ -1778,31 +1801,12 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 	}
 
 	/* Error Tokens */
-	static void *errDispatch[TOK_CAPACITY] = {	
-			[TOK_NONE]          = &&TOK_NONE,
-			[TOK_ERR]           = &&TOK_SPARSE_CHAR,
-			[TOK_SPARSE_CHAR]   = &&TOK_SPARSE_CHAR,
-			[TOK_WHITE_RANGE]   = &&TOK_SPARSE_CHAR,
-			[TOK_ASCII_RANGE]   = &&TOK_SPARSE_CHAR,
-			[TOK_UPPER_ALPHA_RANGE] = &&TOK_ERR_IDENTIFIER,
-			[TOK_LOWER_ALPHA_RANGE] = &&TOK_ERR_IDENTIFIER,
-			[TOK_DIGIT_RANGE]       = &&TOK_ERR_IDENTIFIER,
-	};
-	TOK_ERR_IDENTIFIER: {
-		// If ERR assume IDENTIFIER and traverse sparse chars also checking for delimiter.
-		step.cT = pText[++step.iT];
-	}
 	TOK_ERR: {
 		FRIE_LOG("TK_ERR start:%-4d iT:%-4d iN:%-4d %4d:%s ", step.iTStart, step.iT, step.iN, step.cT, string_CHAR(step.cT));
-		for (int i = step.iTStart; i < step.iT; ++i) {
-			pMeta[i].tok  = TOK_IDENTIFIER;
-			pMeta[i].kind = TOK_KIND_IDENTIFIER; 
-		}
-		// step.cT = pText[++step.iT];
 		step.tok = step.cT < 0 ? TOK_SPARSE_CHAR : step.cT;
 		step.nd = pFrie[step.tok];
 		FRIE_LOG("dispatch-->%s\n", string_TOK(step.tok));
-		goto *errDispatch[step.tok];
+		goto *identifierDispatch[step.tok];
 	}
 
 #pragma GCC diagnostic pop
