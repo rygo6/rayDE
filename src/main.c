@@ -1,3 +1,7 @@
+#define RESULT_TEST0_TESTA
+#define RESULT_TESTA
+#define TESTA
+
 struct STR0{
 	int t;
 };
@@ -457,6 +461,8 @@ DEF_ENUM(SCOPE);
 #define COLOR_COMMAND_BOX    (Color){  20,  20,   2, 200 }
 #define COLOR_TEXT_BOX       (Color){  37,  37,  38, 255 }
 
+#define COLOR_HIGHLIGHT_NONE        (Color){   0,   0,   0, 255 }
+
 /*
 #define COLOR_CARET                 ORANGE
 #define COLOR_HOVER                 (Color){   0, 255,   0, 64  }
@@ -485,7 +491,6 @@ DEF_ENUM(SCOPE);
 #define COLOR_CARET                 (Color){ 224, 175, 104, 255 }  // #e0af68 - gold, high visibility
 #define COLOR_HOVER                 (Color){ 122, 162, 247,  48 }  // #7aa2f7 - keyword blue, translucent
 #define COLOR_BACKGROUND            (Color){  26,  27,  38, 255 }  // #1a1b26 - dark blue-gray
-#define COLOR_HIGHLIGHT_NONE        (Color){  26,  27,  38, 255 }  // #1a1b26 - same as background
 #define COLOR_HIGHLIGHT_CODE        (Color){ 200, 211, 245, 255 }  // #c8d3f5 - main foreground
 #define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 169, 177, 214, 255 }  // #a9b1d6 - muted foreground
 #define COLOR_HIGHLIGHT_ERROR       (Color){ 247, 118, 142, 255 }  // #f7768e - soft red
@@ -505,15 +510,14 @@ DEF_ENUM(SCOPE);
 */
 
 /* Perceptua Solarized */
+/*
 #define COLOR_CARET                 (Color){ 235, 203, 139, 255 }  // #ebcb8b - warm gold
 #define COLOR_HOVER                 (Color){ 163, 190, 140,  48 }  // #a3be8c - soft green, translucent
 #define COLOR_BACKGROUND            (Color){  40,  44,  52, 255 }  // #282c34 - neutral dark (less blue)
-#define COLOR_HIGHLIGHT_NONE        (Color){  40,  44,  52, 255 }  // #282c34 - same as background
 #define COLOR_HIGHLIGHT_CODE        (Color){ 216, 222, 233, 255 }  // #d8dee9 - warm white
 #define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 216, 222, 233, 255 }  // #d8dee9 - muted warm gray
 #define COLOR_HIGHLIGHT_ERROR       (Color){ 191, 105, 105, 255 }  // #bf6969 - muted red (not harsh)
 #define COLOR_HIGHLIGHT_PREPROCESS  (Color){ 180, 142, 173, 255 }  // #b48ead - dusty rose
-#define COLOR_HIGHLIGHT_CONTINUE    (Color){ 208, 135, 112, 255 }  // #d08770 - coral/rust
 #define COLOR_HIGHLIGHT_NUMBER      (Color){ 208, 135, 112, 255 }  // #d08770 - coral
 #define COLOR_HIGHLIGHT_STRING      (Color){ 163, 190, 140, 255 }  // #a3be8c - soft sage green
 #define COLOR_HIGHLIGHT_COMMENT     (Color){ 107, 112, 127, 255 }  // #6b707f - neutral gray
@@ -525,6 +529,47 @@ DEF_ENUM(SCOPE);
 #define COLOR_HIGHLIGHT_SCOPE       (Color){ 216, 222, 233, 255 }  // #d8dee9 - neutral, disappears
 #define COLOR_HIGHLIGHT_KEYWORD     (Color){ 235, 203, 139, 255 }  // #ebcb8b - warm gold
 #define COLOR_HIGHLIGHT_TYPE        (Color){ 143, 188, 187, 255 }  // #8fbcbb - warm teal (minimal blue)
+*/
+
+/* Patina */
+/*
+#define COLOR_CARET                 (Color){ 218, 164,  80, 255 }  // #daa450 - amber gold
+#define COLOR_HOVER                 (Color){ 164, 184, 120,  48 }  // #a4b878 - sage green, translucent
+#define COLOR_BACKGROUND            (Color){  26,  24,  21, 255 }  // #1a1815 - warm charcoal
+#define COLOR_HIGHLIGHT_CODE        (Color){ 212, 200, 180, 255 }  // #d4c8b4 - cream parchment
+#define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 212, 200, 180, 255 }  // #d4c8b4 - cream parchment
+#define COLOR_HIGHLIGHT_ERROR       (Color){ 192, 120, 104, 255 }  // #c07868 - muted brick
+#define COLOR_HIGHLIGHT_PREPROCESS  (Color){ 200, 160, 128, 255 }  // #c8a080 - warm sand
+#define COLOR_HIGHLIGHT_NUMBER      (Color){ 203, 180,  92, 255 }  // #cbb45c - mustard gold
+#define COLOR_HIGHLIGHT_STRING      (Color){ 164, 184, 120, 255 }  // #a4b878 - sage green
+#define COLOR_HIGHLIGHT_COMMENT     (Color){ 106,  96,  85, 255 }  // #6a6055 - clay
+#define COLOR_HIGHLIGHT_OPERATOR    (Color){ 176, 160, 144, 255 }  // #b0a090 - warm taupe
+#define COLOR_HIGHLIGHT_WHITESPACE  (Color){  58,  52,  48, 255 }  // #3a3430 - subtle warm
+#define COLOR_HIGHLIGHT_ESCAPE      (Color){ 224, 192,  96, 255 }  // #e0c060 - bright gold
+#define COLOR_HIGHLIGHT_QUOTE       (Color){ 164, 184, 120, 255 }  // #a4b878 - sage green (same as strings)
+#define COLOR_HIGHLIGHT_SCOPE       (Color){ 212, 200, 180, 255 }  // #d4c8b4 - neutral, disappears
+#define COLOR_HIGHLIGHT_KEYWORD     (Color){ 218, 164,  80, 255 }  // #daa450 - amber gold
+#define COLOR_HIGHLIGHT_TYPE        (Color){ 143, 184, 138, 255 }  // #8fb88a - olive moss green
+*/
+
+/* Glade */
+#define COLOR_CARET                 (Color){ 240, 192,  80, 255 }  // #f0c050 - bright sunlight
+#define COLOR_HOVER                 (Color){ 140, 200, 100,  48 }  // #8cc864 - fresh green, translucent
+#define COLOR_BACKGROUND            (Color){  38,  40,  42, 255 }  // #26282a - clean cool gray
+#define COLOR_HIGHLIGHT_CODE        (Color){ 230, 232, 228, 255 }  // #e6e8e4 - clean white
+#define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 230, 232, 228, 255 }  // #e6e8e4 - clean white
+#define COLOR_HIGHLIGHT_ERROR       (Color){ 220, 100, 100, 255 }  // #dc6464 - clear red
+#define COLOR_HIGHLIGHT_PREPROCESS  (Color){ 200, 160, 120, 255 }  // #c8a078 - light tan
+#define COLOR_HIGHLIGHT_NUMBER      (Color){ 240, 192,  80, 255 }  // #f0c050 - bright gold
+#define COLOR_HIGHLIGHT_STRING      (Color){ 140, 200, 100, 255 }  // #8cc864 - fresh grass green
+#define COLOR_HIGHLIGHT_COMMENT     (Color){ 120, 124, 128, 255 }  // #787c80 - neutral gray
+#define COLOR_HIGHLIGHT_OPERATOR    (Color){ 176, 180, 184, 255 }  // #b0b4b8 - clean gray
+#define COLOR_HIGHLIGHT_WHITESPACE  (Color){  50,  52,  54, 255 }  // #323436 - subtle
+#define COLOR_HIGHLIGHT_ESCAPE      (Color){ 240, 192,  80, 255 }  // #f0c050 - bright gold
+#define COLOR_HIGHLIGHT_QUOTE       (Color){ 140, 200, 100, 255 }  // #8cc864 - fresh green
+#define COLOR_HIGHLIGHT_SCOPE       (Color){ 230, 232, 228, 255 }  // #e6e8e4 - clean white
+#define COLOR_HIGHLIGHT_KEYWORD     (Color){  96, 180, 200, 255 }  // #60b4c8 - sky blue
+#define COLOR_HIGHLIGHT_TYPE        (Color){ 100, 190, 160, 255 }  // #64bea0 - mint/seafoam
 
 /*
  * Token Definition
@@ -566,10 +611,9 @@ static Color TOK_KIND_COLOR[] = {
 	[TOK_KIND_ASSIGN]      = COLOR_HIGHLIGHT_OPERATOR,
 	[TOK_KIND_OPERATOR]    = COLOR_HIGHLIGHT_OPERATOR,
 	[TOK_KIND_PP]          = COLOR_HIGHLIGHT_PREPROCESS,
-	[TOK_KIND_CONTINUE]    = COLOR_HIGHLIGHT_CONTINUE,
 	[TOK_KIND_SCOPE]       = COLOR_HIGHLIGHT_OPERATOR,
 	[TOK_KIND_QUOTE]       = COLOR_HIGHLIGHT_QUOTE,
-	[TOK_KIND_STRING]        = COLOR_HIGHLIGHT_STRING,
+	[TOK_KIND_STRING]      = COLOR_HIGHLIGHT_STRING,
 	[TOK_KIND_ESCAPE]      = COLOR_HIGHLIGHT_ESCAPE,
 	[TOK_KIND_COMMENT]     = COLOR_HIGHLIGHT_COMMENT,
 };
@@ -1500,8 +1544,8 @@ typedef struct PACKED TextMeta {
 	u8 SCOPE_PAREN   : 4;
 	u8 SCOPE_BRACKET : 4;
 
-	u8 iTokenStartOffset : 4;
-	u8 iTokenEndOffset   : 4;
+	u8 iTokenStartOffset : 8;
+	u8 iTokenEndOffset   : 8;
 
 	u16 iScopeStartOffset : 16;
 	u16 iScopeEndOffset   : 16;
@@ -1579,16 +1623,16 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 #pragma GCC diagnostic ignored "-Woverride-init"
 
 	/* Base Dispatch */
-#define DISPATCH_DEEFAULT\
-	[TOK_ALL_RANGE]     = &&TOK_ERR,\
-	[TOK_NONE]          = &&TOK_NONE,\
-	[TOK_MUNCH]         = &&TOK_MUNCH,\
-	[TOK_SPARSE_CHAR]   = &&TOK_SPARSE_CHAR,\
-	[TOK_PACKED_CHAR]   = &&TOK_PACKED_CHAR,\
-	[TOK_DELIMIT]       = &&TOK_DELIMIT,\
-	[TOK_WHITE_RANGE]   = &&TOK_SPARSE_CHAR,\
-	[TOK_ASCII_RANGE]   = &&TOK_SPARSE_CHAR,\
-	[TOK_KEYWORD_RANGE] = &&TOK_ALL,
+	#define DISPATCH_DEEFAULT\
+		[TOK_ALL_RANGE]     = &&TOK_ERR,\
+		[TOK_NONE]          = &&TOK_NONE,\
+		[TOK_MUNCH]         = &&TOK_MUNCH,\
+		[TOK_SPARSE_CHAR]   = &&TOK_SPARSE_CHAR,\
+		[TOK_PACKED_CHAR]   = &&TOK_PACKED_CHAR,\
+		[TOK_DELIMIT]       = &&TOK_DELIMIT,\
+		[TOK_WHITE_RANGE]   = &&TOK_SPARSE_CHAR,\
+		[TOK_ASCII_RANGE]   = &&TOK_SPARSE_CHAR,\
+		[TOK_KEYWORD_RANGE] = &&TOK_ALL,
 
 	static void *baseDispatch[TOK_CAPACITY] = {	
 		DISPATCH_DEEFAULT
@@ -1685,7 +1729,7 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		goto TOK_ALL;
 	}
 
-	/* Sparse Tokens */
+	/* Sparse Token Entry */
 	TOK_SPARSE_CHAR: {
 		FRIE_LOG("TOK_SPARSE_CHAR iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
 		// Current
@@ -1699,7 +1743,6 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		bool match     = step.nd.sparse.succ > 0;
 		// Next
 		step.cT  = pText[++step.iT]; 
-		// if (step.iT>300) goto RESULT_SUCCESS;
 		step.iN  = match ? step.nd.sparse.succ : step.cT < 0 ? TOK_ERR : step.cT;
 		step.nd  = pFrie[step.iN]; 
 		step.tok = match ? TOK_PACKED_CHAR : step.nd.sparse.tok;
@@ -1707,6 +1750,7 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		goto *disp[step.tok]; 
 	}
 
+	/* Sparse Identifier */
 	static void *identifierDispatch[TOK_CAPACITY] = {	
 		[TOK_ALL_RANGE]			= &&TOK_NONE,
 		[TOK_MUNCH]             = &&TOK_MUNCH,
@@ -1730,7 +1774,6 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		// If we start with Alpha. Assume IDENTIFIER and traverse spar chars also checking for delimiter.
 		FRIE_LOG("TOK_SPARSE_IDENTIFIER iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
 		bool match = step.nd.sparse.succ > 0;
-		// Next
 		step.cT = pText[++step.iT];
 		bool delim = IS_DELIM_CHAR(step.cT);
 		step.iN  = match ? step.nd.sparse.succ : step.cT < 0 ? TOK_ERR : step.cT;
@@ -2106,14 +2149,14 @@ static CodeBox text;
 
 int main(void)
 {
-#define CONSTRUCT_TOK_DEF_FRIE(_tok) REQUIRE(ConstructFrie(NARRAY(_tok##_DEFS), _tok##_DEFS, NARRAY(_tok##_FRIE), _tok##_FRIE))
+	#define CONSTRUCT_TOK_DEF_FRIE(_tok) REQUIRE(ConstructFrie(NARRAY(_tok##_DEFS), _tok##_DEFS, NARRAY(_tok##_FRIE), _tok##_FRIE))
 
-	CONSTRUCT_TOK_DEF_FRIE(TOK_BASE);
-	CONSTRUCT_TOK_DEF_FRIE(TOK_QUOTE);
-	CONSTRUCT_TOK_DEF_FRIE(TOK_COMMENT);
-	CONSTRUCT_TOK_DEF_FRIE(TOK_NUMBER);
+		CONSTRUCT_TOK_DEF_FRIE(TOK_BASE);
+		CONSTRUCT_TOK_DEF_FRIE(TOK_QUOTE);
+		CONSTRUCT_TOK_DEF_FRIE(TOK_COMMENT);
+		CONSTRUCT_TOK_DEF_FRIE(TOK_NUMBER);
 
-#undef CONSTRUCT_TOK_DEF_FRIE
+	#undef CONSTRUCT_TOK_DEF_FRIE
 
 	/* Config */
 	SetTraceLogLevel(LOG_ALL);
