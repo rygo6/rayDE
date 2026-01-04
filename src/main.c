@@ -456,13 +456,17 @@ DEF_ENUM(DIRECTION);
 	DEF(SCOPE_COUNT)
 DEF_ENUM(SCOPE);
 
+
+/*
+ * Coddebox Color Scheme
+ */
+#define DEFINE_SCHEME_BORING
+
 #define FIND_CARET_COLOR     (Color){   0, 255,   0, 255 }
 #define FIND_HIGHLIGHT_COLOR (Color){   0, 255,   0, 64  }
 #define COLOR_COMMAND_BOX    (Color){  20,  20,   2, 200 }
 #define COLOR_TEXT_BOX       (Color){  37,  37,  38, 255 }
 #define COLOR_HIGHLIGHT_NONE        (Color){   0,   0,   0, 255 }
-
-#define DEFINE_SCHEME_BORING
 
 #ifdef DEFINE_SCHEME_BORING
 	#define COLOR_CARET                 ORANGE
@@ -570,7 +574,65 @@ DEF_ENUM(SCOPE);
 #endif
 
 /*
- * Token Definition
+ * Lex Token Constants
+ */
+#define TOK_CAPACITY 256
+
+#define TOK_SPECIAL_BEGIN 0
+#define TOK_SPECIAL_END   7
+#define TOK_SPECIAL_RANGE TOK_SPECIAL_BEGIN ... TOK_SPECIAL_END
+
+#define TOK_WHITE_BEGIN 9
+#define TOK_WHITE_END   13
+#define TOK_WHITE_RANGE TOK_WHITE_BEGIN ... TOK_WHITE_END
+
+#define TOK_LOWER_ALPHA_BEGIN 'a'
+#define TOK_LOWER_ALPHA_END   'z'
+#define TOK_LOWER_ALPHA_RANGE TOK_LOWER_ALPHA_BEGIN ... TOK_LOWER_ALPHA_END
+
+#define TOK_UPPER_ALPHA_BEGIN 'A'
+#define TOK_UPPER_ALPHA_END   'Z'
+#define TOK_UPPER_ALPHA_RANGE TOK_UPPER_ALPHA_BEGIN ... TOK_UPPER_ALPHA_END
+
+#define TOK_DIGIT_BEGIN '0'
+#define TOK_DIGIT_END   '9'
+#define TOK_DIGIT_RANGE TOK_DIGIT_BEGIN ... TOK_DIGIT_END
+
+#define TOK_ASCII_BEGIN 32  /* ' ' */
+#define TOK_ASCII_END   127 /* '~' */
+#define TOK_ASCII_RANGE TOK_ASCII_BEGIN ... TOK_ASCII_END
+
+#define TOK_KEYWORD_BEGIN 128
+#define TOK_KEYWORD_END   255
+#define TOK_KEYWORD_RANGE TOK_KEYWORD_BEGIN ... TOK_KEYWORD_END
+
+#define TOK_ALL_BEGIN 0
+#define TOK_ALL_END   255
+#define TOK_ALL_RANGE TOK_ALL_BEGIN ... TOK_ALL_END
+
+#define TOK_RANGE_NAME "\005"
+#define TOK_DELIM_STR  "\003"
+
+#define IS_DELIM_TOKEN(_c)   (_c == TOK_DELIMIT)
+#define IS_SPECIAL_TOKEN(_c) (_c <= TOK_FRIE_SECIAL_END)
+#define IS_KEYWORD_TOKEN(_c) (_c >= TOK_KEYWORD_BEGIN)
+#define IS_TOKEN(_c)         (((i8)_c) <= TOK_SPECIAL_END)
+
+static const bool IDENT_CHAR[128] = {
+	['a'...'z'] = 1,
+	['A'...'Z'] = 1,
+	['0'...'9'] = 1,
+	['_'] = 1,
+};
+
+#define IS_IDENT_CHAR(_c) IDENT_CHAR[(u8)(_c)]
+#define IS_DELIM_CHAR(_c) !IDENT_CHAR[(u8)(_c)]
+
+#define IS_DIGIT_CHAR(_c) (CHAR_FLAGS[(u8)(_c)] & CHAR_DIGIT)
+#define IS_SPACE_CHAR(_c) (CHAR_FLAGS[(u8)(_c)] & CHAR_SPACE)
+
+/*
+ * Lex Token Definition
  */
 #define DEF_TOK_KIND(DEF) \
 	DEF(TOK_KIND_NONE) \
@@ -616,43 +678,6 @@ static Color TOK_KIND_COLOR[] = {
 	[TOK_KIND_COMMENT]     = COLOR_HIGHLIGHT_COMMENT,
 };
 STATIC_ASSERT(NARRAY(TOK_KIND_COLOR) == TOK_KIND_COUNT);
-
-#define TOK_CAPACITY 256
-
-#define TOK_SPECIAL_BEGIN 0
-#define TOK_SPECIAL_END   7
-#define TOK_SPECIAL_RANGE TOK_SPECIAL_BEGIN ... TOK_SPECIAL_END
-
-#define TOK_WHITE_BEGIN 9
-#define TOK_WHITE_END   13
-#define TOK_WHITE_RANGE TOK_WHITE_BEGIN ... TOK_WHITE_END
-
-#define TOK_LOWER_ALPHA_BEGIN 'a'
-#define TOK_LOWER_ALPHA_END   'z'
-#define TOK_LOWER_ALPHA_RANGE TOK_LOWER_ALPHA_BEGIN ... TOK_LOWER_ALPHA_END
-
-#define TOK_UPPER_ALPHA_BEGIN 'A'
-#define TOK_UPPER_ALPHA_END   'Z'
-#define TOK_UPPER_ALPHA_RANGE TOK_UPPER_ALPHA_BEGIN ... TOK_UPPER_ALPHA_END
-
-#define TOK_DIGIT_BEGIN '0'
-#define TOK_DIGIT_END   '9'
-#define TOK_DIGIT_RANGE TOK_DIGIT_BEGIN ... TOK_DIGIT_END
-
-#define TOK_ASCII_BEGIN 32  /* ' ' */
-#define TOK_ASCII_END   127 /* '~' */
-#define TOK_ASCII_RANGE TOK_ASCII_BEGIN ... TOK_ASCII_END
-
-#define TOK_KEYWORD_BEGIN 128
-#define TOK_KEYWORD_END   255
-#define TOK_KEYWORD_RANGE TOK_KEYWORD_BEGIN ... TOK_KEYWORD_END
-
-#define TOK_ALL_BEGIN 0
-#define TOK_ALL_END   255
-#define TOK_ALL_RANGE TOK_ALL_BEGIN ... TOK_ALL_END
-
-#define TOK_RANGE_NAME "\005"
-#define TOK_DELIM_STR  "\003"
 
 #define DEF_TOK(DEF)\
 	/* Special */\
@@ -1100,40 +1125,17 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF("\\u", TOK_ESC_UNICODE4, TOK_KIND_ESCAPE)\
 	DEF("\\U", TOK_ESC_UNICODE8, TOK_KIND_ESCAPE)
 
+#define DEF_TOK_ALL_DEFINITIONS(DEF)\
+	DEF(TOK_BASE)\
+	DEF(TOK_QUOTE)\
+	DEF(TOK_COMMENT)\
+	DEF(TOK_NUMBER)
+
 /*
- * Flat Trie
+ * Lex Frie Data Structure 
  */
-// #define FRIE_DEBUG
-#ifdef FRIE_DEBUG
-	#define FRIE_LOG(...) fprintf(stderr, __VA_ARGS__)
-#else
-	#define FRIE_LOG(...)
-#endif
-
-static const bool IDENT_CHAR[128] = {
-	['a'...'z'] = 1,
-	['A'...'Z'] = 1,
-	['0'...'9'] = 1,
-	['_'] = 1,
-};
-
-#define IS_DELIM_TOKEN(_c)   (_c == TOK_DELIMIT)
-#define IS_SPECIAL_TOKEN(_c) (_c <= TOK_FRIE_SECIAL_END)
-#define IS_KEYWORD_TOKEN(_c) (_c >= TOK_KEYWORD_BEGIN)
-#define IS_TOKEN(_c)         (((i8)_c) <= TOK_SPECIAL_END)
-
-#define IS_IDENT_CHAR(_c) IDENT_CHAR[(u8)(_c)]
-#define IS_DELIM_CHAR(_c) !IDENT_CHAR[(u8)(_c)]
-
-#define IS_DIGIT_CHAR(_c) (CHAR_FLAGS[(u8)(_c)] & CHAR_DIGIT)
-#define IS_SPACE_CHAR(_c) (CHAR_FLAGS[(u8)(_c)] & CHAR_SPACE)
-
-#define DEF_DISPATCH(_name, _tok, _kind) [_tok] = &&_tok,
-#define DISPATCH_ASCII_CHAR_RANGE ' ' ... '~' // 32 ... 126 
-
-#define TRIE_MAX_PACKED_OFFSET  4096  // 12 bit
-#define TRIE_MAX_SPARSE_OFFSET  65536 // 16 bit
-#define MAX_TOKEN_SIZE 16
+#define FRIE_MAX_PACKED_OFFSET  4096  // 12 bit
+#define FRIE_MAX_SPARSE_OFFSET  65536 // 16 bit
 typedef union PACKED FrieNode {
 	/* First 128 ASCII chars are sparse nodes. Char tokue is index. */
 	struct PACKED { 
@@ -1162,22 +1164,28 @@ typedef struct TokDef {
 	u16 kind;
 } TokDef;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Woverride-init"
 #define STR_LEN(_str) (sizeof(_str) - 1)
 #define DEF_TOK_DEF_ITEM(_name, _tok, _kind)  [_tok]   = (TokDef){ _name,          _kind },
 #define DEF_TOK_RANGE_DEF_ITEM(_range, _kind) [_range] = (TokDef){ TOK_RANGE_NAME, _kind },
-#define DEF_TOK_DEFS(_tok)\
+#define DEF_TOK_DEFINITIONS(_tok)\
 	static const TokDef _tok##_DEFS[] = { DEF_##_tok(DEF_TOK_DEF_ITEM, DEF_TOK_RANGE_DEF_ITEM) };\
 	static FrieNode _tok##_FRIE[1024];
 
-DEF_TOK_DEFS(TOK_BASE);
-DEF_TOK_DEFS(TOK_QUOTE);
-DEF_TOK_DEFS(TOK_COMMENT);
-DEF_TOK_DEFS(TOK_NUMBER);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverride-init"
+#define DEF_TOK_DEFINITIONS_ALL(_defs) _defs(DEF_TOK_DEFINITIONS)
+	DEF_TOK_DEFINITIONS_ALL(DEF_TOK_ALL_DEFINITIONS)
+#pragma GCC diagnostic pop // ignored "-Woverride-init"
 
-#undef DEF_TOK_DEFS
-#pragma GCC diagnostic pop
+/*
+ * Lex Frie Functions
+ */
+// #define FRIE_DEBUG
+#ifdef FRIE_DEBUG
+	#define FRIE_LOG(...) fprintf(stderr, __VA_ARGS__)
+#else
+	#define FRIE_LOG(...)
+#endif
 
 static void FrieLog(FrieNode* trie)
 {
@@ -1225,10 +1233,10 @@ static TOK FrieGet(const char *pText, FrieNode *pFrie)
 	struct PACKED {
 		int      iT;
 		int      iN;
+		int      startTok;
+		int      tok;
 		FrieNode nd;
 		char     cT;
-		TOK      startTok;
-		TOK      tok;
 	} step; ZERO(&step);
 
 	step.cT = pText[0];
@@ -1395,7 +1403,7 @@ NextNameChar:
 
 		// Add new token
 		FRIE_LOG("New Entry i%d %c end%d %s\n", (u8)cName, cName, iEndNode, def.name);
-		CHECKMSG(iEndNode < TRIE_MAX_SPARSE_OFFSET, RESULT_OFFSET_ERROR, "end offset:%d", iEndNode);
+		CHECKMSG(iEndNode < FRIE_MAX_SPARSE_OFFSET, RESULT_OFFSET_ERROR, "end offset:%d", iEndNode);
 		pNode->sparse.succ = iEndNode;
 		iNode = iEndNode; 
 		iName++;
@@ -1415,7 +1423,7 @@ NextNameChar:
 			FrieShift(pFrie, iNode, iEndNode);
 			iEndNode++; CHECK(iEndNode < frieCapacity, RESULT_CAPACITY_ERROR);
 			u16 succ = iEndNode - iNode;
-			CHECKMSG(succ < TRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "succ offset:%d", succ);
+			CHECKMSG(succ < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "succ offset:%d", succ);
 			pFrie[iNode] = (FrieNode){ 
 				.packed.tok  = cName, 
 				.packed.succ = succ, 
@@ -1432,9 +1440,9 @@ NextNameChar:
 			bool insertingAtEnd = iEndNode == iNode;
 			iEndNode++; CHECK(iEndNode < frieCapacity, RESULT_CAPACITY_ERROR);
 			u16 succ = iEndNode - iNode;
-			CHECKMSG(succ < TRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "succ offset:%d", succ);
+			CHECKMSG(succ < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "succ offset:%d", succ);
 			u16 fail = insertingAtEnd ? succ + 1 : 1; // If inserting at end ERR token is 1 after succ, otherwise fail to next node
-			CHECKMSG(fail < TRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "fail offset:%d", fail);
+			CHECKMSG(fail < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "fail offset:%d", fail);
 			pFrie[iNode] = (FrieNode){ 
 				.packed.tok  = TOK_DELIMIT, 
 				.packed.succ = succ, 
@@ -1476,7 +1484,7 @@ NextNameChar:
 
 		{
 			u16 fail = (len + 1) - iName - delim; // +1 as err comes after tok
-			CHECKMSG(fail < TRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "fail offset:%d", fail);
+			CHECKMSG(fail < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "fail offset:%d", fail);
 			FRIE_LOG("Add Char iT:%d iN:%d fail:%d end:%d delim%d len:%d %s %c\n", iNode, iName, fail, iEndNode, delim, len, def.name, cName);
 			pFrie[iNode] = (FrieNode){ 
 				.packed.tok  = cName, 
@@ -1504,7 +1512,7 @@ RESULT_DUPLICATE_ERROR:
 	return RESULT_DUPLICATE_ERROR;
 
 RESULT_OFFSET_ERROR:
-	LOG_ERR("Trying to add offset greater than TRIE_MAX_OFFSET. %d %s\n", iNode, def.name);
+	LOG_ERR("Trying to add offset greater than FRIE_MAX_OFFSET. %d %s\n", iNode, def.name);
 	FrieLog(pFrie);
 	return RESULT_OFFSET_ERROR;
 
@@ -1517,6 +1525,9 @@ RESULT_SUCCESS:
 /*
  * CodeBox
  */
+#define DEFAULT_WIDTH  1280
+#define DEFAULT_HEIGHT 1024
+
 #define MAX_INPUT_CHARS      2048
 #define TEXT_BUFFER_CAPACITY 65536 * 2
 
@@ -1532,6 +1543,11 @@ const char availableChars[] = "·¬ abcdefghijklmnopqrstuvwxyzABDCEFGHIJKLMNOPQR
 
 #define CARET_MAX_CAPACITY 8
 #define CARET_INVALID INT_MIN
+
+#define MASK_ASCII    0b00000000000000000000000011111111 
+#define KEY_SHIFT_MOD 0b10000000000000000000000000000000
+#define KEY_ALT_MOD   0b01000000000000000000000000000000
+#define KEY_CTRL_MOD  0b00100000000000000000000000000000
 
 typedef struct PACKED TextMeta {
 	TOK 	 tok;
@@ -1567,6 +1583,7 @@ typedef struct CodePos {
 } CodePos;
 
 typedef struct CodeBox {
+	Rectangle rect;
 	int focusStartRowIndex;
 	int focusStartRow;
 
@@ -1609,10 +1626,7 @@ static inline Vector2 GetBoxLocalToWorld(Vector2 point, Rectangle rect) {
 	return (Vector2){ point.x + rect.x, point.y + rect.y };
 }
 
-/*
- * CodeBox Lex
- */
-static RESULT ProcessTrieMeta(CodeBox* pCode) 
+static RESULT CodeBoxProcessMeta(CodeBox* pCode) 
 {
 	double startTime = GetTime();
 	LOG("Process Meta. Token Count: %d\n", TOK_COUNT);
@@ -1850,7 +1864,7 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		goto *identifierDispatch[step.tok];
 	}
 
-#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop // ignored "-Woverride-init"
 
 RESULT_SUCCESS:
 	double deltaTime = (GetTime() - startTime) * 1000.0;
@@ -2004,6 +2018,13 @@ static bool TextFindCountCharBackward(const char* pText, char searchChar, char c
 	return true;
 }
 
+static void CodeBoxSetRect(CodeBox *pCode, Rectangle rect)
+{
+	pCode->rect = rect;
+	pCode->boxColCount = (int)(pCode->rect.width  / fontXSpacing);
+	pCode->boxRowCount = (int)(pCode->rect.height / fontYSpacing);
+}
+
 // The index of char on current line
 static inline int CodeBoxIndexCol(const CodeBox* pCode, int index)
 {
@@ -2041,7 +2062,6 @@ static void CodeBoxIncrementFocusRow(CodeBox* pCode, int increment)
 	pCode->focusStartRow = MAX(pCode->focusStartRow, 0);
 	pCode->focusStartRow = MIN(pCode->focusStartRow, pCode->textRowCount);
 	pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, '\n', pCode->focusStartRow);
-	// LOG("focusStartRow: %d\n", pCode->focusStartRow);
 }
 
 // Focus on a given character index.
@@ -2060,9 +2080,9 @@ static inline void CodeBoxFocusMark(CodeBox* pCode)
 /* Update Mark Index */
 static void CodeSetMarkIndex(CodeBox* pCode, int newMarkIndex)
 {
-	pCode->mark.index   = newMarkIndex;
-	pCode->mark.row     = CodeBoxIndexRow(pCode, newMarkIndex);
-	pCode->mark.col     = CodeBoxIndexCol(pCode, newMarkIndex);
+	pCode->mark.index = newMarkIndex;
+	pCode->mark.row   = CodeBoxIndexRow(pCode, newMarkIndex);
+	pCode->mark.col   = CodeBoxIndexCol(pCode, newMarkIndex);
 	assert(pCode->mark.index >= 0);
 	assert(pCode->mark.index <= pCode->textCount);
 	assert(pCode->mark.row   >= 0);
@@ -2138,33 +2158,31 @@ void PrintU16Binary(u16 value) {
 	putchar('\n');
 }
 
-static CodeBox text;
-
-#define MASK_ASCII    0b00000000000000000000000011111111 
-#define KEY_SHIFT_MOD 0b10000000000000000000000000000000
-#define KEY_ALT_MOD   0b01000000000000000000000000000000
-#define KEY_CTRL_MOD  0b00100000000000000000000000000000
+/*
+ * rayDE Application
+ */
+static struct {
+	int width;
+	int height;
+	CodeBox codeboxes[10];
+} window = {
+	.width = DEFAULT_WIDTH,
+	.height = DEFAULT_HEIGHT,
+};
 
 int main(void)
 {
-	#define CONSTRUCT_TOK_DEF_FRIE(_tok) REQUIRE(ConstructFrie(NARRAY(_tok##_DEFS), _tok##_DEFS, NARRAY(_tok##_FRIE), _tok##_FRIE))
-
-		CONSTRUCT_TOK_DEF_FRIE(TOK_BASE);
-		CONSTRUCT_TOK_DEF_FRIE(TOK_QUOTE);
-		CONSTRUCT_TOK_DEF_FRIE(TOK_COMMENT);
-		CONSTRUCT_TOK_DEF_FRIE(TOK_NUMBER);
-
+	#define CONSTRUCT_TOK_DEF_FRIE(_tok) REQUIRE(ConstructFrie(NARRAY(_tok##_DEFS), _tok##_DEFS, NARRAY(_tok##_FRIE), _tok##_FRIE));
+	#define CONSTRUCT_TOK_DEF_FRIE_ALL(_defs) _defs(CONSTRUCT_TOK_DEF_FRIE)
+		CONSTRUCT_TOK_DEF_FRIE_ALL(DEF_TOK_ALL_DEFINITIONS)
 	#undef CONSTRUCT_TOK_DEF_FRIE
+	#undef CONSTRUCT_TOK_DEF_FRIE_ALL
 
 	/* Config */
 	SetTraceLogLevel(LOG_ALL);
-	SetConfigFlags(FLAG_VSYNC_HINT);
+	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
 	EnableEventWaiting();
-
-	const int screenWidth = 1600;
-	const int screenHeight = 1200;
-
-	InitWindow(screenWidth, screenHeight, "rayDE");
+	InitWindow(window.width, window.height, "rayDE");
 	   
 	/* Font */
 	int codepointCount = 0;
@@ -2174,7 +2192,7 @@ int main(void)
 	SetTextLineSpacing(0); 
 
 	/* State */
-	CodeBox* pCode = &text;
+	CodeBox* pCode = &window.codeboxes[0];
 
 	struct {
 		float scrollMouse;
@@ -2195,12 +2213,11 @@ int main(void)
 	int currentKey = 0;
 	int priorKey = 0;
 
-	Rectangle textBox = { 5, 20, screenWidth - 10, screenHeight - 25 };
-	// TODO dynamically update
-	pCode->boxColCount = (int)(textBox.width  / fontXSpacing);
-	pCode->boxRowCount = (int)(textBox.height / fontYSpacing);
-	pCode->pBoxRows    = XCALLOC(text.boxRowCount, CodeRow);
-	pCode->pCarets     = XCALLOC(text.boxRowCount, CodePos); 
+	CodeBoxSetRect(pCode, (Rectangle){ 5, 20, window.width - 10, window.height - 25 });
+	#define CODEBOX_ROW_CAPACITY 1024
+	#define CODEBOX_CARET_CAPACITY 128
+	pCode->pBoxRows    = XCALLOC(CODEBOX_ROW_CAPACITY, CodeRow);
+	pCode->pCarets     = XCALLOC(CODEBOX_CARET_CAPACITY, CodePos); 
 	pCode->caretCount = 1;
 
 	/* File Load */
@@ -2227,18 +2244,25 @@ int main(void)
 		pCode->textRowCount = rowIndex;
 		pCode->textCount = index;
 		LOG("Loaded Buffer Size %d\n", pCode->textCount);
-		ASSERTMSG(text.textCount < TEXT_BUFFER_CAPACITY, "Loaded buffer size too big!");
+		ASSERTMSG(pCode->textCount < TEXT_BUFFER_CAPACITY, "Loaded buffer size too big!");
 
 		memcpy(pCode->pText, loadedFile, pCode->textCount + 1);
 		free(loadedFile);
 
-		REQUIRE(ProcessTrieMeta(pCode));
+		REQUIRE(CodeBoxProcessMeta(pCode));
 	}
 
 /*
  * Main Loop
  */
 LoopBegin:
+
+	if (IsWindowResized() && !IsWindowFullscreen())
+	{
+		window.width = GetScreenWidth();
+		window.height = GetScreenHeight();
+		CodeBoxSetRect(pCode, (Rectangle){ 5, 20, window.width - 10, window.height - 25 });
+	}
 
 	framesCounter++;
 
@@ -2318,9 +2342,9 @@ LoopBegin:
 		// TODO pull this into struct function to be used solely for text input
 		const int iCaret = 0;
 		const CodePos mark = pCode->mark;
-		CodePos* pMark = &pCode->mark;
-		CodePos caret = pCode->pCarets[0];
-		CodePos* pCaret = &pCode->pCarets[0];
+		CodePos *pMark  = &pCode->mark;
+		CodePos  caret  = pCode->pCarets[0];
+		CodePos *pCaret = &pCode->pCarets[0];
 		char* pText = pCode->pText;
 		while (currentKey > 0)
 		{
@@ -2549,8 +2573,8 @@ LoopBegin:
 
 				/* Utility Keys */
 				case KEY_CTRL_MOD | KEY_S:
-					LOG("Saving: %s", text.path);
-					SaveFileText(text.path, text.pText);
+					LOG("Saving: %s", pCode->path);
+					SaveFileText(pCode->path, pCode->pText);
 					break;
 
 				/* Character Delete Keys */
@@ -2624,8 +2648,9 @@ LoopBegin:
 		/* 
 		 * Code Box
 		 */
-		bool    boxHovering = CheckCollisionPointRec(hoverPos, textBox);
-		Vector2 hoverBoxPos = GetWorldToBoxLocal(hoverPos, textBox);
+		Rectangle codeRect = pCode->rect;
+		bool    boxHovering = CheckCollisionPointRec(hoverPos, codeRect);
+		Vector2 hoverBoxPos = GetWorldToBoxLocal(hoverPos, codeRect);
 
 		int iHoverBoxCol =  hoverBoxPos.x / fontXSpacing;
 		int iHoverBoxRow =  hoverBoxPos.y / fontYSpacing;
@@ -2638,8 +2663,8 @@ LoopBegin:
 		DrawText(TextFormat("col: %i >row: %i pCaret[0].index: %i hoverPos: x%.1f y%.1f c%i r%i", 
 			pCode->mark.col, pCode->mark.row, pCode->pCarets[0].index, hoverBoxPos.x, hoverBoxPos.y, iHoverBoxCol, iHoverBoxRow), 0, 0, 20, DARKGRAY);
 
-		DrawRectangleRec(textBox, COLOR_BACKGROUND);
-		DrawRectangleLines((int)textBox.x, (int)textBox.y, (int)textBox.width, (int)textBox.height, boxHovering ? COLOR_CARET : DARKGRAY);
+		DrawRectangleRec(codeRect, COLOR_BACKGROUND);
+		DrawRectangleLines((int)codeRect.x, (int)codeRect.y, (int)codeRect.width, (int)codeRect.height, boxHovering ? COLOR_CARET : DARKGRAY);
 
 		Vector2 scanFoundPosition = { -1, -1};
 
@@ -2658,13 +2683,13 @@ LoopBegin:
 				TextMeta currentMeta  = pMeta[iChar];
 
 				Vector2 position = {
-					// textBox.x + (fontXSpacing * iCol) + (tabCount * fontXSpacing * 4), 
-					textBox.x + (fontXSpacing * iCol), 
-					textBox.y + (fontYSpacing * iRow)
+					// codeRect.x + (fontXSpacing * iCol) + (tabCount * fontXSpacing * 4), 
+					codeRect.x + (fontXSpacing * iCol), 
+					codeRect.y + (fontYSpacing * iRow)
 				};										
-				Rectangle rect = {position.x, position.y, fontXSpacing, fontYSpacing};
+				Rectangle charRect = {position.x, position.y, fontXSpacing, fontYSpacing};
 
-				// if (iChar == text.pActiveCaret->index) {
+				// if (iChar == pCode->pActiveCaret->index) {
 				// 	caretColor = COLOR_CARET;
 				// 	caretPosition = position;
 				// 	DEBUG_LOG_ONCE("%s %d %d\n", string_TOK(m.tok), m.QUOTE, Delimiter(currentChar));
@@ -2680,19 +2705,19 @@ LoopBegin:
 				#define COLOR_A(_color, _a) (Color){_color.r, _color.g, _color.b, _a}
 
 				if (currentMeta.SCOPE_PAREN > 0) {
-					DrawRectangleRec(rect, COLOR_A(WHITE, currentMeta.SCOPE_PAREN * 10));
+					DrawRectangleRec(charRect, COLOR_A(WHITE, currentMeta.SCOPE_PAREN * 10));
 				}
 
 				// if (m.BLOCK_COMMENT) {
-				// 	DrawRectangleRec(rect, COLOR_A(BLUE, 10));
+				// 	DrawRectangleRec(charRect, COLOR_A(BLUE, 10));
 				// }
 
 				// if (currentMeta.PREPROCESS) {
-				// 	DrawRectangleRec(rect, COLOR_A(COLOR_HIGHLIGHT_PREPROCESS, 20));
+				// 	DrawRectangleRec(charRect, COLOR_A(COLOR_HIGHLIGHT_PREPROCESS, 20));
 				// }
 
 				// if (currentMeta.QUOTE) {
-				// 	DrawRectangleRec(rect, COLOR_A(COLOR_HIGHLIGHT_QUOTE, 50));
+				// 	DrawRectangleRec(charRect, COLOR_A(COLOR_HIGHLIGHT_QUOTE, 50));
 				// }
 
 				char displayChar = currentChar;
@@ -2708,7 +2733,7 @@ LoopBegin:
 
 					case '\t':
 						// // Step more spaces for tab width
-						// rect.width += (tabCount * fontXSpacing * tabWidth);
+						// charRect.width += (tabCount * fontXSpacing * tabWidth);
 						// tabCount++;
 						displayChar = '-';
 						goto DrawChar;
@@ -2743,7 +2768,7 @@ LoopBegin:
 		 */
 		if (boxHovering) {
 			Vector2 hoverSnapBoxPos = (Vector2){ (iHoverBoxCol * fontXSpacing), (iHoverBoxRow * fontYSpacing) };
-			Vector2 hoverSnapPos    = GetBoxLocalToWorld(hoverSnapBoxPos, textBox);
+			Vector2 hoverSnapPos    = GetBoxLocalToWorld(hoverSnapBoxPos, codeRect);
 			DrawRectangleRec((Rectangle){hoverSnapPos.x, hoverSnapPos.y, fontXSpacing, fontYSpacing}, COLOR_HOVER);
 
 			TextMeta hoverMeta = pCode->pTextMeta[iHoverChar];
@@ -2753,8 +2778,8 @@ LoopBegin:
 
 			Vector2 startBoxPos = (Vector2){ (iHoverStartCol   * fontXSpacing), (iHoverBoxRow * fontYSpacing) };
 			Vector2 endBoxPos   = (Vector2){ ((iHoverEndCol+1) * fontXSpacing), (iHoverBoxRow * fontYSpacing) };
-			Vector2 startPos    = GetBoxLocalToWorld(startBoxPos, textBox);
-			Vector2 endPos      = GetBoxLocalToWorld(endBoxPos,   textBox);
+			Vector2 startPos    = GetBoxLocalToWorld(startBoxPos, codeRect);
+			Vector2 endPos      = GetBoxLocalToWorld(endBoxPos,   codeRect);
 			DrawRectangleRec((Rectangle){ startPos.x, startPos.y, endPos.x - startPos.x, fontYSpacing }, COLOR_HOVER);
 
 			if (input.lMouse) {
@@ -2772,7 +2797,7 @@ LoopBegin:
 		 * Mark
 		 */
 		Vector2 markBoxPos = (Vector2){ (pCode->mark.col * fontXSpacing), ((pCode->mark.row - pCode->focusStartRow) * fontYSpacing) };
-		Vector2 markPos    = GetBoxLocalToWorld(markBoxPos, textBox);
+		Vector2 markPos    = GetBoxLocalToWorld(markBoxPos, codeRect);
 		DrawLineEx(
 			(Vector2){markPos.x, markPos.y}, 
 			(Vector2){markPos.x, markPos.y + fontYSpacing}, 
@@ -2782,7 +2807,7 @@ LoopBegin:
 		 * Caret
 		 */
 		Vector2 caretBoxPos = (Vector2){ (pCode->pCarets[0].col * fontXSpacing), ((pCode->pCarets[0].row - pCode->focusStartRow) * fontYSpacing) };
-		Vector2 caretPos    = GetBoxLocalToWorld(caretBoxPos, textBox);
+		Vector2 caretPos    = GetBoxLocalToWorld(caretBoxPos, codeRect);
 		DrawLineEx(
 			(Vector2){caretPos.x, caretPos.y}, 
 			(Vector2){caretPos.x, caretPos.y + fontYSpacing}, 
