@@ -232,49 +232,49 @@ static char _logOnceNewBuffer[128];
 #define STATIC_ASSERT(...) _Static_assert(__VA_ARGS__)
 
 static const char* string_CHAR(char c) {
-    switch (c) {
-        case '\x00': return "\\0NUL";
-        case '\x01': return "\\x01SOH";
-        case '\x02': return "\\x02STX";
-        case '\x03': return "\\x03ETX";
-        case '\x04': return "\\x04EOT";
-        case '\x05': return "\\x05ENQ";
-        case '\x06': return "\\x06ACK";
-        case '\x07': return "\\aBEL";
-        case '\x08': return "\\bBS";
-        case '\x09': return "\\tTAB";
-        case '\x0A': return "\\nLF";
-        case '\x0B': return "\\vVT";
-        case '\x0C': return "\\fFF";
-        case '\x0D': return "\\rCR";
-        case '\x0E': return "\\x0ESO";
-        case '\x0F': return "\\x0FSI";
-        case '\x10': return "\\x10DLE";
-        case '\x11': return "\\x11DC1";
-        case '\x12': return "\\x12DC2";
-        case '\x13': return "\\x13DC3";
-        case '\x14': return "\\x14DC4";
-        case '\x15': return "\\x15NAK";
-        case '\x16': return "\\x16SYN";
-        case '\x17': return "\\x17ETB";
-        case '\x18': return "\\x18CAN";
-        case '\x19': return "\\x19EM";
-        case '\x1A': return "\\x1ASUB";
-        case '\x1B': return "\\x1BESC";
-        case '\x1C': return "\\x1CFS";
-        case '\x1D': return "\\x1DGS";
-        case '\x1E': return "\\x1ERS";
-        case '\x1F': return "\\x1FUS";
-        case '\\':   return "\\\\";
-        case '\'':   return "\\'";
-        case '\"':   return "\\\"";
-        case '\x7F': return "\\x7FDEL";
-        default: {
-            static char buf[2] = { '\0', '\0' };
-            buf[0] = c;
-            return buf;
-        }
-    }
+	switch (c) {
+		case '\x00': return "\\0NUL";
+		case '\x01': return "\\x01SOH";
+		case '\x02': return "\\x02STX";
+		case '\x03': return "\\x03ETX";
+		case '\x04': return "\\x04EOT";
+		case '\x05': return "\\x05ENQ";
+		case '\x06': return "\\x06ACK";
+		case '\x07': return "\\aBEL";
+		case '\x08': return "\\bBS";
+		case '\x09': return "\\tTAB";
+		case '\x0A': return "\\nLF";
+		case '\x0B': return "\\vVT";
+		case '\x0C': return "\\fFF";
+		case '\x0D': return "\\rCR";
+		case '\x0E': return "\\x0ESO";
+		case '\x0F': return "\\x0FSI";
+		case '\x10': return "\\x10DLE";
+		case '\x11': return "\\x11DC1";
+		case '\x12': return "\\x12DC2";
+		case '\x13': return "\\x13DC3";
+		case '\x14': return "\\x14DC4";
+		case '\x15': return "\\x15NAK";
+		case '\x16': return "\\x16SYN";
+		case '\x17': return "\\x17ETB";
+		case '\x18': return "\\x18CAN";
+		case '\x19': return "\\x19EM";
+		case '\x1A': return "\\x1ASUB";
+		case '\x1B': return "\\x1BESC";
+		case '\x1C': return "\\x1CFS";
+		case '\x1D': return "\\x1DGS";
+		case '\x1E': return "\\x1ERS";
+		case '\x1F': return "\\x1FUS";
+		case '\\':   return "\\\\";
+		case '\'':   return "\\'";
+		case '\"':   return "\\\"";
+		case '\x7F': return "\\x7FDEL";
+		default: {
+			static char buf[2] = { '\0', '\0' };
+			buf[0] = c;
+			return buf;
+		}
+	}
 }
 
 /*
@@ -521,7 +521,7 @@ DEF_ENUM(SCOPE);
 #define COLOR_HIGHLIGHT_WHITESPACE  (Color){  55,  59,  67, 255 }  // #373b43 - subtle
 #define COLOR_HIGHLIGHT_ESCAPE      (Color){ 235, 203, 139, 255 }  // #ebcb8b - gold (attention in strings)
 #define COLOR_HIGHLIGHT_STRING      (Color){ 163, 190, 140, 255 }  // #a3be8c - "strings"
-#define COLOR_HIGHLIGHT_QUOTE       (Color){ 208, 135, 112, 255 }  // #d08770 - 'c' chars (coral)
+#define COLOR_HIGHLIGHT_QUOTE       (Color){ 163, 190, 140, 255 }  // #d08770 - 'c' chars (coral)
 #define COLOR_HIGHLIGHT_SCOPE       (Color){ 216, 222, 233, 255 }  // #d8dee9 - neutral, disappears
 #define COLOR_HIGHLIGHT_KEYWORD     (Color){ 235, 203, 139, 255 }  // #ebcb8b - warm gold
 #define COLOR_HIGHLIGHT_TYPE        (Color){ 143, 188, 187, 255 }  // #8fbcbb - warm teal (minimal blue)
@@ -613,117 +613,117 @@ STATIC_ASSERT(NARRAY(TOK_KIND_COLOR) == TOK_KIND_COUNT);
 #define TOK_DELIM_STR  "\003"
 
 #define DEF_TOK(DEF)\
-    /* Special */\
-    DEF(TOK_NONE,        /*NUL*/'\000')\
-    DEF(TOK_SPARSE_CHAR, /*SOH*/'\001')\
-    DEF(TOK_PACKED_CHAR, /*STX*/'\002')\
+	/* Special */\
+	DEF(TOK_NONE,        /*NUL*/'\000')\
+	DEF(TOK_SPARSE_CHAR, /*SOH*/'\001')\
+	DEF(TOK_PACKED_CHAR, /*STX*/'\002')\
 	DEF(TOK_DELIMIT,     /*ETX*/'\003')\
 	DEF(TOK_MUNCH,              '\006')\
-    DEF(TOK_ERR,         /*ENQ*/'\004')\
-    DEF(TOK_RANGE,              '\005')\
+	DEF(TOK_ERR,         /*ENQ*/'\004')\
+	DEF(TOK_RANGE,              '\005')\
 	/* White Spaces */\
 	DEF(TOK_TAB,          /* 9*/'\t')\
 	DEF(TOK_VERTICAL_TAB, /*10*/'\v')\
 	DEF(TOK_NEWLINE,      /*10*/'\n')\
 	DEF(TOK_FORM_FEED,    /*12*/'\f')\
 	DEF(TOK_CARR_RETURN,  /*13*/'\r')\
-    /*ASCII 32-126*/\
-    DEF(TOK_SPACE,      /*32*/' ' )\
-    DEF(TOK_BANG,       /*33*/'!' )\
-    DEF(TOK_DQUOTE,     /*34*/'"' )\
-    DEF(TOK_HASH,       /*35*/'#' )\
-    DEF(TOK_DOLLAR,     /*36*/'$' )\
-    DEF(TOK_PERCENT,    /*37*/'%' )\
-    DEF(TOK_AMP,        /*38*/'&' )\
-    DEF(TOK_SQUOTE,     /*39*/'\'')\
-    DEF(TOK_LPAREN,     /*40*/'(' )\
-    DEF(TOK_RPAREN,     /*41*/')' )\
-    DEF(TOK_STAR,       /*42*/'*' )\
-    DEF(TOK_PLUS,       /*43*/'+' )\
-    DEF(TOK_COMMA,      /*44*/',' )\
-    DEF(TOK_MINUS,      /*45*/'-' )\
-    DEF(TOK_DOT,        /*46*/'.' )\
-    DEF(TOK_SLASH,      /*47*/'/' )\
-    DEF(TOK_0,          /*48*/'0' )\
-    DEF(TOK_1,          /*49*/'1' )\
-    DEF(TOK_2,          /*50*/'2' )\
-    DEF(TOK_3,          /*51*/'3' )\
-    DEF(TOK_4,          /*52*/'4' )\
-    DEF(TOK_5,          /*53*/'5' )\
-    DEF(TOK_6,          /*54*/'6' )\
-    DEF(TOK_7,          /*55*/'7' )\
-    DEF(TOK_8,          /*56*/'8' )\
-    DEF(TOK_9,          /*57*/'9' )\
-    DEF(TOK_COLON,      /*58*/':' )\
-    DEF(TOK_SEMICOLON,  /*59*/';' )\
-    DEF(TOK_LT,         /*60*/'<' )\
-    DEF(TOK_EQ,         /*61*/'=' )\
-    DEF(TOK_GT,         /*62*/'>' )\
-    DEF(TOK_QUESTION,   /*63*/'?' )\
-    DEF(TOK_AT,         /*64*/'@' )\
-    DEF(TOK_A,          /*65*/'A' )\
-    DEF(TOK_B,          /*66*/'B' )\
-    DEF(TOK_C,          /*67*/'C' )\
-    DEF(TOK_D,          /*68*/'D' )\
-    DEF(TOK_E,          /*69*/'E' )\
-    DEF(TOK_F,          /*70*/'F' )\
-    DEF(TOK_G,          /*71*/'G' )\
-    DEF(TOK_H,          /*72*/'H' )\
-    DEF(TOK_I,          /*73*/'I' )\
-    DEF(TOK_J,          /*74*/'J' )\
-    DEF(TOK_K,          /*75*/'K' )\
-    DEF(TOK_L,          /*76*/'L' )\
-    DEF(TOK_M,          /*77*/'M' )\
-    DEF(TOK_N,          /*78*/'N' )\
-    DEF(TOK_O,          /*79*/'O' )\
-    DEF(TOK_P,          /*80*/'P' )\
-    DEF(TOK_Q,          /*81*/'Q' )\
-    DEF(TOK_R,          /*82*/'R' )\
-    DEF(TOK_S,          /*83*/'S' )\
-    DEF(TOK_T,          /*84*/'T' )\
-    DEF(TOK_U,          /*85*/'U' )\
-    DEF(TOK_V,          /*86*/'V' )\
-    DEF(TOK_W,          /*87*/'W' )\
-    DEF(TOK_X,          /*88*/'X' )\
-    DEF(TOK_Y,          /*89*/'Y' )\
-    DEF(TOK_Z,          /*90*/'Z' )\
-    DEF(TOK_LBRACKET,   /*91*/'[' )\
-    DEF(TOK_BACKSLASH,  /*92*/'\\')\
-    DEF(TOK_RBRACKET,   /*93*/']' )\
-    DEF(TOK_CARET,      /*94*/'^' )\
-    DEF(TOK_UNDERSCORE, /*95*/'_' )\
-    DEF(TOK_BACKTICK,   /*96*/'`' )\
-    DEF(TOK_a,          /*97*/'a' )\
-    DEF(TOK_b,          /*98*/'b' )\
-    DEF(TOK_c,          /*99*/'c' )\
-    DEF(TOK_d,         /*100*/'d' )\
-    DEF(TOK_e,         /*101*/'e' )\
-    DEF(TOK_f,         /*102*/'f' )\
-    DEF(TOK_g,         /*103*/'g' )\
-    DEF(TOK_h,         /*104*/'h' )\
-    DEF(TOK_i,         /*105*/'i' )\
-    DEF(TOK_j,         /*106*/'j' )\
-    DEF(TOK_k,         /*107*/'k' )\
-    DEF(TOK_l,         /*108*/'l' )\
-    DEF(TOK_m,         /*109*/'m' )\
-    DEF(TOK_n,         /*110*/'n' )\
-    DEF(TOK_o,         /*111*/'o' )\
-    DEF(TOK_p,         /*112*/'p' )\
-    DEF(TOK_q,         /*113*/'q' )\
-    DEF(TOK_r,         /*114*/'r' )\
-    DEF(TOK_s,         /*115*/'s' )\
-    DEF(TOK_t,         /*116*/'t' )\
-    DEF(TOK_u,         /*117*/'u' )\
-    DEF(TOK_v,         /*118*/'v' )\
-    DEF(TOK_w,         /*119*/'w' )\
-    DEF(TOK_x,         /*120*/'x' )\
-    DEF(TOK_y,         /*121*/'y' )\
-    DEF(TOK_z,         /*122*/'z' )\
-    DEF(TOK_LBRACE,    /*123*/'{' )\
-    DEF(TOK_PIPE,      /*124*/'|' )\
-    DEF(TOK_RBRACE,    /*125*/'}' )\
-    DEF(TOK_TILDE,     /*126*/'~' )\
-    /* Keywords 128+ */\
+	/*ASCII 32-126*/\
+	DEF(TOK_SPACE,      /*32*/' ' )\
+	DEF(TOK_BANG,       /*33*/'!' )\
+	DEF(TOK_DQUOTE,     /*34*/'"' )\
+	DEF(TOK_HASH,       /*35*/'#' )\
+	DEF(TOK_DOLLAR,     /*36*/'$' )\
+	DEF(TOK_PERCENT,    /*37*/'%' )\
+	DEF(TOK_AMP,        /*38*/'&' )\
+	DEF(TOK_SQUOTE,     /*39*/'\'')\
+	DEF(TOK_LPAREN,     /*40*/'(' )\
+	DEF(TOK_RPAREN,     /*41*/')' )\
+	DEF(TOK_STAR,       /*42*/'*' )\
+	DEF(TOK_PLUS,       /*43*/'+' )\
+	DEF(TOK_COMMA,      /*44*/',' )\
+	DEF(TOK_MINUS,      /*45*/'-' )\
+	DEF(TOK_DOT,        /*46*/'.' )\
+	DEF(TOK_SLASH,      /*47*/'/' )\
+	DEF(TOK_0,          /*48*/'0' )\
+	DEF(TOK_1,          /*49*/'1' )\
+	DEF(TOK_2,          /*50*/'2' )\
+	DEF(TOK_3,          /*51*/'3' )\
+	DEF(TOK_4,          /*52*/'4' )\
+	DEF(TOK_5,          /*53*/'5' )\
+	DEF(TOK_6,          /*54*/'6' )\
+	DEF(TOK_7,          /*55*/'7' )\
+	DEF(TOK_8,          /*56*/'8' )\
+	DEF(TOK_9,          /*57*/'9' )\
+	DEF(TOK_COLON,      /*58*/':' )\
+	DEF(TOK_SEMICOLON,  /*59*/';' )\
+	DEF(TOK_LT,         /*60*/'<' )\
+	DEF(TOK_EQ,         /*61*/'=' )\
+	DEF(TOK_GT,         /*62*/'>' )\
+	DEF(TOK_QUESTION,   /*63*/'?' )\
+	DEF(TOK_AT,         /*64*/'@' )\
+	DEF(TOK_A,          /*65*/'A' )\
+	DEF(TOK_B,          /*66*/'B' )\
+	DEF(TOK_C,          /*67*/'C' )\
+	DEF(TOK_D,          /*68*/'D' )\
+	DEF(TOK_E,          /*69*/'E' )\
+	DEF(TOK_F,          /*70*/'F' )\
+	DEF(TOK_G,          /*71*/'G' )\
+	DEF(TOK_H,          /*72*/'H' )\
+	DEF(TOK_I,          /*73*/'I' )\
+	DEF(TOK_J,          /*74*/'J' )\
+	DEF(TOK_K,          /*75*/'K' )\
+	DEF(TOK_L,          /*76*/'L' )\
+	DEF(TOK_M,          /*77*/'M' )\
+	DEF(TOK_N,          /*78*/'N' )\
+	DEF(TOK_O,          /*79*/'O' )\
+	DEF(TOK_P,          /*80*/'P' )\
+	DEF(TOK_Q,          /*81*/'Q' )\
+	DEF(TOK_R,          /*82*/'R' )\
+	DEF(TOK_S,          /*83*/'S' )\
+	DEF(TOK_T,          /*84*/'T' )\
+	DEF(TOK_U,          /*85*/'U' )\
+	DEF(TOK_V,          /*86*/'V' )\
+	DEF(TOK_W,          /*87*/'W' )\
+	DEF(TOK_X,          /*88*/'X' )\
+	DEF(TOK_Y,          /*89*/'Y' )\
+	DEF(TOK_Z,          /*90*/'Z' )\
+	DEF(TOK_LBRACKET,   /*91*/'[' )\
+	DEF(TOK_BACKSLASH,  /*92*/'\\')\
+	DEF(TOK_RBRACKET,   /*93*/']' )\
+	DEF(TOK_CARET,      /*94*/'^' )\
+	DEF(TOK_UNDERSCORE, /*95*/'_' )\
+	DEF(TOK_BACKTICK,   /*96*/'`' )\
+	DEF(TOK_a,          /*97*/'a' )\
+	DEF(TOK_b,          /*98*/'b' )\
+	DEF(TOK_c,          /*99*/'c' )\
+	DEF(TOK_d,         /*100*/'d' )\
+	DEF(TOK_e,         /*101*/'e' )\
+	DEF(TOK_f,         /*102*/'f' )\
+	DEF(TOK_g,         /*103*/'g' )\
+	DEF(TOK_h,         /*104*/'h' )\
+	DEF(TOK_i,         /*105*/'i' )\
+	DEF(TOK_j,         /*106*/'j' )\
+	DEF(TOK_k,         /*107*/'k' )\
+	DEF(TOK_l,         /*108*/'l' )\
+	DEF(TOK_m,         /*109*/'m' )\
+	DEF(TOK_n,         /*110*/'n' )\
+	DEF(TOK_o,         /*111*/'o' )\
+	DEF(TOK_p,         /*112*/'p' )\
+	DEF(TOK_q,         /*113*/'q' )\
+	DEF(TOK_r,         /*114*/'r' )\
+	DEF(TOK_s,         /*115*/'s' )\
+	DEF(TOK_t,         /*116*/'t' )\
+	DEF(TOK_u,         /*117*/'u' )\
+	DEF(TOK_v,         /*118*/'v' )\
+	DEF(TOK_w,         /*119*/'w' )\
+	DEF(TOK_x,         /*120*/'x' )\
+	DEF(TOK_y,         /*121*/'y' )\
+	DEF(TOK_z,         /*122*/'z' )\
+	DEF(TOK_LBRACE,    /*123*/'{' )\
+	DEF(TOK_PIPE,      /*124*/'|' )\
+	DEF(TOK_RBRACE,    /*125*/'}' )\
+	DEF(TOK_TILDE,     /*126*/'~' )\
+	/* Keywords 128+ */\
 	/* PreProcess */\
 	DEF(TOK_PP_INCLUDE, TOK_KEYWORD_BEGIN)\
 	DEF(TOK_PP_DEFINE)\
@@ -798,48 +798,48 @@ STATIC_ASSERT(NARRAY(TOK_KIND_COLOR) == TOK_KIND_COUNT);
 	DEF(TOK_SIZE_T)\
 	DEF(TOK_INT8_T)\
 	/* Operator */\
-    DEF(TOK_INC,           /* ++  */)\
-    DEF(TOK_DEC,           /* --  */)\
-    DEF(TOK_ARROW,         /* ->  */)\
-    DEF(TOK_LSHIFT,        /* <<  */)\
-    DEF(TOK_RSHIFT,        /* >>  */)\
-    DEF(TOK_LE,            /* <=  */)\
-    DEF(TOK_GE,            /* >=  */)\
-    DEF(TOK_EQ_EQ,         /* ==  */)\
-    DEF(TOK_NE,            /* !=  */)\
-    DEF(TOK_AND,           /* &&  */)\
-    DEF(TOK_OR,            /* ||  */)\
-    DEF(TOK_ADD_ASSIGN,    /* +=  */)\
-    DEF(TOK_SUB_ASSIGN,    /* -=  */)\
-    DEF(TOK_MUL_ASSIGN,    /* *=  */)\
-    DEF(TOK_DIV_ASSIGN,    /* /=  */)\
-    DEF(TOK_MOD_ASSIGN,    /* %=  */)\
-    DEF(TOK_AND_ASSIGN,    /* &=  */)\
-    DEF(TOK_OR_ASSIGN,     /* |=  */)\
-    DEF(TOK_XOR_ASSIGN,    /* ^=  */)\
-    DEF(TOK_LSHIFT_ASSIGN, /* <<= */)\
-    DEF(TOK_RSHIFT_ASSIGN, /* >>= */)\
-    DEF(TOK_ELLIPSIS,      /* ... */)\
+	DEF(TOK_INC,           /* ++  */)\
+	DEF(TOK_DEC,           /* --  */)\
+	DEF(TOK_ARROW,         /* ->  */)\
+	DEF(TOK_LSHIFT,        /* <<  */)\
+	DEF(TOK_RSHIFT,        /* >>  */)\
+	DEF(TOK_LE,            /* <=  */)\
+	DEF(TOK_GE,            /* >=  */)\
+	DEF(TOK_EQ_EQ,         /* ==  */)\
+	DEF(TOK_NE,            /* !=  */)\
+	DEF(TOK_AND,           /* &&  */)\
+	DEF(TOK_OR,            /* ||  */)\
+	DEF(TOK_ADD_ASSIGN,    /* +=  */)\
+	DEF(TOK_SUB_ASSIGN,    /* -=  */)\
+	DEF(TOK_MUL_ASSIGN,    /* *=  */)\
+	DEF(TOK_DIV_ASSIGN,    /* /=  */)\
+	DEF(TOK_MOD_ASSIGN,    /* %=  */)\
+	DEF(TOK_AND_ASSIGN,    /* &=  */)\
+	DEF(TOK_OR_ASSIGN,     /* |=  */)\
+	DEF(TOK_XOR_ASSIGN,    /* ^=  */)\
+	DEF(TOK_LSHIFT_ASSIGN, /* <<= */)\
+	DEF(TOK_RSHIFT_ASSIGN, /* >>= */)\
+	DEF(TOK_ELLIPSIS,      /* ... */)\
 	/* Comment */\
 	DEF(TOK_LCOMMENT)\
-    DEF(TOK_RCOMMENT)\
-    DEF(TOK_COMMENT)\
+	DEF(TOK_RCOMMENT)\
+	DEF(TOK_COMMENT)\
 	/* Escape */\
-    DEF(TOK_ESC_NULL,      /* \\0  NUL */)\
-    DEF(TOK_ESC_ALERT,     /* \\a  BEL */)\
-    DEF(TOK_ESC_BACKSPACE, /* \\b  BS  */)\
-    DEF(TOK_ESC_TAB,       /* \\t  TAB */)\
-    DEF(TOK_ESC_NEWLINE,   /* \\n  LF  */)\
-    DEF(TOK_ESC_VTAB,      /* \\v  VT  */)\
-    DEF(TOK_ESC_FORMFEED,  /* \\f  FF  */)\
-    DEF(TOK_ESC_RETURN,    /* \\r  CR  */)\
-    DEF(TOK_ESC_BACKSLASH, /* \\\\ \\  */)\
-    DEF(TOK_ESC_SQUOTE,    /* \\'  '   */)\
-    DEF(TOK_ESC_DQUOTE,    /* \\\  "   */)\
-    DEF(TOK_ESC_QUESTION,  /* \\?  ?   */)\
+	DEF(TOK_ESC_NULL,      /* \\0  NUL */)\
+	DEF(TOK_ESC_ALERT,     /* \\a  BEL */)\
+	DEF(TOK_ESC_BACKSPACE, /* \\b  BS  */)\
+	DEF(TOK_ESC_TAB,       /* \\t  TAB */)\
+	DEF(TOK_ESC_NEWLINE,   /* \\n  LF  */)\
+	DEF(TOK_ESC_VTAB,      /* \\v  VT  */)\
+	DEF(TOK_ESC_FORMFEED,  /* \\f  FF  */)\
+	DEF(TOK_ESC_RETURN,    /* \\r  CR  */)\
+	DEF(TOK_ESC_BACKSLASH, /* \\\\ \\  */)\
+	DEF(TOK_ESC_SQUOTE,    /* \\'  '   */)\
+	DEF(TOK_ESC_DQUOTE,    /* \\\  "   */)\
+	DEF(TOK_ESC_QUESTION,  /* \\?  ?   */)\
 	DEF(TOK_ESC_HEX,       /* \\x      */)\
-    DEF(TOK_ESC_UNICODE4,  /* \\u      */)\
-    DEF(TOK_ESC_UNICODE8,  /* \\U      */)\
+	DEF(TOK_ESC_UNICODE4,  /* \\u      */)\
+	DEF(TOK_ESC_UNICODE8,  /* \\U      */)\
 	/* Number */\
 	DEF(TOK_NUMBER)\
 	DEF(TOK_NUMBER_HEX)\
@@ -860,65 +860,65 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF_RANGE(TOK_WHITE_RANGE, TOK_KIND_WHITESPACE)\
 	DEF_RANGE(' ',             TOK_KIND_WHITESPACE)\
 	/* Other Alpha */\
-    DEF("_",  TOK_UNDERSCORE, TOK_KIND_ALPHA)\
-    DEF("\\", TOK_BACKSLASH,  TOK_KIND_ALPHA)\
-    DEF("@",  TOK_AT,         TOK_KIND_ALPHA)\
-    DEF("&",  TOK_AMP,        TOK_KIND_ALPHA)\
-    DEF("$",  TOK_DOLLAR,     TOK_KIND_ALPHA)\
-    /* Brace */\
+	DEF("_",  TOK_UNDERSCORE, TOK_KIND_ALPHA)\
+	DEF("\\", TOK_BACKSLASH,  TOK_KIND_ALPHA)\
+	DEF("@",  TOK_AT,         TOK_KIND_ALPHA)\
+	DEF("&",  TOK_AMP,        TOK_KIND_ALPHA)\
+	DEF("$",  TOK_DOLLAR,     TOK_KIND_ALPHA)\
+	/* Brace */\
 	DEF("[", TOK_LBRACKET, TOK_KIND_SCOPE)\
-    DEF("]", TOK_RBRACKET, TOK_KIND_SCOPE)\
-    DEF("{", TOK_LBRACE,   TOK_KIND_SCOPE)\
-    DEF("}", TOK_RBRACE,   TOK_KIND_SCOPE)\
-    DEF("(", TOK_LPAREN,   TOK_KIND_SCOPE)\
-    DEF(")", TOK_RPAREN,   TOK_KIND_SCOPE)\
+	DEF("]", TOK_RBRACKET, TOK_KIND_SCOPE)\
+	DEF("{", TOK_LBRACE,   TOK_KIND_SCOPE)\
+	DEF("}", TOK_RBRACE,   TOK_KIND_SCOPE)\
+	DEF("(", TOK_LPAREN,   TOK_KIND_SCOPE)\
+	DEF(")", TOK_RPAREN,   TOK_KIND_SCOPE)\
 	/* Quote */\
 	DEF("\"", TOK_DQUOTE,   TOK_KIND_QUOTE)\
 	DEF("\'", TOK_SQUOTE,   TOK_KIND_QUOTE)\
-    DEF("`",  TOK_BACKTICK, TOK_KIND_QUOTE)\
+	DEF("`",  TOK_BACKTICK, TOK_KIND_QUOTE)\
 	/* Comment */\
 	DEF("/*", TOK_LCOMMENT, TOK_KIND_COMMENT)\
-    DEF("//", TOK_COMMENT,  TOK_KIND_COMMENT)\
+	DEF("//", TOK_COMMENT,  TOK_KIND_COMMENT)\
 	/* Operator */\
-    DEF("|",   TOK_PIPE,          TOK_KIND_OPERATOR)\
-    DEF("!",   TOK_BANG,          TOK_KIND_OPERATOR)\
-    DEF("%",   TOK_PERCENT,       TOK_KIND_OPERATOR)\
-    DEF("*",   TOK_STAR,          TOK_KIND_OPERATOR)\
-    DEF("+",   TOK_PLUS,          TOK_KIND_OPERATOR)\
-    DEF(",",   TOK_COMMA,         TOK_KIND_OPERATOR)\
-    DEF("-",   TOK_MINUS,         TOK_KIND_OPERATOR)\
-    DEF(".",   TOK_DOT,           TOK_KIND_OPERATOR)\
-    DEF("/",   TOK_SLASH,         TOK_KIND_OPERATOR)\
-    DEF("<",   TOK_LT,            TOK_KIND_OPERATOR)\
-    DEF("=",   TOK_EQ,            TOK_KIND_OPERATOR)\
-    DEF(">",   TOK_GT,            TOK_KIND_OPERATOR)\
-    DEF("^",   TOK_CARET,         TOK_KIND_OPERATOR)\
-    DEF("~",   TOK_TILDE,         TOK_KIND_OPERATOR)\
-    DEF("++",  TOK_INC,           TOK_KIND_OPERATOR)\
-    DEF("--",  TOK_DEC,           TOK_KIND_OPERATOR)\
-    DEF("->",  TOK_ARROW,         TOK_KIND_OPERATOR)\
-    DEF("<<",  TOK_LSHIFT,        TOK_KIND_OPERATOR)\
-    DEF(">>",  TOK_RSHIFT,        TOK_KIND_OPERATOR)\
-    DEF("<=",  TOK_LE,            TOK_KIND_OPERATOR)\
-    DEF(">=",  TOK_GE,            TOK_KIND_OPERATOR)\
-    DEF("==",  TOK_EQ_EQ,         TOK_KIND_OPERATOR)\
-    DEF("!=",  TOK_NE,            TOK_KIND_OPERATOR)\
-    DEF("&&",  TOK_AND,           TOK_KIND_OPERATOR)\
-    DEF("||",  TOK_OR,            TOK_KIND_OPERATOR)\
-    DEF("+=",  TOK_ADD_ASSIGN,    TOK_KIND_OPERATOR)\
-    DEF("-=",  TOK_SUB_ASSIGN,    TOK_KIND_OPERATOR)\
-    DEF("*=",  TOK_MUL_ASSIGN,    TOK_KIND_OPERATOR)\
-    DEF("/=",  TOK_DIV_ASSIGN,    TOK_KIND_OPERATOR)\
-    DEF("%=",  TOK_MOD_ASSIGN,    TOK_KIND_OPERATOR)\
-    DEF("&=",  TOK_AND_ASSIGN,    TOK_KIND_OPERATOR)\
-    DEF("|=",  TOK_OR_ASSIGN,     TOK_KIND_OPERATOR)\
-    DEF("^=",  TOK_XOR_ASSIGN,    TOK_KIND_OPERATOR)\
-    DEF("<<=", TOK_LSHIFT_ASSIGN, TOK_KIND_OPERATOR)\
-    DEF(">>=", TOK_RSHIFT_ASSIGN, TOK_KIND_OPERATOR)\
+	DEF("|",   TOK_PIPE,          TOK_KIND_OPERATOR)\
+	DEF("!",   TOK_BANG,          TOK_KIND_OPERATOR)\
+	DEF("%",   TOK_PERCENT,       TOK_KIND_OPERATOR)\
+	DEF("*",   TOK_STAR,          TOK_KIND_OPERATOR)\
+	DEF("+",   TOK_PLUS,          TOK_KIND_OPERATOR)\
+	DEF(",",   TOK_COMMA,         TOK_KIND_OPERATOR)\
+	DEF("-",   TOK_MINUS,         TOK_KIND_OPERATOR)\
+	DEF(".",   TOK_DOT,           TOK_KIND_OPERATOR)\
+	DEF("/",   TOK_SLASH,         TOK_KIND_OPERATOR)\
+	DEF("<",   TOK_LT,            TOK_KIND_OPERATOR)\
+	DEF("=",   TOK_EQ,            TOK_KIND_OPERATOR)\
+	DEF(">",   TOK_GT,            TOK_KIND_OPERATOR)\
+	DEF("^",   TOK_CARET,         TOK_KIND_OPERATOR)\
+	DEF("~",   TOK_TILDE,         TOK_KIND_OPERATOR)\
+	DEF("++",  TOK_INC,           TOK_KIND_OPERATOR)\
+	DEF("--",  TOK_DEC,           TOK_KIND_OPERATOR)\
+	DEF("->",  TOK_ARROW,         TOK_KIND_OPERATOR)\
+	DEF("<<",  TOK_LSHIFT,        TOK_KIND_OPERATOR)\
+	DEF(">>",  TOK_RSHIFT,        TOK_KIND_OPERATOR)\
+	DEF("<=",  TOK_LE,            TOK_KIND_OPERATOR)\
+	DEF(">=",  TOK_GE,            TOK_KIND_OPERATOR)\
+	DEF("==",  TOK_EQ_EQ,         TOK_KIND_OPERATOR)\
+	DEF("!=",  TOK_NE,            TOK_KIND_OPERATOR)\
+	DEF("&&",  TOK_AND,           TOK_KIND_OPERATOR)\
+	DEF("||",  TOK_OR,            TOK_KIND_OPERATOR)\
+	DEF("+=",  TOK_ADD_ASSIGN,    TOK_KIND_OPERATOR)\
+	DEF("-=",  TOK_SUB_ASSIGN,    TOK_KIND_OPERATOR)\
+	DEF("*=",  TOK_MUL_ASSIGN,    TOK_KIND_OPERATOR)\
+	DEF("/=",  TOK_DIV_ASSIGN,    TOK_KIND_OPERATOR)\
+	DEF("%=",  TOK_MOD_ASSIGN,    TOK_KIND_OPERATOR)\
+	DEF("&=",  TOK_AND_ASSIGN,    TOK_KIND_OPERATOR)\
+	DEF("|=",  TOK_OR_ASSIGN,     TOK_KIND_OPERATOR)\
+	DEF("^=",  TOK_XOR_ASSIGN,    TOK_KIND_OPERATOR)\
+	DEF("<<=", TOK_LSHIFT_ASSIGN, TOK_KIND_OPERATOR)\
+	DEF(">>=", TOK_RSHIFT_ASSIGN, TOK_KIND_OPERATOR)\
 	/* Statement */\
-    DEF("?",   TOK_QUESTION,  TOK_KIND_STATEMENT)\
-    DEF(":",   TOK_COLON,     TOK_KIND_STATEMENT)\
-    DEF("...", TOK_ELLIPSIS,  TOK_KIND_STATEMENT)\
+	DEF("?",   TOK_QUESTION,  TOK_KIND_STATEMENT)\
+	DEF(":",   TOK_COLON,     TOK_KIND_STATEMENT)\
+	DEF("...", TOK_ELLIPSIS,  TOK_KIND_STATEMENT)\
 	DEF(";",   TOK_SEMICOLON, TOK_KIND_STATEMENT)\
 	/* Pre Process */\
 	DEF("#",           TOK_HASH,       TOK_KIND_PP)\
@@ -1006,35 +1006,35 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	/* Quote */\
 	DEF("\"",  TOK_DQUOTE,   TOK_KIND_QUOTE)\
 	DEF("\'",  TOK_SQUOTE,   TOK_KIND_QUOTE)\
-    DEF("`",   TOK_BACKTICK, TOK_KIND_QUOTE)\
+	DEF("`",   TOK_BACKTICK, TOK_KIND_QUOTE)\
 	/* Escape */\
-    DEF("\\"  /*92*/,  TOK_BACKSLASH,     TOK_KIND_ESCAPE)\
-    DEF("\\0" /*NUL*/, TOK_ESC_NULL,      TOK_KIND_ESCAPE)\
-    DEF("\\a" /*BEL*/, TOK_ESC_ALERT,     TOK_KIND_ESCAPE)\
-    DEF("\\b" /*BS*/,  TOK_ESC_BACKSPACE, TOK_KIND_ESCAPE)\
-    DEF("\\t" /*TAB*/, TOK_ESC_TAB,       TOK_KIND_ESCAPE)\
-    DEF("\\n" /*LF*/,  TOK_ESC_NEWLINE,   TOK_KIND_ESCAPE)\
-    DEF("\\v" /*VT*/,  TOK_ESC_VTAB,      TOK_KIND_ESCAPE)\
-    DEF("\\f" /*FF*/,  TOK_ESC_FORMFEED,  TOK_KIND_ESCAPE)\
-    DEF("\\r" /*CR*/,  TOK_ESC_RETURN,    TOK_KIND_ESCAPE)\
-    DEF("\\\\"/*\\*/,  TOK_ESC_BACKSLASH, TOK_KIND_ESCAPE)\
-    DEF("\\'" /*'*/,   TOK_ESC_SQUOTE,    TOK_KIND_ESCAPE)\
-    DEF("\\\""/*"*/,   TOK_ESC_DQUOTE,    TOK_KIND_ESCAPE)\
-    DEF("\\?" /*?*/,   TOK_ESC_QUESTION,  TOK_KIND_ESCAPE)\
-    /* Hex Prefix */\
-    DEF("\\x", TOK_ESC_HEX, TOK_KIND_ESCAPE)\
-    /* Unicode Prefix */\
-    DEF("\\u", TOK_ESC_UNICODE4, TOK_KIND_ESCAPE)\
-    DEF("\\U", TOK_ESC_UNICODE8, TOK_KIND_ESCAPE)
+	DEF("\\"  /*92*/,  TOK_BACKSLASH,     TOK_KIND_ESCAPE)\
+	DEF("\\0" /*NUL*/, TOK_ESC_NULL,      TOK_KIND_ESCAPE)\
+	DEF("\\a" /*BEL*/, TOK_ESC_ALERT,     TOK_KIND_ESCAPE)\
+	DEF("\\b" /*BS*/,  TOK_ESC_BACKSPACE, TOK_KIND_ESCAPE)\
+	DEF("\\t" /*TAB*/, TOK_ESC_TAB,       TOK_KIND_ESCAPE)\
+	DEF("\\n" /*LF*/,  TOK_ESC_NEWLINE,   TOK_KIND_ESCAPE)\
+	DEF("\\v" /*VT*/,  TOK_ESC_VTAB,      TOK_KIND_ESCAPE)\
+	DEF("\\f" /*FF*/,  TOK_ESC_FORMFEED,  TOK_KIND_ESCAPE)\
+	DEF("\\r" /*CR*/,  TOK_ESC_RETURN,    TOK_KIND_ESCAPE)\
+	DEF("\\\\"/*\\*/,  TOK_ESC_BACKSLASH, TOK_KIND_ESCAPE)\
+	DEF("\\'" /*'*/,   TOK_ESC_SQUOTE,    TOK_KIND_ESCAPE)\
+	DEF("\\\""/*"*/,   TOK_ESC_DQUOTE,    TOK_KIND_ESCAPE)\
+	DEF("\\?" /*?*/,   TOK_ESC_QUESTION,  TOK_KIND_ESCAPE)\
+	/* Hex Prefix */\
+	DEF("\\x", TOK_ESC_HEX, TOK_KIND_ESCAPE)\
+	/* Unicode Prefix */\
+	DEF("\\u", TOK_ESC_UNICODE4, TOK_KIND_ESCAPE)\
+	DEF("\\U", TOK_ESC_UNICODE8, TOK_KIND_ESCAPE)
 	/*Octal Prefix TODO how to highlight whole octal? \
-    DEF("\\0",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
-    DEF("\\1",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
-    DEF("\\2",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
-    DEF("\\3",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
-    DEF("\\4",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
-    DEF("\\5",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
-    DEF("\\6",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
-    DEF("\\7",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
+	DEF("\\0",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
+	DEF("\\1",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
+	DEF("\\2",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
+	DEF("\\3",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
+	DEF("\\4",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
+	DEF("\\5",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
+	DEF("\\6",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
+	DEF("\\7",         TOK_ESC_OCT,      TOK_KIND_ESCAPE)\
 	*/
 
 #define DEF_TOK_COMMENT(DEF, DEF_RANGE)\
@@ -1052,16 +1052,16 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF("\t", TOK_TAB,     TOK_KIND_WHITESPACE)\
 	DEF("\n", TOK_NEWLINE, TOK_KIND_WHITESPACE)\
 	DEF(" ",  TOK_SPACE,   TOK_KIND_WHITESPACE)\
-    /* Hex Prefix */\
-    DEF("\\x", TOK_ESC_HEX, TOK_KIND_ESCAPE)\
-    /* Unicode Prefix */\
-    DEF("\\u", TOK_ESC_UNICODE4, TOK_KIND_ESCAPE)\
-    DEF("\\U", TOK_ESC_UNICODE8, TOK_KIND_ESCAPE)
+	/* Hex Prefix */\
+	DEF("\\x", TOK_ESC_HEX, TOK_KIND_ESCAPE)\
+	/* Unicode Prefix */\
+	DEF("\\u", TOK_ESC_UNICODE4, TOK_KIND_ESCAPE)\
+	DEF("\\U", TOK_ESC_UNICODE8, TOK_KIND_ESCAPE)
 
 /*
  * Flat Trie
  */
-#define FRIE_DEBUG
+// #define FRIE_DEBUG
 #ifdef FRIE_DEBUG
 	#define FRIE_LOG(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -1069,10 +1069,10 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 #endif
 
 static const bool IDENT_CHAR[128] = {
-    ['a'...'z'] = 1,
-    ['A'...'Z'] = 1,
-    ['0'...'9'] = 1,
-    ['_'] = 1,
+	['a'...'z'] = 1,
+	['A'...'Z'] = 1,
+	['0'...'9'] = 1,
+	['_'] = 1,
 };
 
 #define IS_DELIM_TOKEN(_c)   (_c == TOK_DELIMIT)
@@ -1560,11 +1560,11 @@ typedef struct Command {
 } Command;
 
 static inline Vector2 GetWorldToBoxLocal(Vector2 point, Rectangle rect) {
-    return (Vector2){ point.x - rect.x, point.y - rect.y };
+	return (Vector2){ point.x - rect.x, point.y - rect.y };
 }
 
 static inline Vector2 GetBoxLocalToWorld(Vector2 point, Rectangle rect) {
-    return (Vector2){ point.x + rect.x, point.y + rect.y };
+	return (Vector2){ point.x + rect.x, point.y + rect.y };
 }
 
 /*
@@ -1625,10 +1625,9 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 	step.nd = pFrie[(u8)step.cT];
 	goto TOK_SPARSE_CHAR;
 
-	TOK_NONE: {
-		// No token means we reached end of file.
-		goto RESULT_SUCCESS;
-	}
+	/* End Of File */
+	TOK_NONE: goto RESULT_SUCCESS;
+
 	/* Specialized Dispatch */
 	TOK_CLOSE_QUOTE: {
 		disp  = baseDispatch;
@@ -1681,6 +1680,7 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		pFrie = TOK_COMMENT_FRIE;
 		goto TOK_ALL;
 	}
+
 	/* Sparse Tokens */
 	TOK_SPARSE_CHAR: {
 		FRIE_LOG("TOK_SPARSE_CHAR iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
@@ -1693,15 +1693,14 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		bool match     = step.nd.sparse.succ > 0;
 		// Next
 		step.cT  = pText[++step.iT]; 
-		if (step.iT > 512) goto RESULT_SUCCESS;
 		step.iN  = match ? step.nd.sparse.succ : step.cT < 0 ? TOK_ERR : step.cT;
 		step.nd  = pFrie[step.iN]; 
 		step.tok = match ? TOK_PACKED_CHAR : step.nd.sparse.tok;
 		FRIE_LOG("dispatch-->iN:%d %s %s\n", step.iN, string_TOK(step.tok), match ? "" : string_TOK_KIND(step.nd.sparse.kind));
 		goto *disp[step.tok];
 	}
-	// If we start with Alpha. Assume IDENTIFIER and traverse spar chars also checking for delimiter.
 	TOK_SPARSE_IDENTIFIER: {
+		// If we start with Alpha. Assume IDENTIFIER and traverse spar chars also checking for delimiter.
 		static void *identifierDispatch[TOK_CAPACITY] = {	
 			DISPATCH_DEEFAULT
 			[TOK_SQUOTE]            = &&TOK_OPEN_SQUOTE,
@@ -1731,6 +1730,7 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		FRIE_LOG("dispatch-->iN:%d %s %s\n", step.iN, string_TOK(step.tok), match ? "" : string_TOK_KIND(step.nd.sparse.kind));
 		goto *identifierDispatch[step.tok];
 	}
+
 	/* Packed Tokens */
 	TOK_PACKED_CHAR: {
 		FRIE_LOG("TOK_PACKED_CHAR iT:%-4d iN:%-4d %4d:%s==", step.iT, step.iN, step.cT, string_CHAR(step.cT));
@@ -1753,6 +1753,7 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		FRIE_LOG("dispatch-->%s\n", string_TOK(step.nd.packed.tok));
 		goto *disp[step.tok];
 	}
+
 	/* Found Tokens */
 	TOK_ALL: {
 		FRIE_LOG("TOK_ALL %s start:%d iT:%d iN:%d kind:%s \n", string_TOK(step.nd.terminator.tok), step.iTStart, step.iT, step.iN,  string_TOK_KIND(step.nd.terminator.kind));
@@ -1775,6 +1776,7 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 		FRIE_LOG("dispatch-->%s\n", string_TOK(step.cT));
 		goto *disp[step.tok];	
 	}
+
 	/* Error Tokens */
 	static void *errDispatch[TOK_CAPACITY] = {	
 			[TOK_NONE]          = &&TOK_NONE,
@@ -1786,8 +1788,8 @@ static RESULT ProcessTrieMeta(CodeBox* pCode)
 			[TOK_LOWER_ALPHA_RANGE] = &&TOK_ERR_IDENTIFIER,
 			[TOK_DIGIT_RANGE]       = &&TOK_ERR_IDENTIFIER,
 	};
-	/* If ERR assume IDENTIFIER and traverse sparse chars also checking for delimiter. */
 	TOK_ERR_IDENTIFIER: {
+		// If ERR assume IDENTIFIER and traverse sparse chars also checking for delimiter.
 		step.cT = pText[++step.iT];
 	}
 	TOK_ERR: {
