@@ -1,3 +1,6 @@
+
+#define CONCAT(_a, _b) hello _a## _b # _a  #_b _a#_b
+
 #define RESULT_TEST0_TESTA
 #define RESULT_TESTA
 #define TESTA
@@ -27,8 +30,6 @@ double T() {
 
 //0123456789
 
-#define CONCAT(_a, _b, define) hello _a## _b # _a  #_a #define \
- hello
 
 static double Test(int input) {
 	static const int  x;
@@ -456,7 +457,6 @@ DEF_ENUM(DIRECTION);
 	DEF(SCOPE_COUNT)
 DEF_ENUM(SCOPE);
 
-
 /*
  * Coddebox Color Scheme
  */
@@ -572,6 +572,11 @@ DEF_ENUM(SCOPE);
 	#define COLOR_HIGHLIGHT_KEYWORD     (Color){  96, 180, 200, 255 }  // #60b4c8 - sky blue
 	#define COLOR_HIGHLIGHT_TYPE        (Color){ 100, 190, 160, 255 }  // #64bea0 - mint/seafoam
 #endif
+
+#define LERP(_a, _b, _t) (((_b - _a) * _t) + _a)
+
+#define COLOR_BACKGROUND_DIM    (Color){ LERP(0, COLOR_BACKGROUND.r, 0.9f),   LERP(0, COLOR_BACKGROUND.g, 0.9f),   LERP(0 ,COLOR_BACKGROUND.b, 0.9f),   255 }
+#define COLOR_BACKGROUND_BRIGHT (Color){ LERP(COLOR_BACKGROUND.r, 255, 0.1f), LERP(COLOR_BACKGROUND.g, 255, 0.1f), LERP(COLOR_BACKGROUND.b, 255, 0.1f), 255 }
 
 /*
  * Lex Token Constants
@@ -1107,9 +1112,9 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 #define DEF_TOK_COMMENT(DEF, DEF_RANGE)\
 	DEF_RANGE(TOK_ASCII_RANGE, TOK_KIND_COMMENT)\
 	/* Whitespace */\
-	DEF("\t", TOK_TAB,         TOK_KIND_WHITESPACE)\
-	DEF("\n", TOK_NEWLINE,     TOK_KIND_WHITESPACE)\
-	DEF(" ",  TOK_SPACE,       TOK_KIND_WHITESPACE)\
+	DEF("\t", TOK_TAB,     TOK_KIND_WHITESPACE)\
+	DEF("\n", TOK_NEWLINE, TOK_KIND_WHITESPACE)\
+	DEF(" ",  TOK_SPACE,   TOK_KIND_WHITESPACE)\
 	/* Comment */\
 	DEF("*/", TOK_RCOMMENT,    TOK_KIND_COMMENT)
 
@@ -1138,13 +1143,13 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 #define FRIE_MAX_SPARSE_OFFSET  65536 // 16 bit
 typedef union PACKED FrieNode {
 	/* First 128 ASCII chars are sparse nodes. Char tokue is index. */
-	struct PACKED { 
+	struct PACKED {
 		u32  tok :  8;  // Token
 		u32  succ : 16; // Amount to jump.
 		u32  kind : 8;  // Token Category
 	} sparse;
 	/* All tokens past first 128 ASCII chars are packed nodes. Can contain TOK_DELIMIT or TOK_MUNCH nodes. */
-	struct PACKED { 
+	struct PACKED {
 		u32  tok  : 8;  // Token Value. 0-6 Special Frie Token. 32-128 ASCII Tokens. >128 Keyword Tokens
 		u32  succ : 12; // offset to jump on success
 		u32  fail : 12; // offset to jump on fail
@@ -1159,16 +1164,16 @@ typedef union PACKED FrieNode {
 } FrieNode;
 STATIC_ASSERT(sizeof(FrieNode) == 4);
 
-typedef struct TokDef {
+typedef struct FrieTokDef {
 	char* name;
 	u16 kind;
-} TokDef;
+} FrieTokDef;
 
 #define STR_LEN(_str) (sizeof(_str) - 1)
-#define DEF_TOK_DEF_ITEM(_name, _tok, _kind)  [_tok]   = (TokDef){ _name,          _kind },
-#define DEF_TOK_RANGE_DEF_ITEM(_range, _kind) [_range] = (TokDef){ TOK_RANGE_NAME, _kind },
+#define DEF_TOK_DEF_ITEM(_name, _tok, _kind)  [_tok]   = (FrieTokDef){ _name,          _kind },
+#define DEF_TOK_RANGE_DEF_ITEM(_range, _kind) [_range] = (FrieTokDef){ TOK_RANGE_NAME, _kind },
 #define DEF_TOK_DEFINITIONS(_tok)\
-	static const TokDef _tok##_DEFS[] = { DEF_##_tok(DEF_TOK_DEF_ITEM, DEF_TOK_RANGE_DEF_ITEM) };\
+	static const FrieTokDef _tok##_DEFS[] = { DEF_##_tok(DEF_TOK_DEF_ITEM, DEF_TOK_RANGE_DEF_ITEM) };\
 	static FrieNode _tok##_FRIE[1024];
 
 #pragma GCC diagnostic push
@@ -1191,20 +1196,62 @@ static void FrieLog(FrieNode* trie)
 {
 	LOG("Frie:\n");
 	int iNode = 0; FrieNode node = trie[iNode]; 
-	fprintf(stderr, "Sparse Table: " ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "index" ANSI_RESET ANSI_WHITE "char" ANSI_DIM ANSI_ITALIC ANSI_YELLOW "SuccessTarget\n "ANSI_RESET);
+	fprintf(stderr, 
+		"Sparse Table: " 
+		ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "index" 
+		ANSI_RESET ANSI_WHITE "char" 
+		ANSI_DIM ANSI_ITALIC ANSI_YELLOW "SuccessTarget\n "
+		ANSI_RESET);
 	while ( iNode < TOK_KEYWORD_BEGIN) {
-		fprintf(stderr, ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" ANSI_RESET ANSI_WHITE "%s" ANSI_DIM ANSI_ITALIC ANSI_YELLOW "%d" ANSI_WHITE "%s" ANSI_BRIGHT_BLACK "|" ANSI_RESET, iNode, string_CHAR(iNode), node.sparse.succ, string_TOK(node.sparse.tok));
+		fprintf(stderr, 
+			ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" 
+			ANSI_RESET ANSI_WHITE "%s" 
+			ANSI_DIM ANSI_ITALIC ANSI_YELLOW "%d" 
+			ANSI_WHITE "%s" 
+			ANSI_BRIGHT_BLACK "|" 
+			ANSI_RESET, 
+			iNode, string_CHAR(iNode), node.sparse.succ, string_TOK(node.sparse.tok));
 		node = trie[++iNode];
 	}
-
-	fprintf(stderr, "\nPacked Trie: " ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "index" ANSI_RESET ANSI_WHITE "char/token" ANSI_DIM ANSI_GREEN "SuccessOffset" ANSI_ITALIC ANSI_YELLOW "SuccessTarget" ANSI_RESET ANSI_DIM ANSI_RED "FailOffset" ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "FailTarget\n" ANSI_RESET);
+	fprintf(stderr, 
+		"\nPacked Trie: " ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE 
+		"index" ANSI_RESET ANSI_WHITE "char/token" 
+		ANSI_DIM ANSI_GREEN "SuccessOffset" 
+		ANSI_ITALIC ANSI_YELLOW "SuccessTarget" 
+		ANSI_RESET ANSI_DIM ANSI_RED "FailOffset" 
+		ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW 
+		"FailTarget\n" 
+		ANSI_RESET);
 	while (node.packed.tok != '\0' || iNode < 128) {
 		if (IS_DELIM_TOKEN(node.packed.tok)) 
-			fprintf(stderr, ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s" ANSI_DIM ANSI_GREEN "%d" ANSI_ITALIC ANSI_YELLOW "%d" ANSI_RESET ANSI_DIM ANSI_RED "%d" ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "%d" ANSI_BRIGHT_BLACK "|" ANSI_RESET, iNode, string_TOK(node.packed.tok), node.packed.succ, node.packed.succ+iNode, node.packed.fail, node.packed.fail+iNode);
+			fprintf(stderr, 
+				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" 
+				ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s" 
+				ANSI_DIM ANSI_GREEN "%d" 
+				ANSI_ITALIC ANSI_YELLOW "%d" 
+				ANSI_RESET ANSI_DIM ANSI_RED "%d" 
+				ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "%d" 
+				ANSI_BRIGHT_BLACK "|" 
+				ANSI_RESET, 
+				iNode, string_TOK(node.packed.tok), node.packed.succ, node.packed.succ+iNode, node.packed.fail, node.packed.fail+iNode);
 		else if (IS_TOKEN(node.packed.tok)) 
-			fprintf(stderr, ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s" ANSI_BRIGHT_BLACK "%c" ANSI_RESET, iNode, string_TOK(node.terminator.tok), node.terminator.tok == TOK_ERR ? '\n' : '|');
+			fprintf(stderr, 
+				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" 
+				ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s" 
+				ANSI_BRIGHT_BLACK "%c" 
+				ANSI_RESET, 
+				iNode, string_TOK(node.terminator.tok), node.terminator.tok == TOK_ERR ? '\n' : '|');
 		else  			       
-			fprintf(stderr, ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" ANSI_RESET ANSI_WHITE "%c" ANSI_DIM ANSI_GREEN "%d" ANSI_ITALIC ANSI_YELLOW "%d" ANSI_RESET ANSI_DIM ANSI_RED "%d" ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "%d" ANSI_BRIGHT_BLACK "|" ANSI_RESET, iNode, node.packed.tok, node.packed.succ, node.packed.succ+iNode, node.packed.fail, node.packed.fail+iNode);
+			fprintf(stderr, 
+				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" 
+				ANSI_RESET ANSI_WHITE "%c" 
+				ANSI_DIM ANSI_GREEN "%d" 
+				ANSI_ITALIC ANSI_YELLOW "%d" 
+				ANSI_RESET ANSI_DIM ANSI_RED "%d" 
+				ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "%d" 
+				ANSI_BRIGHT_BLACK "|" 
+				ANSI_RESET, 
+				iNode, node.packed.tok, node.packed.succ, node.packed.succ+iNode, node.packed.fail, node.packed.fail+iNode);
 		node = trie[++iNode];
 	}
 	fprintf(stderr, "\n");
@@ -1294,11 +1341,11 @@ TOK_NONE:
 	return step.startTok;
 }
 
-static void FrieValidate(int tokCount, const TokDef* tokDefs, FrieNode* pFrie) 
+static void FrieValidate(int tokCount, const FrieTokDef* tokDefs, FrieNode* pFrie) 
 {
 	char sparseCharBuf[2] = { '\0', '\0' };
 	for (int iTok = TOK_ASCII_BEGIN; iTok < tokCount; ++iTok) {
-		TokDef def = tokDefs[iTok];
+		FrieTokDef def = tokDefs[iTok];
 		if (def.name == NULL) continue;
 		if (def.name[0] == TOK_RANGE) {	def.name = sparseCharBuf; def.name[0] = iTok; }
 		TOK tok = FrieGet(def.name, pFrie);
@@ -1339,9 +1386,9 @@ static void FrieShift(FrieNode* pFrie, int iInsertNode, int iEndNode)
 	}
 }
 
-static RESULT ConstructFrie(int tokCount, const TokDef* tokDefs, int frieCapacity, FrieNode* pFrie) 
+static RESULT ConstructFrie(int tokCount, const FrieTokDef* tokDefs, int frieCapacity, FrieNode* pFrie) 
 {	
-	TokDef def = { .name = "\0" };
+	FrieTokDef def = { .name = "\0" };
 	int iEndNode = TOK_KEYWORD_BEGIN;
 	int iNodeFirstFail = 0;
 	int iTok   = 0;
@@ -1379,6 +1426,7 @@ NextNameChar:
 	}
 	char cNameNext= def.name[iName+1];
 
+	/* Token First Char */
 	if (iName == 0) {
 		FrieNode *pNode = pFrie + cName;
 		FrieNode node = *pNode;
@@ -1410,6 +1458,7 @@ NextNameChar:
 		goto NextNameChar;
 	}
 
+	/* Token Subsequent Chars */
 	{
 		FrieNode node  = pFrie[iNode];
 		// Encounter a token, must shift to the right and fill in new token.
@@ -1652,7 +1701,6 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		[TOK_DQUOTE]            = &&TOK_OPEN_DQUOTE,
 		[TOK_LCOMMENT]          = &&TOK_OPEN_BLOCK_COMMENT,
 		[TOK_COMMENT]           = &&TOK_OPEN_LINE_COMMENT,
-		[TOK_IDENTIFIER]        = &&TOK_SPARSE_IDENTIFIER,
 		[TOK_UPPER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER_BEGIN,
 		[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER_BEGIN,
 		['_']                   = &&TOK_SPARSE_IDENTIFIER_BEGIN,
@@ -2162,12 +2210,12 @@ void PrintU16Binary(u16 value) {
  * rayDE Application
  */
 static struct {
-	int width;
-	int height;
+	Vector2 windowSize;
+	Font    font;
 	CodeBox codeboxes[10];
-} window = {
-	.width = DEFAULT_WIDTH,
-	.height = DEFAULT_HEIGHT,
+} rayde = {
+	.windowSize.x = DEFAULT_WIDTH,
+	.windowSize.y = DEFAULT_HEIGHT,
 };
 
 int main(void)
@@ -2182,17 +2230,17 @@ int main(void)
 	SetTraceLogLevel(LOG_ALL);
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
 	EnableEventWaiting();
-	InitWindow(window.width, window.height, "rayDE");
+	InitWindow(rayde.windowSize.x, rayde.windowSize.y, "rayDE");
 	   
 	/* Font */
 	int codepointCount = 0;
 	int *codepoints = LoadCodepoints(availableChars, &codepointCount);
-	Font font = LoadFontEx("resources/JetBrainsMono-Regular.ttf", fontSize, codepoints, codepointCount);
-	SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
+	rayde.font = LoadFontEx("resources/JetBrainsMono-Regular.ttf", fontSize, codepoints, codepointCount);
+	SetTextureFilter(rayde.font.texture, TEXTURE_FILTER_BILINEAR);
 	SetTextLineSpacing(0); 
 
 	/* State */
-	CodeBox* pCode = &window.codeboxes[0];
+	CodeBox* pCode = &rayde.codeboxes[0];
 
 	struct {
 		float scrollMouse;
@@ -2213,11 +2261,10 @@ int main(void)
 	int currentKey = 0;
 	int priorKey = 0;
 
-	CodeBoxSetRect(pCode, (Rectangle){ 5, 20, window.width - 10, window.height - 25 });
 	#define CODEBOX_ROW_CAPACITY 1024
 	#define CODEBOX_CARET_CAPACITY 128
-	pCode->pBoxRows    = XCALLOC(CODEBOX_ROW_CAPACITY, CodeRow);
-	pCode->pCarets     = XCALLOC(CODEBOX_CARET_CAPACITY, CodePos); 
+	pCode->pBoxRows   = XCALLOC(CODEBOX_ROW_CAPACITY, CodeRow);
+	pCode->pCarets    = XCALLOC(CODEBOX_CARET_CAPACITY, CodePos); 
 	pCode->caretCount = 1;
 
 	/* File Load */
@@ -2257,14 +2304,14 @@ int main(void)
  */
 LoopBegin:
 
+	framesCounter++;
+
 	if (IsWindowResized() && !IsWindowFullscreen())
 	{
-		window.width = GetScreenWidth();
-		window.height = GetScreenHeight();
-		CodeBoxSetRect(pCode, (Rectangle){ 5, 20, window.width - 10, window.height - 25 });
+		rayde.windowSize.x = GetScreenWidth();
+		rayde.windowSize.y = GetScreenHeight();
+		CodeBoxSetRect(pCode, (Rectangle){ 0, 0, rayde.windowSize.x, rayde.windowSize.y });
 	}
-
-	framesCounter++;
 
 	/* Input Read */
 	{
@@ -2648,77 +2695,84 @@ LoopBegin:
 		/* 
 		 * Code Box
 		 */
-		Rectangle codeRect = pCode->rect;
+		#define LEFT_MARGIN_CAPACITY 4
+		#define LEFT_MARGIN_SIZE   2
+		#define RIGHT_MARGIN_SIZE  1
+		#define BOTTOM_MARGIN_SIZE 2
+
+		Rectangle boxRect = pCode->rect;
+		Rectangle statusMarginRect = { 
+			boxRect.x, boxRect.height - (fontYSpacing*BOTTOM_MARGIN_SIZE), 
+			boxRect.width, fontYSpacing
+		};
+		Rectangle commandMarginRect = { 
+			boxRect.x, 
+			statusMarginRect.y + statusMarginRect.height, 
+			boxRect.width, 
+			(fontYSpacing*BOTTOM_MARGIN_SIZE) - statusMarginRect.height
+		};
+		Rectangle bottomMarginRect = { 
+			boxRect.x, 
+			statusMarginRect.y, 
+			boxRect.width, 
+			statusMarginRect.height + commandMarginRect.height,
+		};
+		Rectangle leftMarginRect = {
+			boxRect.x,
+			boxRect.y, 
+			fontXSpacing * LEFT_MARGIN_SIZE,
+			boxRect.height - bottomMarginRect.height
+		};
+		Rectangle rightMarginRect = {
+			boxRect.width - (fontXSpacing*RIGHT_MARGIN_SIZE),
+			boxRect.y, 
+			fontXSpacing * RIGHT_MARGIN_SIZE,
+			boxRect.height - bottomMarginRect.height
+		};
+		Rectangle codeRect = {boxRect.x + leftMarginRect.width,
+			boxRect.y, 
+			boxRect.width  - leftMarginRect.width - rightMarginRect.width,
+			boxRect.height - bottomMarginRect.height
+		};
+
 		bool    boxHovering = CheckCollisionPointRec(hoverPos, codeRect);
 		Vector2 hoverBoxPos = GetWorldToBoxLocal(hoverPos, codeRect);
 
-		int iHoverBoxCol =  hoverBoxPos.x / fontXSpacing;
-		int iHoverBoxRow =  hoverBoxPos.y / fontYSpacing;
-		int iHoverCol    =  iHoverBoxCol;
-		int iHoverRow    =  pCode->focusStartRow + iHoverBoxRow;
+		int iHoverBoxCol = hoverBoxPos.x / fontXSpacing;
+		int iHoverBoxRow = hoverBoxPos.y / fontYSpacing;
+		int iHoverCol    = iHoverBoxCol;
+		int iHoverRow    = pCode->focusStartRow + iHoverBoxRow;
 		CodeRow hoverRow = pCode->pTextRows[iHoverRow];
-		int iHoverChar = MIN(hoverRow.startIndex + iHoverBoxCol, hoverRow.endIndex);
-
-		// DrawText(TextFormat("frameTime: %f/", GetFrameTime()), 512, 0, 20, GRAY);
-		DrawText(TextFormat("col: %i >row: %i pCaret[0].index: %i hoverPos: x%.1f y%.1f c%i r%i", 
-			pCode->mark.col, pCode->mark.row, pCode->pCarets[0].index, hoverBoxPos.x, hoverBoxPos.y, iHoverBoxCol, iHoverBoxRow), 0, 0, 20, DARKGRAY);
+		int iHoverChar   = MIN(hoverRow.startIndex + iHoverBoxCol, hoverRow.endIndex);
 
 		DrawRectangleRec(codeRect, COLOR_BACKGROUND);
-		DrawRectangleLines((int)codeRect.x, (int)codeRect.y, (int)codeRect.width, (int)codeRect.height, boxHovering ? COLOR_CARET : DARKGRAY);
 
-		Vector2 scanFoundPosition = { -1, -1};
+		Vector2 scanFoundPosition = { -1, -1}; // TODO compute deterministically
 
-		const char* pText = pCode->pText;
-		const TextMeta* pMeta  = pCode->pTextMeta;
+		const char*     pText = pCode->pText;
+		const TextMeta* pMeta = pCode->pTextMeta;
 		int boxRowCount = pCode->boxRowCount;
 		int boxColCount = pCode->boxColCount;
 		int iChar = pCode->focusStartRowIndex;
 
+		static TextMeta marginMeta[LEFT_MARGIN_CAPACITY] = { 
+			(TextMeta){ .iScopeStartOffset = 0, .iScopeEndOffset = 3 },
+			(TextMeta){ .iScopeStartOffset = 1, .iScopeEndOffset = 2 },
+			(TextMeta){ .iScopeStartOffset = 2, .iScopeEndOffset = 1 },
+			(TextMeta){ .iScopeStartOffset = 3, .iScopeEndOffset = 0 },
+		};
+		char margingText[LEFT_MARGIN_CAPACITY];
+
 		for (int iRow = 0; iRow < boxRowCount; ++iRow) {
-			// int tabCount = 0;
-			// for (int iCol = 0; iCol < boxColCount - (tabCount * tabWidth); ++iCol) {
-			char currentChar = 0;
+			Vector2   charPos =  { codeRect.x, codeRect.y + (fontYSpacing * iRow) };		
+			Rectangle charRect = { charPos.x, charPos.y, fontXSpacing, fontYSpacing };
+			char      currentChar = 0;
+			TextMeta  currentMeta = {};
 			for (int iCol = 0; iCol < boxColCount; ++iCol) {
-				currentChar      = pText[iChar];
-				TextMeta currentMeta  = pMeta[iChar];
-
-				Vector2 position = {
-					// codeRect.x + (fontXSpacing * iCol) + (tabCount * fontXSpacing * 4), 
-					codeRect.x + (fontXSpacing * iCol), 
-					codeRect.y + (fontYSpacing * iRow)
-				};										
-				Rectangle charRect = {position.x, position.y, fontXSpacing, fontYSpacing};
-
-				// if (iChar == pCode->pActiveCaret->index) {
-				// 	caretColor = COLOR_CARET;
-				// 	caretPosition = position;
-				// 	DEBUG_LOG_ONCE("%s %d %d\n", string_TOK(m.tok), m.QUOTE, Delimiter(currentChar));
-				// }
-
-				if (iChar == command.scanFoundIndex) 
-					scanFoundPosition = position;
-
-				// #define GENERATE_BITMASK(_type) ((m._type > 0) << TEXT_META_TYPE_##_type ) | 
-				// u16 mask = (u16)META_TYPES(GENERATE_BITMASK) 0;
-				// #undef GENERATE_BITMASK
-
-				#define COLOR_A(_color, _a) (Color){_color.r, _color.g, _color.b, _a}
-
-				if (currentMeta.SCOPE_PAREN > 0) {
-					DrawRectangleRec(charRect, COLOR_A(WHITE, currentMeta.SCOPE_PAREN * 10));
-				}
-
-				// if (m.BLOCK_COMMENT) {
-				// 	DrawRectangleRec(charRect, COLOR_A(BLUE, 10));
-				// }
-
-				// if (currentMeta.PREPROCESS) {
-				// 	DrawRectangleRec(charRect, COLOR_A(COLOR_HIGHLIGHT_PREPROCESS, 20));
-				// }
-
-				// if (currentMeta.QUOTE) {
-				// 	DrawRectangleRec(charRect, COLOR_A(COLOR_HIGHLIGHT_QUOTE, 50));
-				// }
+				currentChar = pText[iChar];
+				currentMeta = pMeta[iChar];
+				charPos = (Vector2){ codeRect.x + (fontXSpacing * iCol), codeRect.y + (fontYSpacing * iRow) };										
+				charRect = (Rectangle){ charPos.x, charPos.y, fontXSpacing, fontYSpacing };
 
 				char displayChar = currentChar;
 				switch (currentChar) 
@@ -2751,21 +2805,20 @@ LoopBegin:
 						int codePointSize;
 						int codePoint = GetCodepoint(&displayChar, &codePointSize);
 						Color color = TOK_KIND_COLOR[currentMeta.kind];
-						DrawTextCodepoint(font, codePoint, position, fontSize, color);
+						DrawTextCodepoint(rayde.font, codePoint, charPos, fontSize, color);
 						iChar++;
-
 						break;
-				}									
-			}
+				}
+			} // iCol
 			
 			// If we are wrapping not on a newline, skip index to next new line so text doesn't wrap
 			if (currentChar != '\n') iChar = TextFindCharForward(pText, iChar, '\n') + 1;
-		}      
+		} // iRow   
 		FinishDrawingText:
 
-		/*
-		 * Hover
-		 */
+		/* Hover */
+		#define DIAGNOSTIC_TEXT_CAPACITY 256
+		static char tokenDiagnosticText[DIAGNOSTIC_TEXT_CAPACITY];
 		if (boxHovering) {
 			Vector2 hoverSnapBoxPos = (Vector2){ (iHoverBoxCol * fontXSpacing), (iHoverBoxRow * fontYSpacing) };
 			Vector2 hoverSnapPos    = GetBoxLocalToWorld(hoverSnapBoxPos, codeRect);
@@ -2786,32 +2839,48 @@ LoopBegin:
 				pCode->mark.col = iHoverCol;
 				pCode->mark.row = iHoverRow;
 				CodeSyncCaretToMarkRow(pCode, 0);
-
-				char c = pCode->pText[pCode->pCarets[0].index];
+				char c     = pCode->pText[pCode->pCarets[0].index];
 				TextMeta m = pCode->pTextMeta[pCode->pCarets[0].index];
-				DEBUG_LOG_ONCE("%s %s start: %d end: %d\n", string_TOK(m.tok), string_TOK_KIND(m.kind), m.iTokenStartOffset, m.iTokenEndOffset);
+				snprintf(tokenDiagnosticText, DIAGNOSTIC_TEXT_CAPACITY, "%s %s start: %d end: %d\n", string_TOK(m.tok), string_TOK_KIND(m.kind), m.iTokenStartOffset, m.iTokenEndOffset);
 			}
 		}
 
-		/*
-		 * Mark
-		 */
-		Vector2 markBoxPos = (Vector2){ (pCode->mark.col * fontXSpacing), ((pCode->mark.row - pCode->focusStartRow) * fontYSpacing) };
-		Vector2 markPos    = GetBoxLocalToWorld(markBoxPos, codeRect);
-		DrawLineEx(
-			(Vector2){markPos.x, markPos.y}, 
-			(Vector2){markPos.x, markPos.y + fontYSpacing}, 
-			2, GREEN);
+		/* Mark */
+		{
+			Vector2 markBoxPos = (Vector2){ (pCode->mark.col * fontXSpacing), ((pCode->mark.row - pCode->focusStartRow) * fontYSpacing) };
+			Vector2 markPos    = GetBoxLocalToWorld(markBoxPos, codeRect);
+			DrawLineEx(
+				(Vector2){markPos.x, markPos.y}, 
+				(Vector2){markPos.x, markPos.y + fontYSpacing}, 
+				2, GREEN);
+		}
 
-		/*
-		 * Caret
-		 */
+		/* Caret */
 		Vector2 caretBoxPos = (Vector2){ (pCode->pCarets[0].col * fontXSpacing), ((pCode->pCarets[0].row - pCode->focusStartRow) * fontYSpacing) };
 		Vector2 caretPos    = GetBoxLocalToWorld(caretBoxPos, codeRect);
-		DrawLineEx(
-			(Vector2){caretPos.x, caretPos.y}, 
-			(Vector2){caretPos.x, caretPos.y + fontYSpacing}, 
-			4, COLOR_CARET);
+		{
+			DrawLineEx(
+				(Vector2){caretPos.x, caretPos.y}, 
+				(Vector2){caretPos.x, caretPos.y + fontYSpacing}, 
+				4, COLOR_CARET);
+		}
+
+		/* Margin */
+		{
+			DrawRectangleRec(leftMarginRect,    COLOR_BACKGROUND_DIM);
+			DrawRectangleRec(rightMarginRect,   COLOR_BACKGROUND_DIM);
+			DrawRectangleRec(statusMarginRect,  COLOR_BACKGROUND_BRIGHT);
+			DrawRectangleRec(commandMarginRect, COLOR_BACKGROUND_DIM);
+
+			#define STATUS_TEXT_CAPACITY 1024
+			static char statusText[STATUS_TEXT_CAPACITY];
+			snprintf(statusText, STATUS_TEXT_CAPACITY, "mark col:%-4i row:%-4i index:%-4i hoverPos x:%-6.1f y:%-6.1f c:%-4i r:%-4i token: %s", 
+					pCode->mark.col, pCode->mark.row, pCode->pCarets[0].index, hoverBoxPos.x, hoverBoxPos.y, iHoverBoxCol, iHoverBoxRow, tokenDiagnosticText), 
+			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, COLOR_HIGHLIGHT_COMMENT);
+
+			if (boxHovering)
+				DrawRectangleLines((int)codeRect.x, (int)codeRect.y, (int)codeRect.width, (int)codeRect.height, COLOR_HIGHLIGHT_WHITESPACE);
+		}
 
 		/*
 		 * Command
@@ -2847,8 +2916,8 @@ LoopBegin:
 				char c = command.buffer[iCommand];
 				int codePointSize;
 				int codePoint = GetCodepoint(&c, &codePointSize);
-				Vector2 position = { caretPos.x + (fontXSpacing * iCommand), caretPos.y };								
-				DrawTextCodepoint(font, codePoint, position, fontSize, WHITE);
+				Vector2 charPos = { caretPos.x + (fontXSpacing * iCommand), caretPos.y };								
+				DrawTextCodepoint(rayde.font, codePoint, charPos, fontSize, WHITE);
 			}
 		}
 	}
