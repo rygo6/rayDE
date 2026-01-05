@@ -466,117 +466,127 @@ DEF_ENUM(SCOPE);
 #define FIND_HIGHLIGHT_COLOR (Color){   0, 255,   0, 64  }
 #define COLOR_COMMAND_BOX    (Color){  20,  20,   2, 200 }
 #define COLOR_TEXT_BOX       (Color){  37,  37,  38, 255 }
-#define COLOR_HIGHLIGHT_NONE        (Color){   0,   0,   0, 255 }
+#define HIGHLIGHT_NONE       (Color){   0,   0,   0, 255 }
 
-#ifdef DEFINE_SCHEME_BORING
-	#define COLOR_CARET                 ORANGE
-	#define COLOR_HOVER                 (Color){   0, 255,   0, 64  }
-	#define COLOR_BACKGROUND            (Color){  48,  56,  65, 255 } 
-	#define COLOR_HIGHLIGHT_CODE        (Color){ 216, 222, 233, 255 }
-	#define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 216, 222, 233, 255 }
-	#define COLOR_HIGHLIGHT_ERROR       (Color){ 255,   0,   0, 255 }
-	#define COLOR_HIGHLIGHT_PREPROCESS  (Color){ 135, 132, 219, 255 }
-	#define COLOR_HIGHLIGHT_CONTINUE    (Color){ 148,  99, 148, 255 }
-	#define COLOR_HIGHLIGHT_NUMBER      (Color){ 249, 174,  87, 255 }
-	#define COLOR_HIGHLIGHT_STRING      (Color){ 153, 199, 148, 255 } 
-	#define COLOR_HIGHLIGHT_COMMENT     (Color){ 166, 172, 185, 255 }  
-	#define COLOR_HIGHLIGHT_OPERATOR    (Color){ 249, 123,  87, 255 }
-	#define COLOR_HIGHLIGHT_WHITESPACE  (Color){  68,  76,  85, 255 } 
-	#define COLOR_HIGHLIGHT_ESCAPE      (Color){ 198, 149, 198, 255 } 
-	#define COLOR_HIGHLIGHT_TEXT        (Color){ 127, 199, 148, 255 } 
-	#define COLOR_HIGHLIGHT_QUOTE       (Color){  96, 180, 180, 255 } 
-	#define COLOR_HIGHLIGHT_SCOPE       (Color){ 206, 186, 192, 255 } 
-	#define COLOR_HIGHLIGHT_KEYWORD     (Color){ 236,  96, 102, 255 }
-	#define COLOR_HIGHLIGHT_TYPE        (Color){ 198, 149, 198, 255 }
-#endif
-
-#ifdef DEFINE_SCHEME_PERCEPTUA
-	#define COLOR_CARET                 (Color){ 224, 175, 104, 255 }  // #e0af68 - gold, high visibility
-	#define COLOR_HOVER                 (Color){ 122, 162, 247,  48 }  // #7aa2f7 - keyword blue, translucent
-	#define COLOR_BACKGROUND            (Color){  26,  27,  38, 255 }  // #1a1b26 - dark blue-gray
-	#define COLOR_HIGHLIGHT_CODE        (Color){ 200, 211, 245, 255 }  // #c8d3f5 - main foreground
-	#define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 169, 177, 214, 255 }  // #a9b1d6 - muted foreground
-	#define COLOR_HIGHLIGHT_ERROR       (Color){ 247, 118, 142, 255 }  // #f7768e - soft red
-	#define COLOR_HIGHLIGHT_PREPROCESS  (Color){ 192, 202, 245, 255 }  // #c0caf5 - pale blue
-	#define COLOR_HIGHLIGHT_CONTINUE    (Color){ 187, 154, 247, 255 }  // #bb9af7 - purple (control flow)
-	#define COLOR_HIGHLIGHT_NUMBER      (Color){ 187, 154, 247, 255 }  // #bb9af7 - purple
-	#define COLOR_HIGHLIGHT_STRING      (Color){ 158, 206, 106, 255 }  // #9ece6a - green
-	#define COLOR_HIGHLIGHT_COMMENT     (Color){  99, 109, 166, 255 }  // #636da6 - muted blue-gray
-	#define COLOR_HIGHLIGHT_OPERATOR    (Color){ 137, 221, 255, 255 }  // #89ddff - light cyan
-	#define COLOR_HIGHLIGHT_WHITESPACE  (Color){  40,  44,  55, 255 }  // #282c37 - subtle gray
-	#define COLOR_HIGHLIGHT_ESCAPE      (Color){ 255, 158, 100, 255 }  // #ff9e64 - orange (stands out in strings)
-	#define COLOR_HIGHLIGHT_TEXT        (Color){ 200, 211, 245, 255 }  // #c8d3f5 - foreground
-	#define COLOR_HIGHLIGHT_QUOTE       (Color){ 137, 221, 255, 255 }  // #89ddff - matches operators/structure
-	#define COLOR_HIGHLIGHT_SCOPE       (Color){ 137, 221, 255, 255 }  // #89ddff - brackets same as operators
-	#define COLOR_HIGHLIGHT_KEYWORD     (Color){ 122, 162, 247, 255 }  // #7aa2f7 - blue
-	#define COLOR_HIGHLIGHT_TYPE        (Color){  42, 195, 222, 255 }  // #2ac3de - cyan
-#endif
-
-#ifdef DEFINE_SCHEME_PERCEPTUA_SOLARIZED
-	#define COLOR_CARET                 (Color){ 235, 203, 139, 255 }  // #ebcb8b - warm gold
-	#define COLOR_HOVER                 (Color){ 163, 190, 140,  48 }  // #a3be8c - soft green, translucent
-	#define COLOR_BACKGROUND            (Color){  40,  44,  52, 255 }  // #282c34 - neutral dark (less blue)
-	#define COLOR_HIGHLIGHT_CODE        (Color){ 216, 222, 233, 255 }  // #d8dee9 - warm white
-	#define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 216, 222, 233, 255 }  // #d8dee9 - muted warm gray
-	#define COLOR_HIGHLIGHT_ERROR       (Color){ 191, 105, 105, 255 }  // #bf6969 - muted red (not harsh)
-	#define COLOR_HIGHLIGHT_PREPROCESS  (Color){ 180, 142, 173, 255 }  // #b48ead - dusty rose
-	#define COLOR_HIGHLIGHT_NUMBER      (Color){ 208, 135, 112, 255 }  // #d08770 - coral
-	#define COLOR_HIGHLIGHT_STRING      (Color){ 163, 190, 140, 255 }  // #a3be8c - soft sage green
-	#define COLOR_HIGHLIGHT_COMMENT     (Color){ 107, 112, 127, 255 }  // #6b707f - neutral gray
-	#define COLOR_HIGHLIGHT_OPERATOR    (Color){ 180, 186, 197, 255 }  // #b4bac5 - subtle, not distracting
-	#define COLOR_HIGHLIGHT_WHITESPACE  (Color){  55,  59,  67, 255 }  // #373b43 - subtle
-	#define COLOR_HIGHLIGHT_ESCAPE      (Color){ 235, 203, 139, 255 }  // #ebcb8b - gold (attention in strings)
-	#define COLOR_HIGHLIGHT_STRING      (Color){ 163, 190, 140, 255 }  // #a3be8c - "strings"
-	#define COLOR_HIGHLIGHT_QUOTE       (Color){ 163, 190, 140, 255 }  // #d08770 - 'c' chars (coral)
-	#define COLOR_HIGHLIGHT_SCOPE       (Color){ 216, 222, 233, 255 }  // #d8dee9 - neutral, disappears
-	#define COLOR_HIGHLIGHT_KEYWORD     (Color){ 235, 203, 139, 255 }  // #ebcb8b - warm gold
-	#define COLOR_HIGHLIGHT_TYPE        (Color){ 143, 188, 187, 255 }  // #8fbcbb - warm teal (minimal blue)
-#endif
-
-#ifdef DEFINE_SCHEME_PATINA
-	#define COLOR_CARET                 (Color){ 218, 164,  80, 255 }  // #daa450 - amber gold
-	#define COLOR_HOVER                 (Color){ 164, 184, 120,  48 }  // #a4b878 - sage green, translucent
-	#define COLOR_BACKGROUND            (Color){  26,  24,  21, 255 }  // #1a1815 - warm charcoal
-	#define COLOR_HIGHLIGHT_CODE        (Color){ 212, 200, 180, 255 }  // #d4c8b4 - cream parchment
-	#define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 212, 200, 180, 255 }  // #d4c8b4 - cream parchment
-	#define COLOR_HIGHLIGHT_ERROR       (Color){ 192, 120, 104, 255 }  // #c07868 - muted brick
-	#define COLOR_HIGHLIGHT_PREPROCESS  (Color){ 200, 160, 128, 255 }  // #c8a080 - warm sand
-	#define COLOR_HIGHLIGHT_NUMBER      (Color){ 203, 180,  92, 255 }  // #cbb45c - mustard gold
-	#define COLOR_HIGHLIGHT_STRING      (Color){ 164, 184, 120, 255 }  // #a4b878 - sage green
-	#define COLOR_HIGHLIGHT_COMMENT     (Color){ 106,  96,  85, 255 }  // #6a6055 - clay
-	#define COLOR_HIGHLIGHT_OPERATOR    (Color){ 176, 160, 144, 255 }  // #b0a090 - warm taupe
-	#define COLOR_HIGHLIGHT_WHITESPACE  (Color){  58,  52,  48, 255 }  // #3a3430 - subtle warm
-	#define COLOR_HIGHLIGHT_ESCAPE      (Color){ 224, 192,  96, 255 }  // #e0c060 - bright gold
-	#define COLOR_HIGHLIGHT_QUOTE       (Color){ 164, 184, 120, 255 }  // #a4b878 - sage green (same as strings)
-	#define COLOR_HIGHLIGHT_SCOPE       (Color){ 212, 200, 180, 255 }  // #d4c8b4 - neutral, disappears
-	#define COLOR_HIGHLIGHT_KEYWORD     (Color){ 218, 164,  80, 255 }  // #daa450 - amber gold
-	#define COLOR_HIGHLIGHT_TYPE        (Color){ 143, 184, 138, 255 }  // #8fb88a - olive moss green
-#endif
-
-#ifdef DEFINE_SCHEME_GLADE
-	#define COLOR_CARET                 (Color){ 240, 192,  80, 255 }  // #f0c050 - bright sunlight
-	#define COLOR_HOVER                 (Color){ 140, 200, 100,  48 }  // #8cc864 - fresh green, translucent
-	#define COLOR_BACKGROUND            (Color){  38,  40,  42, 255 }  // #26282a - clean cool gray
-	#define COLOR_HIGHLIGHT_CODE        (Color){ 230, 232, 228, 255 }  // #e6e8e4 - clean white
-	#define COLOR_HIGHLIGHT_IDENTIFIER  (Color){ 230, 232, 228, 255 }  // #e6e8e4 - clean white
-	#define COLOR_HIGHLIGHT_ERROR       (Color){ 220, 100, 100, 255 }  // #dc6464 - clear red
-	#define COLOR_HIGHLIGHT_PREPROCESS  (Color){ 200, 160, 120, 255 }  // #c8a078 - light tan
-	#define COLOR_HIGHLIGHT_NUMBER      (Color){ 240, 192,  80, 255 }  // #f0c050 - bright gold
-	#define COLOR_HIGHLIGHT_STRING      (Color){ 140, 200, 100, 255 }  // #8cc864 - fresh grass green
-	#define COLOR_HIGHLIGHT_COMMENT     (Color){ 120, 124, 128, 255 }  // #787c80 - neutral gray
-	#define COLOR_HIGHLIGHT_OPERATOR    (Color){ 176, 180, 184, 255 }  // #b0b4b8 - clean gray
-	#define COLOR_HIGHLIGHT_WHITESPACE  (Color){  50,  52,  54, 255 }  // #323436 - subtle
-	#define COLOR_HIGHLIGHT_ESCAPE      (Color){ 240, 192,  80, 255 }  // #f0c050 - bright gold
-	#define COLOR_HIGHLIGHT_QUOTE       (Color){ 140, 200, 100, 255 }  // #8cc864 - fresh green
-	#define COLOR_HIGHLIGHT_SCOPE       (Color){ 230, 232, 228, 255 }  // #e6e8e4 - clean white
-	#define COLOR_HIGHLIGHT_KEYWORD     (Color){  96, 180, 200, 255 }  // #60b4c8 - sky blue
-	#define COLOR_HIGHLIGHT_TYPE        (Color){ 100, 190, 160, 255 }  // #64bea0 - mint/seafoam
-#endif
 
 #define LERP(_a, _b, _t) (((_b - _a) * _t) + _a)
 
-#define COLOR_BACKGROUND_DIM    (Color){ LERP(0, COLOR_BACKGROUND.r, 0.9f),   LERP(0, COLOR_BACKGROUND.g, 0.9f),   LERP(0 ,COLOR_BACKGROUND.b, 0.9f),   255 }
-#define COLOR_BACKGROUND_BRIGHT (Color){ LERP(COLOR_BACKGROUND.r, 255, 0.1f), LERP(COLOR_BACKGROUND.g, 255, 0.1f), LERP(COLOR_BACKGROUND.b, 255, 0.1f), 255 }
+#define DIM_RATIO    0.9f
+#define BRIGHT_RATIO 0.1f
+
+#ifdef DEFINE_SCHEME_BORING
+#define DEF_SCHEME(DEF)\
+	DEF(COLOR_CARET,          255, 161,   0, 255)  /* #ffa100 */\
+	DEF(COLOR_HOVER,            0, 255,   0,  64)  /* #00ff00 */\
+	DEF(COLOR_BACKGROUND,      48,  56,  65, 255)  /* #303841 */\
+	DEF(HIGHLIGHT_CODE,       216, 222, 233, 255)  /* #d8dee9 */\
+	DEF(HIGHLIGHT_IDENTIFIER, 216, 222, 233, 255)  /* #d8dee9 */\
+	DEF(HIGHLIGHT_ERROR,      255,   0,   0, 255)  /* #ff0000 */\
+	DEF(HIGHLIGHT_PREPROCESS, 135, 132, 219, 255)  /* #8784db */\
+	DEF(HIGHLIGHT_CONTINUE,   148,  99, 148, 255)  /* #946394 */\
+	DEF(HIGHLIGHT_NUMBER,     249, 174,  87, 255)  /* #f9ae57 */\
+	DEF(HIGHLIGHT_STRING,     153, 199, 148, 255)  /* #99c794 */\
+	DEF(HIGHLIGHT_COMMENT,    166, 172, 185, 255)  /* #a6acb9 */\
+	DEF(HIGHLIGHT_OPERATOR,   249, 123,  87, 255)  /* #f97b57 */\
+	DEF(HIGHLIGHT_ESCAPE,     198, 149, 198, 255)  /* #c695c6 */\
+	DEF(HIGHLIGHT_TEXT,       127, 199, 148, 255)  /* #7fc794 */\
+	DEF(HIGHLIGHT_QUOTE,       96, 180, 180, 255)  /* #60b4b4 */\
+	DEF(HIGHLIGHT_SCOPE,      206, 186, 192, 255)  /* #cebac0 */\
+	DEF(HIGHLIGHT_KEYWORD,    236,  96, 102, 255)  /* #ec6066 */\
+	DEF(HIGHLIGHT_TYPE,       198, 149, 198, 255)  /* #c695c6 */
+#endif
+
+#ifdef DEFINE_SCHEME_PERCEPTUA
+#define DEF_SCHEME(DEF)\
+	DEF(COLOR_CARET,          224, 175, 104, 255)  /* #e0af68 */\
+	DEF(COLOR_HOVER,          122, 162, 247,  48)  /* #7aa2f7 */\
+	DEF(COLOR_BACKGROUND,      26,  27,  38, 255)  /* #1a1b26 */\
+	DEF(HIGHLIGHT_CODE,       200, 211, 245, 255)  /* #c8d3f5 */\
+	DEF(HIGHLIGHT_IDENTIFIER, 169, 177, 214, 255)  /* #a9b1d6 */\
+	DEF(HIGHLIGHT_ERROR,      247, 118, 142, 255)  /* #f7768e */\
+	DEF(HIGHLIGHT_PREPROCESS, 192, 202, 245, 255)  /* #c0caf5 */\
+	DEF(HIGHLIGHT_CONTINUE,   187, 154, 247, 255)  /* #bb9af7 */\
+	DEF(HIGHLIGHT_NUMBER,     187, 154, 247, 255)  /* #bb9af7 */\
+	DEF(HIGHLIGHT_STRING,     158, 206, 106, 255)  /* #9ece6a */\
+	DEF(HIGHLIGHT_COMMENT,     99, 109, 166, 255)  /* #636da6 */\
+	DEF(HIGHLIGHT_OPERATOR,   137, 221, 255, 255)  /* #89ddff */\
+	DEF(HIGHLIGHT_ESCAPE,     255, 158, 100, 255)  /* #ff9e64 */\
+	DEF(HIGHLIGHT_TEXT,       200, 211, 245, 255)  /* #c8d3f5 */\
+	DEF(HIGHLIGHT_QUOTE,      137, 221, 255, 255)  /* #89ddff */\
+	DEF(HIGHLIGHT_SCOPE,      137, 221, 255, 255)  /* #89ddff */\
+	DEF(HIGHLIGHT_KEYWORD,    122, 162, 247, 255)  /* #7aa2f7 */\
+	DEF(HIGHLIGHT_TYPE,        42, 195, 222, 255)  /* #2ac3de */
+#endif
+
+#ifdef DEFINE_SCHEME_PERCEPTUA_SOLARIZED
+#define DEF_SCHEME(DEF)\
+	DEF(COLOR_CARET,          235, 203, 139, 255)  /* #ebcb8b */\
+	DEF(COLOR_HOVER,          163, 190, 140,  48)  /* #a3be8c */\
+	DEF(COLOR_BACKGROUND,      40,  44,  52, 255)  /* #282c34 */\
+	DEF(HIGHLIGHT_CODE,       216, 222, 233, 255)  /* #d8dee9 */\
+	DEF(HIGHLIGHT_IDENTIFIER, 216, 222, 233, 255)  /* #d8dee9 */\
+	DEF(HIGHLIGHT_ERROR,      191, 105, 105, 255)  /* #bf6969 */\
+	DEF(HIGHLIGHT_PREPROCESS, 180, 142, 173, 255)  /* #b48ead */\
+	DEF(HIGHLIGHT_NUMBER,     208, 135, 112, 255)  /* #d08770 */\
+	DEF(HIGHLIGHT_STRING,     163, 190, 140, 255)  /* #a3be8c */\
+	DEF(HIGHLIGHT_COMMENT,    107, 112, 127, 255)  /* #6b707f */\
+	DEF(HIGHLIGHT_OPERATOR,   180, 186, 197, 255)  /* #b4bac5 */\
+	DEF(HIGHLIGHT_ESCAPE,     235, 203, 139, 255)  /* #ebcb8b */\
+	DEF(HIGHLIGHT_TEXT,       216, 222, 233, 255)  /* #d8dee9 */\
+	DEF(HIGHLIGHT_QUOTE,      163, 190, 140, 255)  /* #a3be8c */\
+	DEF(HIGHLIGHT_SCOPE,      216, 222, 233, 255)  /* #d8dee9 */\
+	DEF(HIGHLIGHT_KEYWORD,    235, 203, 139, 255)  /* #ebcb8b */\
+	DEF(HIGHLIGHT_TYPE,       143, 188, 187, 255)  /* #8fbcbb */
+#endif
+
+#ifdef DEFINE_SCHEME_PATINA
+#define DEF_SCHEME(DEF)\
+	DEF(COLOR_CARET,          218, 164,  80, 255)  /* #daa450 */\
+	DEF(COLOR_HOVER,          164, 184, 120,  48)  /* #a4b878 */\
+	DEF(COLOR_BACKGROUND,      26,  24,  21, 255)  /* #1a1815 */\
+	DEF(HIGHLIGHT_CODE,       212, 200, 180, 255)  /* #d4c8b4 */\
+	DEF(HIGHLIGHT_IDENTIFIER, 212, 200, 180, 255)  /* #d4c8b4 */\
+	DEF(HIGHLIGHT_ERROR,      192, 120, 104, 255)  /* #c07868 */\
+	DEF(HIGHLIGHT_PREPROCESS, 200, 160, 128, 255)  /* #c8a080 */\
+	DEF(HIGHLIGHT_NUMBER,     203, 180,  92, 255)  /* #cbb45c */\
+	DEF(HIGHLIGHT_STRING,     164, 184, 120, 255)  /* #a4b878 */\
+	DEF(HIGHLIGHT_COMMENT,    106,  96,  85, 255)  /* #6a6055 */\
+	DEF(HIGHLIGHT_OPERATOR,   176, 160, 144, 255)  /* #b0a090 */\
+	DEF(HIGHLIGHT_ESCAPE,     224, 192,  96, 255)  /* #e0c060 */\
+	DEF(HIGHLIGHT_TEXT,       212, 200, 180, 255)  /* #d4c8b4 */\
+	DEF(HIGHLIGHT_QUOTE,      164, 184, 120, 255)  /* #a4b878 */\
+	DEF(HIGHLIGHT_SCOPE,      212, 200, 180, 255)  /* #d4c8b4 */\
+	DEF(HIGHLIGHT_KEYWORD,    218, 164,  80, 255)  /* #daa450 */\
+	DEF(HIGHLIGHT_TYPE,       143, 184, 138, 255)  /* #8fb88a */
+#endif
+
+#ifdef DEFINE_SCHEME_GLADE
+#define DEF_SCHEME(DEF)\
+	DEF(COLOR_CARET,          240, 192,  80, 255)  /* #f0c050 */\
+	DEF(COLOR_HOVER,          140, 200, 100,  48)  /* #8cc864 */\
+	DEF(COLOR_BACKGROUND,      38,  40,  42, 255)  /* #26282a */\
+	DEF(HIGHLIGHT_CODE,       230, 232, 228, 255)  /* #e6e8e4 */\
+	DEF(HIGHLIGHT_IDENTIFIER, 230, 232, 228, 255)  /* #e6e8e4 */\
+	DEF(HIGHLIGHT_ERROR,      220, 100, 100, 255)  /* #dc6464 */\
+	DEF(HIGHLIGHT_PREPROCESS, 200, 160, 120, 255)  /* #c8a078 */\
+	DEF(HIGHLIGHT_NUMBER,     240, 192,  80, 255)  /* #f0c050 */\
+	DEF(HIGHLIGHT_STRING,     140, 200, 100, 255)  /* #8cc864 */\
+	DEF(HIGHLIGHT_COMMENT,    120, 124, 128, 255)  /* #787c80 */\
+	DEF(HIGHLIGHT_OPERATOR,   176, 180, 184, 255)  /* #b0b4b8 */\
+	DEF(HIGHLIGHT_ESCAPE,     240, 192,  80, 255)  /* #f0c050 */\
+	DEF(HIGHLIGHT_TEXT,       230, 232, 228, 255)  /* #e6e8e4 */\
+	DEF(HIGHLIGHT_QUOTE,      140, 200, 100, 255)  /* #8cc864 */\
+	DEF(HIGHLIGHT_SCOPE,      230, 232, 228, 255)  /* #e6e8e4 */\
+	DEF(HIGHLIGHT_KEYWORD,     96, 180, 200, 255)  /* #60b4c8 */\
+	DEF(HIGHLIGHT_TYPE,       100, 190, 160, 255)  /* #64bea0 */
+#endif
+
+#define DEF_COLOR(_name, _r, _g, _b, _a)\
+	static const Color _name##_BRIGHT = { LERP(_r, 255, BRIGHT_RATIO), LERP(_g, 255, BRIGHT_RATIO), LERP(_b, 255, BRIGHT_RATIO), _a };\
+	static const Color _name##_DIM = { LERP(0, _r, DIM_RATIO), LERP(0, _g, DIM_RATIO), LERP(0, _b, DIM_RATIO), _a };\
+    static const Color _name = { _r, _g, _b, _a };
+
+DEF_SCHEME(DEF_COLOR)
 
 /*
  * Lex Token Constants
@@ -662,25 +672,25 @@ static const bool IDENT_CHAR[128] = {
 	DEF(TOK_KIND_COUNT)
 DEF_ENUM(TOK_KIND);
 
-static Color TOK_KIND_COLOR[] = {
-	[TOK_KIND_NONE]        = COLOR_HIGHLIGHT_NONE,
-	[TOK_KIND_ERROR]       = COLOR_HIGHLIGHT_ERROR,
-	[TOK_KIND_ALPHA]       = COLOR_HIGHLIGHT_CODE,
-	[TOK_KIND_LITERAL]     = COLOR_HIGHLIGHT_CODE,
-	[TOK_KIND_DIGIT]       = COLOR_HIGHLIGHT_NUMBER,
-	[TOK_KIND_TYPE]        = COLOR_HIGHLIGHT_TYPE,
-	[TOK_KIND_IDENTIFIER]  = COLOR_HIGHLIGHT_IDENTIFIER,
-	[TOK_KIND_KEYWORD]     = COLOR_HIGHLIGHT_KEYWORD,
-	[TOK_KIND_WHITESPACE]  = COLOR_HIGHLIGHT_WHITESPACE,
-	[TOK_KIND_STATEMENT]   = COLOR_HIGHLIGHT_OPERATOR,
-	[TOK_KIND_ASSIGN]      = COLOR_HIGHLIGHT_OPERATOR,
-	[TOK_KIND_OPERATOR]    = COLOR_HIGHLIGHT_OPERATOR,
-	[TOK_KIND_PP]          = COLOR_HIGHLIGHT_PREPROCESS,
-	[TOK_KIND_SCOPE]       = COLOR_HIGHLIGHT_OPERATOR,
-	[TOK_KIND_QUOTE]       = COLOR_HIGHLIGHT_QUOTE,
-	[TOK_KIND_STRING]      = COLOR_HIGHLIGHT_STRING,
-	[TOK_KIND_ESCAPE]      = COLOR_HIGHLIGHT_ESCAPE,
-	[TOK_KIND_COMMENT]     = COLOR_HIGHLIGHT_COMMENT,
+static const Color TOK_KIND_COLOR[] = {
+	[TOK_KIND_NONE]        = HIGHLIGHT_NONE,
+	[TOK_KIND_ERROR]       = HIGHLIGHT_ERROR,
+	[TOK_KIND_ALPHA]       = HIGHLIGHT_CODE,
+	[TOK_KIND_LITERAL]     = HIGHLIGHT_CODE,
+	[TOK_KIND_DIGIT]       = HIGHLIGHT_NUMBER,
+	[TOK_KIND_TYPE]        = HIGHLIGHT_TYPE,
+	[TOK_KIND_IDENTIFIER]  = HIGHLIGHT_IDENTIFIER,
+	[TOK_KIND_KEYWORD]     = HIGHLIGHT_KEYWORD,
+	[TOK_KIND_WHITESPACE]  = COLOR_BACKGROUND_BRIGHT,
+	[TOK_KIND_STATEMENT]   = HIGHLIGHT_OPERATOR,
+	[TOK_KIND_ASSIGN]      = HIGHLIGHT_OPERATOR,
+	[TOK_KIND_OPERATOR]    = HIGHLIGHT_OPERATOR,
+	[TOK_KIND_PP]          = HIGHLIGHT_PREPROCESS,
+	[TOK_KIND_SCOPE]       = HIGHLIGHT_OPERATOR,
+	[TOK_KIND_QUOTE]       = HIGHLIGHT_QUOTE,
+	[TOK_KIND_STRING]      = HIGHLIGHT_STRING,
+	[TOK_KIND_ESCAPE]      = HIGHLIGHT_ESCAPE,
+	[TOK_KIND_COMMENT]     = HIGHLIGHT_COMMENT,
 };
 STATIC_ASSERT(NARRAY(TOK_KIND_COLOR) == TOK_KIND_COUNT);
 
@@ -2695,8 +2705,8 @@ LoopBegin:
 		/* 
 		 * Code Box
 		 */
-		#define LEFT_MARGIN_CAPACITY 4
-		#define LEFT_MARGIN_SIZE   2
+		#define LEFT_MARGIN_CAPACITY 16
+		#define LEFT_MARGIN_SIZE   6
 		#define RIGHT_MARGIN_SIZE  1
 		#define BOTTOM_MARGIN_SIZE 2
 
@@ -2745,8 +2755,6 @@ LoopBegin:
 		CodeRow hoverRow = pCode->pTextRows[iHoverRow];
 		int iHoverChar   = MIN(hoverRow.startIndex + iHoverBoxCol, hoverRow.endIndex);
 
-		DrawRectangleRec(codeRect, COLOR_BACKGROUND);
-
 		Vector2 scanFoundPosition = { -1, -1}; // TODO compute deterministically
 
 		const char*     pText = pCode->pText;
@@ -2763,16 +2771,21 @@ LoopBegin:
 		};
 		char margingText[LEFT_MARGIN_CAPACITY];
 
+		DrawRectangleRec(leftMarginRect, COLOR_BACKGROUND_DIM);
+		DrawRectangleRec(codeRect, COLOR_BACKGROUND);
+
 		for (int iRow = 0; iRow < boxRowCount; ++iRow) {
-			Vector2   charPos =  { codeRect.x, codeRect.y + (fontYSpacing * iRow) };		
-			Rectangle charRect = { charPos.x, charPos.y, fontXSpacing, fontYSpacing };
+			Vector2 charPos = (Vector2){ leftMarginRect.x, leftMarginRect.y + (fontYSpacing * iRow) };			
+			static char leftMarginText[LEFT_MARGIN_CAPACITY];
+			snprintf(leftMarginText, LEFT_MARGIN_CAPACITY, "%5d", iRow + pCode->focusStartRow), 
+			DrawTextEx(rayde.font, leftMarginText, charPos, fontSize, 0, COLOR_BACKGROUND_BRIGHT);
+
+			TextMeta  currentMeta;
 			char      currentChar = 0;
-			TextMeta  currentMeta = {};
 			for (int iCol = 0; iCol < boxColCount; ++iCol) {
 				currentChar = pText[iChar];
 				currentMeta = pMeta[iChar];
-				charPos = (Vector2){ codeRect.x + (fontXSpacing * iCol), codeRect.y + (fontYSpacing * iRow) };										
-				charRect = (Rectangle){ charPos.x, charPos.y, fontXSpacing, fontYSpacing };
+				charPos = (Vector2){ codeRect.x + (fontXSpacing * iCol), codeRect.y + (fontYSpacing * iRow) };					
 
 				char displayChar = currentChar;
 				switch (currentChar) 
@@ -2867,7 +2880,6 @@ LoopBegin:
 
 		/* Margin */
 		{
-			DrawRectangleRec(leftMarginRect,    COLOR_BACKGROUND_DIM);
 			DrawRectangleRec(rightMarginRect,   COLOR_BACKGROUND_DIM);
 			DrawRectangleRec(statusMarginRect,  COLOR_BACKGROUND_BRIGHT);
 			DrawRectangleRec(commandMarginRect, COLOR_BACKGROUND_DIM);
@@ -2876,10 +2888,10 @@ LoopBegin:
 			static char statusText[STATUS_TEXT_CAPACITY];
 			snprintf(statusText, STATUS_TEXT_CAPACITY, "mark col:%-4i row:%-4i index:%-4i hoverPos x:%-6.1f y:%-6.1f c:%-4i r:%-4i token: %s", 
 					pCode->mark.col, pCode->mark.row, pCode->pCarets[0].index, hoverBoxPos.x, hoverBoxPos.y, iHoverBoxCol, iHoverBoxRow, tokenDiagnosticText), 
-			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, COLOR_HIGHLIGHT_COMMENT);
+			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, HIGHLIGHT_COMMENT);
 
 			if (boxHovering)
-				DrawRectangleLines((int)codeRect.x, (int)codeRect.y, (int)codeRect.width, (int)codeRect.height, COLOR_HIGHLIGHT_WHITESPACE);
+				DrawRectangleLines((int)codeRect.x, (int)codeRect.y, (int)codeRect.width, (int)codeRect.height, COLOR_BACKGROUND_BRIGHT);
 		}
 
 		/*
