@@ -1,5 +1,4 @@
-
-#define CONCAT(_a, _b) hello _a## _b # _a  #_b _a#_b
+#define C(a) #a a#a a## a # a  
 
 #define RESULT_TEST0_TESTA
 #define RESULT_TESTA
@@ -17,9 +16,14 @@ static char Test0() { return '0'; }
 #ifdef A
 #endif
 
+void a(){ 
+	int b=1<<!1;
+	b<<=!1;
+}
+
 double T() {
 	char *str = "Hello\n\x01!\\";
-	int a0 = 0x10;
+	int a0 = 1<<!0x10;
 	a0 <<=+1<<+1<+10;
 	do {a0++;} while (a0<10);
 	int b = a0-a0 - 1- 2 -3;
@@ -979,6 +983,7 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF("++",  TOK_INC,           TOK_KIND_OPERATOR)\
 	DEF("--",  TOK_DEC,           TOK_KIND_OPERATOR)\
 	DEF("->",  TOK_ARROW,         TOK_KIND_OPERATOR)\
+	DEF("<<=", TOK_LSHIFT_ASSIGN, TOK_KIND_OPERATOR)\
 	DEF("<<",  TOK_LSHIFT,        TOK_KIND_OPERATOR)\
 	DEF(">>",  TOK_RSHIFT,        TOK_KIND_OPERATOR)\
 	DEF("<=",  TOK_LE,            TOK_KIND_OPERATOR)\
@@ -995,7 +1000,6 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF("&=",  TOK_AND_ASSIGN,    TOK_KIND_OPERATOR)\
 	DEF("|=",  TOK_OR_ASSIGN,     TOK_KIND_OPERATOR)\
 	DEF("^=",  TOK_XOR_ASSIGN,    TOK_KIND_OPERATOR)\
-	DEF("<<=", TOK_LSHIFT_ASSIGN, TOK_KIND_OPERATOR)\
 	DEF(">>=", TOK_RSHIFT_ASSIGN, TOK_KIND_OPERATOR)\
 	/* Statement */\
 	DEF("?",   TOK_QUESTION,  TOK_KIND_STATEMENT)\
@@ -1405,6 +1409,7 @@ static RESULT ConstructFrie(int tokCount, const FrieTokDef* tokDefs, int frieCap
 	int iNode  = 0;
 	int iName  = 0;
 	int len    = 0;
+	bool munch = false;
 	bool delim = false;
 	TOK tok    = TOK_NONE;
 	char sparseCharBuf[2] = { '\0', '\0' };
@@ -1421,10 +1426,12 @@ NextTok:
 	def = tokDefs[iTok];
 	if (def.name == NULL) {	iTok++; goto NextTok; }
 	if (def.name[0] == TOK_RANGE) {	def.name = sparseCharBuf; def.name[0] = iTok; }
+	FRIE_LOG("NextTok %s\n", def.name);
 	iNodeFirstFail = TOK_KEYWORD_BEGIN;
 	iNode = 0; 
 	iName = 0; 
 	len = strlen(def.name); 
+	munch = false;
 	delim = def.name[len-1] == TOK_DELIMIT;
 	tok = iTok; 
 
@@ -1453,15 +1460,17 @@ NextNameChar:
 
 		// Already added. Jump.
 		if (node.sparse.succ > 0) {
-			FRIE_LOG("Entry Jump i%d %c end%d %s\n", (u8)cName, cName, iEndNode, def.name);
+			FRIE_LOG("Entry Jump i%d %c end%d %s %s\n", (u8)cName, cName, iEndNode, def.name, string_TOK(pNode->sparse.tok));
+			if (node.sparse.tok != TOK_ERR) munch = true;
 			iNode = node.sparse.succ;
 			iName++;
 			goto NextNameChar;
 		}		
 
-		// Add new token
-		FRIE_LOG("New Entry i%d %c end%d %s\n", (u8)cName, cName, iEndNode, def.name);
+		// Set succ on sparse token to signal a match
+		FRIE_LOG("New Entry i%d %c end%d %s %s\n", (u8)cName, cName, iEndNode, def.name,  string_TOK(pNode->sparse.tok));
 		CHECKMSG(iEndNode < FRIE_MAX_SPARSE_OFFSET, RESULT_OFFSET_ERROR, "end offset:%d", iEndNode);
+		if (node.sparse.tok != TOK_ERR) munch = true;
 		pNode->sparse.succ = iEndNode;
 		iNode = iEndNode; 
 		iName++;
@@ -1473,19 +1482,18 @@ NextNameChar:
 		FrieNode node  = pFrie[iNode];
 		// Encounter a token, must shift to the right and fill in new token.
 		if (IS_KEYWORD_TOKEN(node.packed.tok) || node.packed.tok == TOK_ERR || node.packed.tok == TOK_MUNCH) { 
-			// CHECKMSG(node.tok.tok == TOK_ERR || node.tok.tok == TOK_NONE, RESULT_DUPLICATE_ERROR, "Trying to write token in non-empty node!");
-
-			// FRIE_LOG("Insert Tok i%d firstfail%d end%d %s\n", iNode, iNodeFirstFail, iEndNode, def.name);
-			if (iNodeFirstFail != TOK_KEYWORD_BEGIN)	iNode = iNodeFirstFail;
+			if (iNodeFirstFail != TOK_KEYWORD_BEGIN) iNode = iNodeFirstFail;
 
 			FRIE_LOG("Insert Char i%d %c end%d %s\n", iNode, cName, iEndNode, def.name);
 			FrieShift(pFrie, iNode, iEndNode);
 			iEndNode++; CHECK(iEndNode < frieCapacity, RESULT_CAPACITY_ERROR);
 			u16 succ = iEndNode - iNode;
 			CHECKMSG(succ < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "succ offset:%d", succ);
-			pFrie[iNode] = (FrieNode){ 
+			pFrie[iNode] = (FrieNode){
 				.packed.tok  = cName, 
 				.packed.succ = succ, 
+				// When non-delim, fail = 1 ends up pointing to the token to be munched
+				// whereas with delim fail will point to a delim token, which will then go to err token
 				.packed.fail = 1 
 			};
 			iName++; iNode = iEndNode;
@@ -1516,11 +1524,11 @@ NextNameChar:
 		if (cName == '\0') {
 			CHECKMSG(iNode == iEndNode, RESULT_ORDER_ERROR, "Trying to inset shorter token after longer token! %s %s", def.name, string_TOK(tok));
 			FRIE_LOG("Finish Token i%d end%d len%d %s %s\n", iNode, iEndNode, iName - delim, def.name, string_TOK(tok));
-			pFrie[iNode++] = (FrieNode){ .terminator.tok = tok,    .terminator.kind = def.kind };
+			pFrie[iNode++] = (FrieNode){ .terminator.tok = tok, .terminator.kind = def.kind };
 			// If the token has a delimiter it will have an explicit end delimit node to signal match. If it gets past the delimiter node it's because there was no match and thus an error.
 			// If there is no delimiter it runs on maximal munch and whatever muched thus far should be the token. 
-			if (delim) pFrie[iNode++] = (FrieNode){ .terminator.tok = TOK_ERR,   .terminator.kind = TOK_KIND_ERROR };
-			else       pFrie[iNode++] = (FrieNode){ .terminator.tok = TOK_MUNCH, .terminator.kind = TOK_KIND_ERROR };
+			if (munch) pFrie[iNode++] = (FrieNode){ .terminator.tok = TOK_MUNCH, .terminator.kind = TOK_KIND_ERROR };
+			else       pFrie[iNode++] = (FrieNode){ .terminator.tok = TOK_ERR,   .terminator.kind = TOK_KIND_ERROR };
 			iTok++;	iEndNode = iNode;
 			goto NextTok;
 		}
@@ -1855,8 +1863,8 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	TOK_SPARSE_IDENTIFIER_END: {
 		FRIE_LOG("TOK_SPARSE_IDENTIFIER_END start:%d iT:%d len:%d %.*s\n", step.iTStart, step.iT, step.iT - step.iTStart, step.iT - step.iTStart, pText + step.iTStart);
 		for (int i = step.iTStart; i < step.iT; ++i) { 
-			pMeta[i].tok  = TOK_IDENTIFIER; 
-			pMeta[i].kind = TOK_KIND_IDENTIFIER; 
+			pMeta[i].tok  = step.startTok; 
+			pMeta[i].kind = step.startKind; 
 			pMeta[i].iTokenStartOffset = i - step.iTStart;
 			pMeta[i].iTokenEndOffset   = (step.iT-1) - i;
 		}
@@ -1900,6 +1908,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		goto *disp[step.tok];
 	}
 	TOK_MUNCH: {
+		// Did not reach a TK_ERR so we apply the 
 		FRIE_LOG("TOK_MUNCH iT:%-4d iN:%-4d %4d:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT));
 		for (int i = step.iTStart; i < step.iT; ++i) { 
 			pMeta[i].tok  = step.startTok; 
