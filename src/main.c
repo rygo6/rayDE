@@ -2627,26 +2627,30 @@ LoopBegin:
 				// 	command.buffer[command.bufferCount] = '\0';
 				// 	break;
 
-				UpdateCommandKey:
+				UpdateCommandKey: {
 					if (!command.firstKeyPressed) command.firstKeyPressed = true;   
 					command.buffer[command.bufferCount++] = modifiedKey;
 					command.buffer[command.bufferCount] = '\0';
-
-				UpdateCommandScan:
+				}
+				UpdateCommandScan: {
 					LOG("%d\n", command.scanFoundIndex);
 					command.scanFoundIndex = TextFindTextForward(pText, mark.index, command.buffer);
 					break;
-
+				}
 				/* Utility Keys */
-				case KEY_CTRL_MOD | KEY_S:
+				case KEY_CTRL_MOD | KEY_S: {
 					LOG("Saving: %s", pCode->path);
 					SaveFileText(pCode->path, pCode->pText);
 					break;
-
+				}
 				/* Character Delete Keys */
-				case KEY_BACKSPACE: CodeBoxDeleteChar(pCode); pCode->mark.index--; break;
-				case KEY_DELETE:    CodeBoxDeleteChar(pCode); break;
-
+				case KEY_DELETE: CodeBoxDeleteChar(pCode); break;
+				case KEY_BACKSPACE: {
+					CodeBoxDeleteChar(pCode); 
+					CodeSetMarkIndex(pCode, mark.index - 1);
+					CodeSyncCaretToMark(pCode, 0);
+					break;
+				}					 
 				/* Character Insert Keys */
 				case KEY_ENTER: CodeBoxInsertChar(pCode, '\n'); break;
 				case KEY_SPACE: CodeBoxInsertChar(pCode, ' '); break;
