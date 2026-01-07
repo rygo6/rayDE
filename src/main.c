@@ -362,6 +362,11 @@ STATIC_ASSERT(SMIN(i8) == -128);
 
 #define ZERO(_p)             memset((void*)(_p), 0, sizeof(*_p))
 #define ZERO_RANGE(_p, _len) memset((void*)(_p), 0, sizeof(*_p) * _len)
+#define COPY(_dst, _src)\
+({\
+	ASSERT(sizeof(*(_dst)) <= sizeof(*(_src)));\
+	memcpy((void*)(_dst), (void*)(_src), sizeof(*(_dst)));\
+})
 
 /*
  * Validation
@@ -485,7 +490,6 @@ DEF_ENUM(SCOPE);
 	DEF(COLOR_CARET,          255, 161,   0, 255)  /* #ffa100 */\
 	DEF(COLOR_HOVER,            0, 255,   0,  64)  /* #00ff00 */\
 	DEF(COLOR_BACKGROUND,      48,  56,  65, 255)  /* #303841 */\
-	DEF(HIGHLIGHT_CODE,       216, 222, 233, 255)  /* #d8dee9 */\
 	DEF(HIGHLIGHT_IDENTIFIER, 216, 222, 233, 255)  /* #d8dee9 */\
 	DEF(HIGHLIGHT_ERROR,      255,   0,   0, 255)  /* #ff0000 */\
 	DEF(HIGHLIGHT_PREPROCESS, 135, 132, 219, 255)  /* #8784db */\
@@ -493,11 +497,10 @@ DEF_ENUM(SCOPE);
 	DEF(HIGHLIGHT_NUMBER,     249, 174,  87, 255)  /* #f9ae57 */\
 	DEF(HIGHLIGHT_STRING,     153, 199, 148, 255)  /* #99c794 */\
 	DEF(HIGHLIGHT_COMMENT,    166, 172, 185, 255)  /* #a6acb9 */\
-	DEF(HIGHLIGHT_OPERATOR,   249, 123,  87, 255)  /* #f97b57 */\
+	DEF(HIGHLIGHT_OPERATOR,   200, 160, 140, 255)  /* #c8a08c - muted warm coral */\
 	DEF(HIGHLIGHT_ESCAPE,     198, 149, 198, 255)  /* #c695c6 */\
-	DEF(HIGHLIGHT_TEXT,       127, 199, 148, 255)  /* #7fc794 */\
 	DEF(HIGHLIGHT_QUOTE,       96, 180, 180, 255)  /* #60b4b4 */\
-	DEF(HIGHLIGHT_SCOPE,      206, 186, 192, 255)  /* #cebac0 */\
+	DEF(HIGHLIGHT_SCOPE,      184, 164, 132, 255)  /* #b8a484 - muted tan */\
 	DEF(HIGHLIGHT_KEYWORD,    236,  96, 102, 255)  /* #ec6066 */\
 	DEF(HIGHLIGHT_TYPE,       198, 149, 198, 255)  /* #c695c6 */
 #endif
@@ -507,7 +510,6 @@ DEF_ENUM(SCOPE);
 	DEF(COLOR_CARET,          224, 175, 104, 255)  /* #e0af68 */\
 	DEF(COLOR_HOVER,          122, 162, 247,  48)  /* #7aa2f7 */\
 	DEF(COLOR_BACKGROUND,      26,  27,  38, 255)  /* #1a1b26 */\
-	DEF(HIGHLIGHT_CODE,       200, 211, 245, 255)  /* #c8d3f5 */\
 	DEF(HIGHLIGHT_IDENTIFIER, 169, 177, 214, 255)  /* #a9b1d6 */\
 	DEF(HIGHLIGHT_ERROR,      247, 118, 142, 255)  /* #f7768e */\
 	DEF(HIGHLIGHT_PREPROCESS, 192, 202, 245, 255)  /* #c0caf5 */\
@@ -515,11 +517,10 @@ DEF_ENUM(SCOPE);
 	DEF(HIGHLIGHT_NUMBER,     187, 154, 247, 255)  /* #bb9af7 */\
 	DEF(HIGHLIGHT_STRING,     158, 206, 106, 255)  /* #9ece6a */\
 	DEF(HIGHLIGHT_COMMENT,     99, 109, 166, 255)  /* #636da6 */\
-	DEF(HIGHLIGHT_OPERATOR,   137, 221, 255, 255)  /* #89ddff */\
+	DEF(HIGHLIGHT_OPERATOR,   176, 168, 156, 255)  /* #b0a89c - warm gray */\
 	DEF(HIGHLIGHT_ESCAPE,     255, 158, 100, 255)  /* #ff9e64 */\
-	DEF(HIGHLIGHT_TEXT,       200, 211, 245, 255)  /* #c8d3f5 */\
 	DEF(HIGHLIGHT_QUOTE,      137, 221, 255, 255)  /* #89ddff */\
-	DEF(HIGHLIGHT_SCOPE,      137, 221, 255, 255)  /* #89ddff */\
+	DEF(HIGHLIGHT_SCOPE,      188, 168, 132, 255)  /* #bca884 - muted gold */\
 	DEF(HIGHLIGHT_KEYWORD,    122, 162, 247, 255)  /* #7aa2f7 */\
 	DEF(HIGHLIGHT_TYPE,        42, 195, 222, 255)  /* #2ac3de */
 #endif
@@ -529,18 +530,16 @@ DEF_ENUM(SCOPE);
 	DEF(COLOR_CARET,          235, 203, 139, 255)  /* #ebcb8b */\
 	DEF(COLOR_HOVER,          163, 190, 140,  48)  /* #a3be8c */\
 	DEF(COLOR_BACKGROUND,      40,  44,  52, 255)  /* #282c34 */\
-	DEF(HIGHLIGHT_CODE,       216, 222, 233, 255)  /* #d8dee9 */\
 	DEF(HIGHLIGHT_IDENTIFIER, 216, 222, 233, 255)  /* #d8dee9 */\
 	DEF(HIGHLIGHT_ERROR,      191, 105, 105, 255)  /* #bf6969 */\
 	DEF(HIGHLIGHT_PREPROCESS, 180, 142, 173, 255)  /* #b48ead */\
 	DEF(HIGHLIGHT_NUMBER,     208, 135, 112, 255)  /* #d08770 */\
 	DEF(HIGHLIGHT_STRING,     163, 190, 140, 255)  /* #a3be8c */\
 	DEF(HIGHLIGHT_COMMENT,    107, 112, 127, 255)  /* #6b707f */\
-	DEF(HIGHLIGHT_OPERATOR,   180, 186, 197, 255)  /* #b4bac5 */\
+	DEF(HIGHLIGHT_OPERATOR,   176, 160, 144, 255)  /* #b0a090 - muted taupe */\
 	DEF(HIGHLIGHT_ESCAPE,     235, 203, 139, 255)  /* #ebcb8b */\
-	DEF(HIGHLIGHT_TEXT,       216, 222, 233, 255)  /* #d8dee9 */\
 	DEF(HIGHLIGHT_QUOTE,      163, 190, 140, 255)  /* #a3be8c */\
-	DEF(HIGHLIGHT_SCOPE,      216, 222, 233, 255)  /* #d8dee9 */\
+	DEF(HIGHLIGHT_SCOPE,      168, 176, 156, 255)  /* #a8b09c - muted sage */\
 	DEF(HIGHLIGHT_KEYWORD,    235, 203, 139, 255)  /* #ebcb8b */\
 	DEF(HIGHLIGHT_TYPE,       143, 188, 187, 255)  /* #8fbcbb */
 #endif
@@ -550,18 +549,16 @@ DEF_ENUM(SCOPE);
 	DEF(COLOR_CARET,          218, 164,  80, 255)  /* #daa450 */\
 	DEF(COLOR_HOVER,          164, 184, 120,  48)  /* #a4b878 */\
 	DEF(COLOR_BACKGROUND,      26,  24,  21, 255)  /* #1a1815 */\
-	DEF(HIGHLIGHT_CODE,       212, 200, 180, 255)  /* #d4c8b4 */\
 	DEF(HIGHLIGHT_IDENTIFIER, 212, 200, 180, 255)  /* #d4c8b4 */\
 	DEF(HIGHLIGHT_ERROR,      192, 120, 104, 255)  /* #c07868 */\
 	DEF(HIGHLIGHT_PREPROCESS, 200, 160, 128, 255)  /* #c8a080 */\
 	DEF(HIGHLIGHT_NUMBER,     203, 180,  92, 255)  /* #cbb45c */\
 	DEF(HIGHLIGHT_STRING,     164, 184, 120, 255)  /* #a4b878 */\
 	DEF(HIGHLIGHT_COMMENT,    106,  96,  85, 255)  /* #6a6055 */\
-	DEF(HIGHLIGHT_OPERATOR,   176, 160, 144, 255)  /* #b0a090 */\
+	DEF(HIGHLIGHT_OPERATOR,   172, 152, 124, 255)  /* #ac9880 - muted tan */\
 	DEF(HIGHLIGHT_ESCAPE,     224, 192,  96, 255)  /* #e0c060 */\
-	DEF(HIGHLIGHT_TEXT,       212, 200, 180, 255)  /* #d4c8b4 */\
 	DEF(HIGHLIGHT_QUOTE,      164, 184, 120, 255)  /* #a4b878 */\
-	DEF(HIGHLIGHT_SCOPE,      212, 200, 180, 255)  /* #d4c8b4 */\
+	DEF(HIGHLIGHT_SCOPE,      160, 160, 128, 255)  /* #a0a080 - muted olive */\
 	DEF(HIGHLIGHT_KEYWORD,    218, 164,  80, 255)  /* #daa450 */\
 	DEF(HIGHLIGHT_TYPE,       143, 184, 138, 255)  /* #8fb88a */
 #endif
@@ -571,26 +568,24 @@ DEF_ENUM(SCOPE);
 	DEF(COLOR_CARET,          240, 192,  80, 255)  /* #f0c050 */\
 	DEF(COLOR_HOVER,          140, 200, 100,  48)  /* #8cc864 */\
 	DEF(COLOR_BACKGROUND,      38,  40,  42, 255)  /* #26282a */\
-	DEF(HIGHLIGHT_CODE,       230, 232, 228, 255)  /* #e6e8e4 */\
 	DEF(HIGHLIGHT_IDENTIFIER, 230, 232, 228, 255)  /* #e6e8e4 */\
 	DEF(HIGHLIGHT_ERROR,      220, 100, 100, 255)  /* #dc6464 */\
 	DEF(HIGHLIGHT_PREPROCESS, 200, 160, 120, 255)  /* #c8a078 */\
 	DEF(HIGHLIGHT_NUMBER,     240, 192,  80, 255)  /* #f0c050 */\
 	DEF(HIGHLIGHT_STRING,     140, 200, 100, 255)  /* #8cc864 */\
 	DEF(HIGHLIGHT_COMMENT,    120, 124, 128, 255)  /* #787c80 */\
-	DEF(HIGHLIGHT_OPERATOR,   176, 180, 184, 255)  /* #b0b4b8 */\
+	DEF(HIGHLIGHT_OPERATOR,   160, 164, 148, 255)  /* #a0a494 - muted sage-gray */\
 	DEF(HIGHLIGHT_ESCAPE,     240, 192,  80, 255)  /* #f0c050 */\
-	DEF(HIGHLIGHT_TEXT,       230, 232, 228, 255)  /* #e6e8e4 */\
 	DEF(HIGHLIGHT_QUOTE,      140, 200, 100, 255)  /* #8cc864 */\
-	DEF(HIGHLIGHT_SCOPE,      230, 232, 228, 255)  /* #e6e8e4 */\
+	DEF(HIGHLIGHT_SCOPE,      168, 156, 120, 255)  /* #a89c78 - muted warm tan */\
 	DEF(HIGHLIGHT_KEYWORD,     96, 180, 200, 255)  /* #60b4c8 */\
 	DEF(HIGHLIGHT_TYPE,       100, 190, 160, 255)  /* #64bea0 */
 #endif
 
 #define DEF_COLOR(_name, _r, _g, _b, _a)\
 	static const Color _name##_BRIGHT = { LERP(_r, 255, BRIGHT_RATIO), LERP(_g, 255, BRIGHT_RATIO), LERP(_b, 255, BRIGHT_RATIO), _a };\
-	static const Color _name##_DIM = { LERP(0, _r, DIM_RATIO), LERP(0, _g, DIM_RATIO), LERP(0, _b, DIM_RATIO), _a };\
-    static const Color _name = { _r, _g, _b, _a };
+	static const Color _name##_DIM    = { LERP( 0, _r,     DIM_RATIO), LERP( 0,  _g,    DIM_RATIO), LERP( 0,  _b,    DIM_RATIO), _a };\
+    static const Color _name          = { _r, _g, _b, _a };
 
 DEF_SCHEME(DEF_COLOR)
 
@@ -1592,21 +1587,22 @@ const char availableChars[] = "·¬ abcdefghijklmnopqrstuvwxyzABDCEFGHIJKLMNOPQR
 #define KEY_ALT_MOD   0b01000000000000000000000000000000
 #define KEY_CTRL_MOD  0b00100000000000000000000000000000
 
-typedef struct PACKED TextMeta {
-	TOK 	 tok;
+typedef struct SpanU16 {
+	u8 iStart;
+	u8 iEnd;
+} SpanU16;
+
+typedef struct TokMeta {
+	TOK 	 val;
 	TOK_KIND kind;
+} TokMeta;
 
-	u8 SCOPE_TAB     : 4;
-	u8 SCOPE_CURLY   : 4;
-	u8 SCOPE_PAREN   : 4;
-	u8 SCOPE_BRACKET : 4;
-
-	u8 iTokenStartOffset : 8;
-	u8 iTokenEndOffset   : 8;
-
-	u16 iScopeStartOffset : 16;
-	u16 iScopeEndOffset   : 16;
-
+typedef struct PACKED TextMeta {
+	TokMeta  tok;
+ 	SpanU16  tokOffset;
+	u8 braceLevel;
+	u8 bracketLevel;
+	u8 parenLevel;
 } TextMeta;
 
 typedef struct Highlight {
@@ -1671,9 +1667,6 @@ static inline Vector2 GetBoxLocalToWorld(Vector2 point, Rectangle rect) {
 
 static RESULT CodeBoxProcessMeta(CodeBox* pCode) 
 {
-	double startTime = GetTime();
-	LOG("Process Meta. Token Count: %d\n", TOK_COUNT);
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverride-init"
 
@@ -1699,6 +1692,8 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER_BEGIN,
 		['_']                   = &&TOK_SPARSE_IDENTIFIER_BEGIN,
 		[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_NUMBER_BEGIN, 
+		['{']                   = &&TOK_LBRACE,
+		['}']                   = &&TOK_RBRACE,
 	};
 
 	/* State */
@@ -1709,8 +1704,10 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		int      iN;
 		int      iTStart;
 		TOK      tok;
-		TOK      startTok;
-		TOK_KIND startKind;
+
+		// TOK      startTok;
+		// TOK_KIND startKind;
+		TextMeta meta;
 	} step;	ZERO(&step);
 
 	const int  textCount = pCode->textCount;
@@ -1733,38 +1730,26 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		step.tok = jump ? TOK_PACKED_CHAR     : cTok;\
 		step.iN  = jump ? step.nd.sparse.succ : cTok;\
 		step.nd  = pFrie[step.iN];\
-		FRIE_LOG("dispatch-->iN:%d %s\n", step.iN, string_TOK(step.tok));\
 		goto *disp[step.tok]; 
 
 	TOK_SPARSE_CHAR: {
-		FRIE_LOG("TOK_SPARSE_CHAR iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
-		// Current
-		pMeta[step.iT].kind = step.nd.sparse.kind;
-		pMeta[step.iT].tok  = step.cT;
-		pMeta[step.iT].iTokenStartOffset = 0;
-		pMeta[step.iT].iTokenEndOffset   = 0;
-		step.iTStart   = step.iT;
-		step.startTok  = step.nd.sparse.tok;
-		step.startKind = step.nd.sparse.kind;
-		// if (step.iT > 500) goto RESULT_SUCCESS;
+		step.meta.tok = (TokMeta){ step.cT, step.nd.sparse.kind };
+		ZERO(&step.meta.tokOffset);
+		memcpy(pMeta + step.iT, &step.meta, sizeof(TextMeta));
+		step.iTStart  = step.iT;
+		step.meta.tok = (TokMeta){ step.nd.sparse.tok, step.nd.sparse.kind };
 		SPARSE_DISP();
 	}
 	TOK_SPARSE_STEP: {
-		FRIE_LOG("TOK_SPARSE_STEP iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
-		// Assume NUMBER and traverse spar chars also checking for delimiter.
 		step.cT  = pText[++step.iT];
 		step.tok = step.cT < 0 ? TOK_ERR : step.cT;
 		step.nd  = pFrie[step.tok]; 
-		FRIE_LOG("dispatch-->%s\n", string_TOK(step.tok));
 		goto *disp[step.tok];
 	}
 	TOK_SPARSE_END: {
-		FRIE_LOG("TOK_SPARSE_END start:%d iT:%d len:%d %.*s\n", step.iTStart, step.iT, step.iT - step.iTStart, step.iT - step.iTStart, pText + step.iTStart);
 		for (int i = step.iTStart; i < step.iT; ++i) { 
-			pMeta[i].tok  = step.startTok; 
-			pMeta[i].kind = step.startKind; 
-			pMeta[i].iTokenStartOffset = i - step.iTStart;
-			pMeta[i].iTokenEndOffset   = (step.iT-1) - i;
+			step.meta.tokOffset = (SpanU16){ i - step.iTStart, (step.iT-1) - i };
+			memcpy(pMeta + i, &step.meta, sizeof(TextMeta));
 		}
 		disp = baseDispatch;
 		goto *disp[step.tok];
@@ -1772,7 +1757,6 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* Sparse Number */
 	TOK_SPARSE_NUMBER_BEGIN: {
-		FRIE_LOG("TOK_SPARSE_NUMBER_BEGIN iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
 		static void *numberDispatch[TOK_CAPACITY] = {	
 			DISPATCH_DEEFAULT
 			[TOK_WHITE_RANGE]       = &&TOK_SPARSE_END,
@@ -1784,15 +1768,13 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 			[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_STEP,
 		};
 		step.iTStart   = step.iT;
-		step.startTok  = TOK_NUMBER;
-		step.startKind = TOK_KIND_NUMBER;
+		step.meta.tok = (TokMeta){ TOK_NUMBER, TOK_KIND_NUMBER };
 		disp = numberDispatch;
 		SPARSE_DISP();
 	}
 
 	/* Sparse Identifier */
 	TOK_SPARSE_IDENTIFIER_BEGIN: {
-		FRIE_LOG("TOK_SPARSE_IDENTIFIER_BEGIN iT:%-4d iN:%-4d %4d:%s -->sparse %d kind:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT), step.nd.sparse.succ, string_TOK_KIND(step.nd.sparse.kind));
 		static void *identifierDispatch[TOK_CAPACITY] = {	
 			DISPATCH_DEEFAULT
 			[TOK_WHITE_RANGE]       = &&TOK_SPARSE_END,
@@ -1803,24 +1785,36 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 			[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_STEP,
 		};
 		step.iTStart   = step.iT;
-		step.startTok  = TOK_IDENTIFIER;
-		step.startKind = TOK_KIND_IDENTIFIER;
+		step.meta.tok = (TokMeta){ TOK_IDENTIFIER, TOK_KIND_IDENTIFIER };
 		disp = identifierDispatch;
 		SPARSE_DISP();
 	}
 
 	/* Packed Tokens */
 	TOK_PACKED_CHAR: {
-		FRIE_LOG("TOK_PACKED_CHAR iT:%-4d iN:%-4d %4d:%s == ", step.iT, step.iN, step.cT, string_CHAR(step.cT));
-		FRIE_LOG("%s:%-4d match:%d ", string_CHAR(step.nd.packed.tok), step.nd.packed.tok, step.nd.packed.tok == step.cT);
 		bool match = step.nd.packed.tok == step.cT;
 		step.iN += match ? step.nd.packed.succ : step.nd.packed.fail;
 		step.nd  = pFrie[step.iN];
 		step.iT += match;
 		step.cT  = pText[step.iT];
 		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
-		FRIE_LOG("dispatch-->%s\n", string_TOK(step.tok));
 		goto *disp[step.tok];
+	}
+
+	/* Scope Tokens */
+	TOK_LBRACE: {
+		step.meta.tok = (TokMeta){ TOK_LBRACE, TOK_KIND_SCOPE };
+		step.meta.braceLevel++;
+		ZERO(&step.meta.tokOffset);
+		COPY(pMeta + step.iT, &step.meta);
+		SPARSE_DISP();
+	}
+	TOK_RBRACE: {
+		step.meta.tok = (TokMeta){ TOK_RBRACE, TOK_KIND_SCOPE };
+		ZERO(&step.meta.tokOffset);
+		COPY(pMeta + step.iT, &step.meta);
+		step.meta.braceLevel--;
+		SPARSE_DISP();
 	}
 
 	/* Quote Tokens */
@@ -1869,7 +1863,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		goto TOK_ALL;
 	}
 	TOK_CLOSE_LINE_COMMENT:	{
-		basedisp  = baseDispatch;
+		basedisp = baseDispatch;
 		disp  = baseDispatch;
 		pFrie = TOK_BASE_FRIE;
 		goto TOK_SPARSE_CHAR;
@@ -1886,52 +1880,32 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	}
 
 	/* End Tokens */
-	#define PACKED_END_DISP()\
-		step.tok = step.cT < 0 ? TOK_ERR : step.cT;\
-		step.nd  = pFrie[step.tok];\
-		goto *disp[step.tok];
-
 	TOK_ALL: {
-		FRIE_LOG("TOK_ALL %s start:%d iT:%d iN:%d kind:%s \n", string_TOK(step.nd.terminator.tok), step.iTStart, step.iT, step.iN,  string_TOK_KIND(step.nd.terminator.kind));
-		for (int i = step.iTStart; i < step.iT; ++i) { 
-			pMeta[i].tok  = step.nd.terminator.tok; // TODO memcpy?
-			pMeta[i].kind = step.nd.terminator.kind; 
-			pMeta[i].iTokenStartOffset = i - step.iTStart;
-			pMeta[i].iTokenEndOffset   = (step.iT-1) - i;
-		}
-		disp = basedisp;
-		PACKED_END_DISP();
+		step.meta.tok = (TokMeta){ step.nd.terminator.tok, step.nd.terminator.kind };
 	}
 	TOK_MUNCH: {
-		// Did not reach a TK_ERR so we apply the 
-		FRIE_LOG("TOK_MUNCH iT:%-4d iN:%-4d %4d:%s ", step.iT, step.iN, step.cT, string_CHAR(step.cT));
 		for (int i = step.iTStart; i < step.iT; ++i) { 
-			pMeta[i].tok  = step.startTok; 
-			pMeta[i].kind = step.startKind; 
-			pMeta[i].iTokenStartOffset = i - step.iTStart;
-			pMeta[i].iTokenEndOffset   = (step.iT-1) - i;
+			step.meta.tokOffset = (SpanU16){ i - step.iTStart, (step.iT-1) - i };
+			COPY(pMeta + i, &step.meta);
 		}
 		disp = basedisp;
-		PACKED_END_DISP();
+		step.tok = step.cT < 0 ? TOK_ERR : step.cT;
+		step.nd  = pFrie[step.tok];
+		goto *disp[step.tok];
 	}
 
 	/* Continue Tokens */
 	TOK_DELIMIT: {
-		FRIE_LOG("TOK_DELIMIT     iT:%-4d iN:%-4d %4d:%s == ", step.iT, step.iN, step.cT, string_CHAR(step.cT));
-		FRIE_LOG("%s:%-4d delim:%d ", string_CHAR(step.nd.packed.tok), step.nd.packed.tok, IS_DELIM_CHAR(step.cT));
 		disp = basedisp;
 		bool delim = IS_DELIM_CHAR(step.cT);
 		step.iN += delim ? step.nd.packed.succ : step.nd.packed.fail;
 		step.nd  = pFrie[step.iN]; 
 		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
-		FRIE_LOG("dispatch-->%s\n", string_TOK(step.nd.packed.tok));
 		goto *disp[step.tok];
 	}
 	TOK_ERR: {
-		FRIE_LOG("TK_ERR start:%-4d iT:%-4d iN:%-4d %4d:%s ", step.iTStart, step.iT, step.iN, step.cT, string_CHAR(step.cT));
 		step.tok = step.cT < 0 ? TOK_SPARSE_CHAR : step.cT;
 		step.nd = pFrie[step.tok];
-		FRIE_LOG("dispatch-->%s\n", string_TOK(step.tok));
 		goto *disp[step.tok];
 	}
 
@@ -1943,8 +1917,6 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 #pragma GCC diagnostic pop // ignored "-Woverride-init"
 
 RESULT_SUCCESS:
-	double deltaTime = (GetTime() - startTime) * 1000.0;
-	printf("\n"); LOG("Meta Process Time: %lf", deltaTime);
 	return RESULT_SUCCESS;
 }
 
@@ -2788,14 +2760,6 @@ LoopBegin:
 		int boxColCount = pCode->boxColCount;
 		int iChar = pCode->focusStartRowIndex;
 
-		static TextMeta marginMeta[LEFT_MARGIN_CAPACITY] = { 
-			(TextMeta){ .iScopeStartOffset = 0, .iScopeEndOffset = 3 },
-			(TextMeta){ .iScopeStartOffset = 1, .iScopeEndOffset = 2 },
-			(TextMeta){ .iScopeStartOffset = 2, .iScopeEndOffset = 1 },
-			(TextMeta){ .iScopeStartOffset = 3, .iScopeEndOffset = 0 },
-		};
-		char margingText[LEFT_MARGIN_CAPACITY];
-
 		DrawRectangleRec(leftMarginRect, COLOR_BACKGROUND_DIM);
 		DrawRectangleRec(codeRect, COLOR_BACKGROUND);
 
@@ -2842,7 +2806,7 @@ LoopBegin:
 					default:
 						int codePointSize;
 						int codePoint = GetCodepoint(&displayChar, &codePointSize);
-						Color color = TOK_KIND_COLOR[currentMeta.kind];
+						Color color = TOK_KIND_COLOR[currentMeta.tok.kind];
 						DrawTextCodepoint(rayde.font, codePoint, charPos, fontSize, color);
 						iChar++;
 						break;
@@ -2864,8 +2828,8 @@ LoopBegin:
 
 			TextMeta hoverMeta = pCode->pTextMeta[iHoverChar];
 
-			int iHoverStartCol = iHoverCol - hoverMeta.iTokenStartOffset;
-			int iHoverEndCol   = iHoverCol + hoverMeta.iTokenEndOffset;
+			int iHoverStartCol = iHoverCol - hoverMeta.tokOffset.iStart;
+			int iHoverEndCol   = iHoverCol + hoverMeta.tokOffset.iEnd;
 
 			Vector2 startBoxPos = (Vector2){ (iHoverStartCol   * fontXSpacing), (iHoverBoxRow * fontYSpacing) };
 			Vector2 endBoxPos   = (Vector2){ ((iHoverEndCol+1) * fontXSpacing), (iHoverBoxRow * fontYSpacing) };
@@ -2879,7 +2843,8 @@ LoopBegin:
 				CodeSyncCaretToMarkRow(pCode, 0);
 				char c     = pCode->pText[pCode->pCarets[0].index];
 				TextMeta m = pCode->pTextMeta[pCode->pCarets[0].index];
-				snprintf(tokenDiagnosticText, DIAGNOSTIC_TEXT_CAPACITY, "%s %s start: %d end: %d\n", string_TOK(m.tok), string_TOK_KIND(m.kind), m.iTokenStartOffset, m.iTokenEndOffset);
+				snprintf(tokenDiagnosticText, DIAGNOSTIC_TEXT_CAPACITY, "%s %s start: %d end: %d brace: %d bracket: %d paren: %d\n", 
+					string_TOK(m.tok.val), string_TOK_KIND(m.tok.kind), m.tokOffset.iStart, m.tokOffset.iEnd, m.braceLevel, m.bracketLevel, m.parenLevel);
 			}
 		}
 
