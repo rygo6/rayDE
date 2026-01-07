@@ -360,13 +360,8 @@ STATIC_ASSERT(SMIN(i8) == -128);
 	_p;\
 })
 
-#define ZERO(_p)             memset((void*)(_p), 0, sizeof(*_p))
-#define ZERO_RANGE(_p, _len) memset((void*)(_p), 0, sizeof(*_p) * _len)
-#define COPY(_dst, _src)\
-({\
-	ASSERT(sizeof(*(_dst)) <= sizeof(*(_src)));\
-	memcpy((void*)(_dst), (void*)(_src), sizeof(*(_dst)));\
-})
+#define ZERO(_p)             memset((_p), 0, sizeof(*_p))
+#define ZERO_RANGE(_p, _len) memset((_p), 0, sizeof((_p)[0]) * (_len))
 
 /*
  * Validation
@@ -1704,9 +1699,6 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		int      iN;
 		int      iTStart;
 		TOK      tok;
-
-		// TOK      startTok;
-		// TOK_KIND startKind;
 		TextMeta meta;
 	} step;	ZERO(&step);
 
@@ -1749,7 +1741,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	TOK_SPARSE_END: {
 		for (int i = step.iTStart; i < step.iT; ++i) { 
 			step.meta.tokOffset = (SpanU16){ i - step.iTStart, (step.iT-1) - i };
-			memcpy(pMeta + i, &step.meta, sizeof(TextMeta));
+			pMeta[i] = step.meta;
 		}
 		disp = baseDispatch;
 		goto *disp[step.tok];
@@ -1806,13 +1798,13 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		step.meta.tok = (TokMeta){ TOK_LBRACE, TOK_KIND_SCOPE };
 		step.meta.braceLevel++;
 		ZERO(&step.meta.tokOffset);
-		COPY(pMeta + step.iT, &step.meta);
+		pMeta[step.iT] = step.meta;
 		SPARSE_DISP();
 	}
 	TOK_RBRACE: {
 		step.meta.tok = (TokMeta){ TOK_RBRACE, TOK_KIND_SCOPE };
 		ZERO(&step.meta.tokOffset);
-		COPY(pMeta + step.iT, &step.meta);
+		pMeta[step.iT] = step.meta;
 		step.meta.braceLevel--;
 		SPARSE_DISP();
 	}
@@ -1886,7 +1878,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	TOK_MUNCH: {
 		for (int i = step.iTStart; i < step.iT; ++i) { 
 			step.meta.tokOffset = (SpanU16){ i - step.iTStart, (step.iT-1) - i };
-			COPY(pMeta + i, &step.meta);
+			pMeta[i] = step.meta;
 		}
 		disp = basedisp;
 		step.tok = step.cT < 0 ? TOK_ERR : step.cT;
