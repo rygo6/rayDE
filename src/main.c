@@ -1,10 +1,10 @@
-static char _Test0() { 
+static char _Test0() {
 	{
 		{
 			{ { { }}}
 		}
 	}
-	return '0'; 
+	return '0';
 }
 
 #define C(abcd0_) #abcd0_ abcd0_#abcd0_ abcd0_## abcd0 # abcd0_
@@ -16,16 +16,16 @@ static char _Test0() {
 struct STR0{
 	int t;
 };
-inline int T1(struct STR0 AB10) 
-{ 
-	return AB10.t; 
+inline int T1(struct STR0 AB10)
+{
+	return AB10.t;
 }
 
 
 #ifdef A
 #endif
 
-void a(){ 
+void a(){
 	int b=1<<!1;
 	b<<=!1;
 }
@@ -52,12 +52,12 @@ static double Test(int input) {
 	int output = input;
 	int vala = output*output+2;
 	int valb = 10 / 2;
-	if (vala-->=0) 
+	if (vala-->=0)
 		vala>>=vala;
 	return output;
 }
 
-/* 
+/*
  * Test
  */
 
@@ -164,7 +164,7 @@ static double Test(int input) {
 | Ctrl+Delete               | Delete word forwards                           |
 +---------------------------+------------------------------------------------+
 
-GOOD IDEA 
+GOOD IDEA
 Alt + { - Jump to Nearest, then next
 Alt + } - ...
 Alt + [ - ...
@@ -197,7 +197,7 @@ Alt + " - ...
 #define ANSI_CYAN    "\033[36m"
 #define ANSI_WHITE   "\033[37m"
 
-#define ANSI_BRIGHT_BLACK   "\033[90m" 
+#define ANSI_BRIGHT_BLACK   "\033[90m"
 #define ANSI_BRIGHT_RED     "\033[91m"
 #define ANSI_BRIGHT_GREEN   "\033[92m"
 #define ANSI_BRIGHT_YELLOW  "\033[93m"
@@ -915,9 +915,9 @@ static const Color TOK_SCOPE_COLORS[] = {
 	DEF(TOK_RSHIFT_ASSIGN, /* >>= */)\
 	DEF(TOK_ELLIPSIS,      /* ... */)\
 	/* Comment */\
-	DEF(TOK_LCOMMENT)\
-	DEF(TOK_RCOMMENT)\
-	DEF(TOK_COMMENT)\
+	DEF(TOK_LBLOCK_COMMENT)\
+	DEF(TOK_RBLOCK_COMMENT)\
+	DEF(TOK_LINE_COMMENT)\
 	/* Escape */\
 	DEF(TOK_ESC_NULL,      /* \\0  NUL */)\
 	DEF(TOK_ESC_ALERT,     /* \\a  BEL */)\
@@ -935,12 +935,13 @@ static const Color TOK_SCOPE_COLORS[] = {
 	DEF(TOK_ESC_UNICODE4,  /* \\u      */)\
 	DEF(TOK_ESC_UNICODE8,  /* \\U      */)\
 	DEF(TOK_ESC_OCTAL,     /* \\U      */)\
-	/* Number */\
+	/* Sparse Groups */\
 	DEF(TOK_NUMBER)\
 	DEF(TOK_NUMBER_BINARY)\
 	DEF(TOK_NUMBER_HEX)\
-	/* Identifier */\
 	DEF(TOK_IDENTIFIER)\
+	DEF(TOK_STRING)\
+	DEF(TOK_COMMENT)\
 	DEF(TOK_COUNT)
 DEF_ENUM(TOK);
 STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 tokens!");
@@ -948,9 +949,6 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 #define DLM TOK_DELIM_STR
 
 #define DEF_TOK_BASE(DEF, DEF_RANGE)\
-	/* Whitespace */\
-	DEF_RANGE(TOK_WHITE_RANGE, TOK_KIND_WHITESPACE)\
-	DEF_RANGE(' ',             TOK_KIND_WHITESPACE)\
 	/* Number */\
 	DEF("0x"  , TOK_NUMBER_BINARY , TOK_KIND_ESCAPE)\
 	DEF("0b"  , TOK_NUMBER_HEX    , TOK_KIND_ESCAPE)\
@@ -966,8 +964,8 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF("\'"  , TOK_SQUOTE,   TOK_KIND_QUOTE)\
 	DEF("`"   , TOK_BACKTICK, TOK_KIND_QUOTE)\
 	/* Comment */\
-	DEF("/*"  , TOK_LCOMMENT, TOK_KIND_COMMENT)\
-	DEF("//"  , TOK_COMMENT,  TOK_KIND_COMMENT)\
+	DEF("/*"  , TOK_LBLOCK_COMMENT, TOK_KIND_COMMENT)\
+	DEF("//"  , TOK_LINE_COMMENT,  TOK_KIND_COMMENT)\
 	/* Operator */\
 	DEF("&"   , TOK_AND           , TOK_KIND_OPERATOR)\
 	DEF("|"   , TOK_PIPE          , TOK_KIND_OPERATOR)\
@@ -1090,10 +1088,6 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF("ptrdiff_t"DLM , TOK_PTRDIFF_T , TOK_KIND_TYPE)
 
 #define DEF_TOK_QUOTE(DEF, DEF_RANGE)\
-	DEF_RANGE(TOK_ASCII_RANGE,  TOK_KIND_STRING)\
-	/* Whitespace */\
-	DEF_RANGE(TOK_WHITE_RANGE, TOK_KIND_WHITESPACE)\
-	DEF_RANGE(' ',             TOK_KIND_WHITESPACE)\
 	/* Quote */\
 	DEF("\"",  TOK_DQUOTE,   TOK_KIND_QUOTE)\
 	DEF("\'",  TOK_SQUOTE,   TOK_KIND_QUOTE)\
@@ -1127,21 +1121,17 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF("\\6", TOK_ESC_OCTAL, TOK_KIND_ESCAPE)\
 	DEF("\\7", TOK_ESC_OCTAL, TOK_KIND_ESCAPE)
 
-#define DEF_TOK_COMMENT(DEF, DEF_RANGE)\
-	DEF_RANGE(TOK_ASCII_RANGE, TOK_KIND_COMMENT)\
-	/* Whitespace */\
-	DEF_RANGE(TOK_WHITE_RANGE, TOK_KIND_WHITESPACE)\
-	DEF(" ",  TOK_SPACE,   TOK_KIND_WHITESPACE)\
-	/* Comment */\
-	DEF("*/", TOK_RCOMMENT,    TOK_KIND_COMMENT)
+#define DEF_TOK_LINE_COMMENT(DEF, DEF_RANGE)\
+	DEF("*/", TOK_RBLOCK_COMMENT, TOK_KIND_COMMENT)\
+	DEF("\n", TOK_NEWLINE,  TOK_KIND_WHITESPACE)
 
 #define DEF_TOK_ALL_DEFINITIONS(DEF)\
 	DEF(TOK_BASE)\
 	DEF(TOK_QUOTE)\
-	DEF(TOK_COMMENT)
+	DEF(TOK_LINE_COMMENT)
 
 /*
- * Lex Frie Data Structure 
+ * Flat Trie Data Structure
  */
 #define FRIE_MAX_PACKED_OFFSET  4096  // 12 bit
 #define FRIE_MAX_SPARSE_OFFSET  65536 // 16 bit
@@ -1187,88 +1177,80 @@ typedef struct FrieTokDef {
 #pragma GCC diagnostic pop // ignored "-Woverride-init"
 
 /*
- * Lex Frie Functions
+ * Flat Trie Functions
  */
-// #define FRIE_DEBUG
-#ifdef FRIE_DEBUG
-	#define FRIE_LOG(...) fprintf(stderr, __VA_ARGS__)
-#else
-	#define FRIE_LOG(...)
-#endif
 
 static void FrieLog(FrieNode* trie)
 {
 	LOG("Frie:\n");
-	int iNode = 0; FrieNode node = trie[iNode]; 
-	fprintf(stderr, 
-		"Sparse Table: " 
-		ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "index" 
-		ANSI_RESET ANSI_WHITE "char" 
+	int iNode = 0; FrieNode node = trie[iNode];
+	fprintf(stderr,
+		"Sparse Table: "
+		ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "index"
+		ANSI_RESET ANSI_WHITE "char"
 		ANSI_DIM ANSI_ITALIC ANSI_YELLOW "SuccessTarget\n "
 		ANSI_RESET);
 	while ( iNode < TOK_KEYWORD_BEGIN) {
-		fprintf(stderr, 
-			ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" 
-			ANSI_RESET ANSI_WHITE "%s" 
-			ANSI_DIM ANSI_ITALIC ANSI_YELLOW "%d" 
-			ANSI_WHITE "%s" 
-			ANSI_BRIGHT_BLACK "|" 
-			ANSI_RESET, 
+		fprintf(stderr,
+			ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d"
+			ANSI_RESET ANSI_WHITE "%s"
+			ANSI_DIM ANSI_ITALIC ANSI_YELLOW "%d"
+			ANSI_WHITE "%s"
+			ANSI_BRIGHT_BLACK "|"
+			ANSI_RESET,
 			iNode, string_CHAR(iNode), node.sparse.succ, string_TOK(node.sparse.tok));
 		node = trie[++iNode];
 	}
-	fprintf(stderr, 
-		"\nPacked Trie: " ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE 
-		"index" ANSI_RESET ANSI_WHITE "char/token" 
-		ANSI_DIM ANSI_GREEN "SuccessOffset" 
-		ANSI_ITALIC ANSI_YELLOW "SuccessTarget" 
-		ANSI_RESET ANSI_DIM ANSI_RED "FailOffset" 
-		ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW 
-		"FailTarget\n" 
+	fprintf(stderr,
+		"\nPacked Trie: " ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE
+		"index" ANSI_RESET ANSI_WHITE "char/token"
+		ANSI_DIM ANSI_GREEN "SuccessOffset"
+		ANSI_ITALIC ANSI_YELLOW "SuccessTarget"
+		ANSI_RESET ANSI_DIM ANSI_RED "FailOffset"
+		ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW
+		"FailTarget\n"
 		ANSI_RESET);
 	while (node.packed.tok != '\0' || iNode < 128) {
-		if (IS_DELIM_TOKEN(node.packed.tok)) 
-			fprintf(stderr, 
-				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" 
-				ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s" 
-				ANSI_DIM ANSI_GREEN "%d" 
-				ANSI_ITALIC ANSI_YELLOW "%d" 
-				ANSI_RESET ANSI_DIM ANSI_RED "%d" 
-				ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "%d" 
-				ANSI_BRIGHT_BLACK "|" 
-				ANSI_RESET, 
+		if (IS_DELIM_TOKEN(node.packed.tok))
+			fprintf(stderr,
+				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d"
+				ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s"
+				ANSI_DIM ANSI_GREEN "%d"
+				ANSI_ITALIC ANSI_YELLOW "%d"
+				ANSI_RESET ANSI_DIM ANSI_RED "%d"
+				ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "%d"
+				ANSI_BRIGHT_BLACK "|"
+				ANSI_RESET,
 				iNode, string_TOK(node.packed.tok), node.packed.succ, node.packed.succ+iNode, node.packed.fail, node.packed.fail+iNode);
-		else if (IS_TOKEN(node.packed.tok)) 
-			fprintf(stderr, 
-				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" 
-				ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s" 
-				ANSI_BRIGHT_BLACK "%c" 
-				ANSI_RESET, 
+		else if (IS_TOKEN(node.packed.tok))
+			fprintf(stderr,
+				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d"
+				ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s"
+				ANSI_BRIGHT_BLACK "%c"
+				ANSI_RESET,
 				iNode, string_TOK(node.terminator.tok), node.terminator.tok == TOK_ERR ? '\n' : '|');
-		else  			       
-			fprintf(stderr, 
-				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d" 
-				ANSI_RESET ANSI_WHITE "%c" 
-				ANSI_DIM ANSI_GREEN "%d" 
-				ANSI_ITALIC ANSI_YELLOW "%d" 
-				ANSI_RESET ANSI_DIM ANSI_RED "%d" 
-				ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "%d" 
-				ANSI_BRIGHT_BLACK "|" 
-				ANSI_RESET, 
+		else
+			fprintf(stderr,
+				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d"
+				ANSI_RESET ANSI_WHITE "%c"
+				ANSI_DIM ANSI_GREEN "%d"
+				ANSI_ITALIC ANSI_YELLOW "%d"
+				ANSI_RESET ANSI_DIM ANSI_RED "%d"
+				ANSI_RESET ANSI_ITALIC ANSI_DIM ANSI_YELLOW "%d"
+				ANSI_BRIGHT_BLACK "|"
+				ANSI_RESET,
 				iNode, node.packed.tok, node.packed.succ, node.packed.succ+iNode, node.packed.fail, node.packed.fail+iNode);
 		node = trie[++iNode];
 	}
 	fprintf(stderr, "\n");
 }
 
-static TOK FrieGet(const char *pText, FrieNode *pFrie) 
+static TOK FrieGet(const char *pText, FrieNode *pFrie)
 {
-	FRIE_LOG("Checking Frie for %s\n", pText);
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverride-init"
 
-	static void *dispatch[TOK_CAPACITY] = {	
+	static void *dispatch[TOK_CAPACITY] = {
 		[TOK_ALL_RANGE]     = &&TOK_NONE,
 		[TOK_PACKED_CHAR]   = &&TOK_PACKED_CHAR,
 		[TOK_DELIMIT]       = &&TOK_DELIMIT,
@@ -1290,21 +1272,17 @@ static TOK FrieGet(const char *pText, FrieNode *pFrie)
 	{
 		step.cT = pText[0];
 		step.nd = pFrie[(u8)step.cT];
-		FRIE_LOG("TOK_ENTRY iT:%-4d %4d:%s %s %s %s jump%d ", step.iT, step.cT, string_CHAR(step.cT),  string_TOK(step.cT), string_TOK(step.nd.sparse.tok), string_TOK_KIND(step.nd.sparse.kind), step.nd.sparse.succ);
 		step.startTok = step.nd.sparse.tok;
 		bool jump = step.nd.sparse.succ > 0;
 		step.iN  = step.nd.sparse.succ;
 		step.tok = jump ? TOK_PACKED_CHAR :step.nd.sparse.tok;
-		step.cT  = pText[++step.iT]; 
+		step.cT  = pText[++step.iT];
 		step.nd  = pFrie[step.iN];
-		FRIE_LOG("dispatch-->%s\n", string_TOK(step.tok));
 		goto *dispatch[step.tok];
 	}
 
-TOK_PACKED_CHAR: 
+TOK_PACKED_CHAR:
 	{
-		FRIE_LOG("TOK_PACKED_CHAR iT:%-4d iN:%-4d %4d:%s==", step.iT, step.iN, step.cT, string_CHAR(step.cT));
-		FRIE_LOG("%s:%-4d ", string_CHAR(step.nd.packed.tok), step.nd.packed.tok);
 		// Determine node match and retrieve next node.
 		bool match = step.nd.packed.tok == step.cT;
 		step.iN += match ? step.nd.packed.succ : step.nd.packed.fail;
@@ -1312,32 +1290,26 @@ TOK_PACKED_CHAR:
 		// Progress to next text char if matched.
 		step.iT += match; step.cT = pText[step.iT];
 		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
-		FRIE_LOG("dispatch-->%d:%s\n", step.iN, string_TOK(step.tok));
 		goto *dispatch[step.tok];
 	}
 
-TOK_DELIMIT: 
+TOK_DELIMIT:
 	{
-		FRIE_LOG("TOK_DELIMIT     iT:%-4d iN:%-4d %4d:%s==", step.iT, step.iN, step.cT, string_CHAR(step.cT));
-		FRIE_LOG("%s:%-4d ", string_CHAR(step.nd.packed.tok), step.nd.packed.tok);
 		bool delim = IS_DELIM_CHAR(step.cT);
 		step.iN += delim ? step.nd.packed.succ : step.nd.packed.fail;
 		step.nd  = pFrie[step.iN];
 		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
-		FRIE_LOG("dispatch-->%s\n", string_TOK(step.nd.packed.tok));
 		goto *dispatch[step.tok];
 	}
 
 TOK_ALL:
-	FRIE_LOG("Token: %d %s\n", step.tok, string_TOK(step.tok));
 	return step.tok;
 
 TOK_NONE:
-	FRIE_LOG("Token: %d %s\n", step.startTok, string_TOK(step.startTok));
 	return step.startTok;
 }
 
-static void FrieValidate(int tokCount, const FrieTokDef* tokDefs, FrieNode* pFrie) 
+static void FrieValidate(int tokCount, const FrieTokDef* tokDefs, FrieNode* pFrie)
 {
 	char sparseCharBuf[2] = { '\0', '\0' };
 	for (int iTok = TOK_ASCII_BEGIN; iTok < tokCount; ++iTok) {
@@ -1354,16 +1326,12 @@ static void FrieValidate(int tokCount, const FrieTokDef* tokDefs, FrieNode* pFri
 static void FrieShift(FrieNode* pFrie, int iInsertNode, int iEndNode)
 {
 	// Shift all to right by 1 to make room for new char condition.
-	FRIE_LOG("Shift 1 dst:%d src:%d len:%d\n", iInsertNode+1, iInsertNode, iEndNode - iInsertNode);
 	memmove(pFrie + iInsertNode + 1, pFrie + iInsertNode, (iEndNode - iInsertNode) * sizeof(FrieNode));
 
 	// Increment sparse ascii jump values if they would have jumped past current insertion
 	for (int iNodePrev = 0; iNodePrev < TOK_KEYWORD_BEGIN; iNodePrev++) {
 		FrieNode *pPrevNode = pFrie + iNodePrev;
-		if (pPrevNode->sparse.succ > iInsertNode) { 
-			FRIE_LOG("Increment sparse i%d %c succ%d\n", iNodePrev, iNodePrev, pPrevNode->sparse.succ);
-			pPrevNode->sparse.succ++;
-		}
+		if (pPrevNode->sparse.succ > iInsertNode) pPrevNode->sparse.succ++;
 	}
 
 	// Increment all fail succ values in prior trie steps if they would have jumped past current insertion
@@ -1371,19 +1339,13 @@ static void FrieShift(FrieNode* pFrie, int iInsertNode, int iEndNode)
 		FrieNode *pPrevNode = pFrie + iNodePrev;
 		int diff = iInsertNode - iNodePrev;
 		if (IS_KEYWORD_TOKEN(pPrevNode->packed.tok)) continue;
-		if (pPrevNode->packed.succ > diff) {
-			pPrevNode->packed.succ++;
-			FRIE_LOG("Increment succ i%d %c succ%d\n", iNodePrev, pPrevNode->packed.tok, pPrevNode->packed.succ);
-		}
-		if (pPrevNode->packed.fail > diff) {
-			pPrevNode->packed.fail++;
-			FRIE_LOG("Increment fail i%d %c fail%d\n", iNodePrev, pPrevNode->packed.tok, pPrevNode->packed.fail);
-		}
+		if (pPrevNode->packed.succ > diff) pPrevNode->packed.succ++;
+		if (pPrevNode->packed.fail > diff) pPrevNode->packed.fail++;
 	}
 }
 
-static RESULT ConstructFrie(int tokCount, const FrieTokDef* tokDefs, int frieCapacity, FrieNode* pFrie) 
-{	
+static RESULT ConstructFrie(int tokCount, const FrieTokDef* tokDefs, int frieCapacity, FrieNode* pFrie)
+{
 	FrieTokDef def = { .name = "\0" };
 	int iEndNode = TOK_KEYWORD_BEGIN;
 	int iNodeFirstFail = 0;
@@ -1403,21 +1365,20 @@ static RESULT ConstructFrie(int tokCount, const FrieTokDef* tokDefs, int frieCap
 		pFrie[i].sparse.kind = TOK_KIND_ERROR;
 	}
 
-NextTok: 
+NextTok:
 	if (iTok == tokCount) goto RESULT_SUCCESS;
 	def = tokDefs[iTok];
 	if (def.name == NULL) {	iTok++; goto NextTok; }
 	if (def.name[0] == TOK_RANGE) {	def.name = sparseCharBuf; def.name[0] = iTok; }
-	FRIE_LOG("NextTok %s\n", def.name);
 	iNodeFirstFail = TOK_KEYWORD_BEGIN;
-	iNode = 0; 
-	iName = 0; 
-	len = strlen(def.name); 
+	iNode = 0;
+	iName = 0;
+	len = strlen(def.name);
 	munch = false;
 	delim = def.name[len-1] == TOK_DELIMIT;
-	tok = iTok; 
+	tok = iTok;
 
-NextNameChar: 
+NextNameChar:
 	char cName = def.name[iName];
 	if (cName == '\0' && iName == 0) {
 		LOG_WARN("Trying to add empty token!\n");
@@ -1432,29 +1393,26 @@ NextNameChar:
 
 		// One char token
 		if (cNameNext == '\0') {
-			FRIE_LOG("One Char Token i%d %c end%d %s\n", (u8)cName, cName, iEndNode, def.name);
 			pNode->sparse.kind = def.kind;
 			CHECKMSG(pNode->sparse.tok != TOK_SPARSE_CHAR, RESULT_DUPLICATE_ERROR, "Trying to insert single char token twice! %s %s %s", def.name, string_CHAR(cName), string_TOK(tok));
 			pNode->sparse.tok = tok;
-			iTok++; 
+			iTok++;
 			goto NextTok;
 		}
 
 		// Already added. Jump.
 		if (node.sparse.succ > 0) {
-			FRIE_LOG("Entry Jump i%d %c end%d %s %s\n", (u8)cName, cName, iEndNode, def.name, string_TOK(pNode->sparse.tok));
 			if (node.sparse.tok != TOK_ERR) munch = true;
 			iNode = node.sparse.succ;
 			iName++;
 			goto NextNameChar;
-		}		
+		}
 
 		// Set succ on sparse token to signal a match
-		FRIE_LOG("New Entry i%d %c end%d %s %s\n", (u8)cName, cName, iEndNode, def.name,  string_TOK(pNode->sparse.tok));
 		CHECKMSG(iEndNode < FRIE_MAX_SPARSE_OFFSET, RESULT_OFFSET_ERROR, "end offset:%d", iEndNode);
 		if (node.sparse.tok != TOK_ERR) munch = true;
 		pNode->sparse.succ = iEndNode;
-		iNode = iEndNode; 
+		iNode = iEndNode;
 		iName++;
 		goto NextNameChar;
 	}
@@ -1463,20 +1421,18 @@ NextNameChar:
 	{
 		FrieNode node  = pFrie[iNode];
 		// Encounter a token, must shift to the right and fill in new token.
-		if (IS_KEYWORD_TOKEN(node.packed.tok) || node.packed.tok == TOK_ERR || node.packed.tok == TOK_MUNCH) { 
+		if (IS_KEYWORD_TOKEN(node.packed.tok) || node.packed.tok == TOK_ERR || node.packed.tok == TOK_MUNCH) {
 			if (iNodeFirstFail != TOK_KEYWORD_BEGIN) iNode = iNodeFirstFail;
-
-			FRIE_LOG("Insert Char i%d %c end%d %s\n", iNode, cName, iEndNode, def.name);
 			FrieShift(pFrie, iNode, iEndNode);
 			iEndNode++; CHECK(iEndNode < frieCapacity, RESULT_CAPACITY_ERROR);
 			u16 succ = iEndNode - iNode;
 			CHECKMSG(succ < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "succ offset:%d", succ);
 			pFrie[iNode] = (FrieNode){
-				.packed.tok  = cName, 
-				.packed.succ = succ, 
+				.packed.tok  = cName,
+				.packed.succ = succ,
 				// When non-delim, fail = 1 ends up pointing to the token to be munched
 				// whereas with delim fail will point to a delim token, which will then go to err token
-				.packed.fail = 1 
+				.packed.fail = 1
 			};
 			iName++; iNode = iEndNode;
 			goto NextNameChar;
@@ -1484,7 +1440,6 @@ NextNameChar:
 
 		// Encounter delimit char, must shift to the right and fill in new token.
 		if (cName == TOK_DELIMIT) {
-			FRIE_LOG("Delimit Insert i%d end%d %s\n", iNode, iEndNode, def.name);
 			FrieShift(pFrie, iNode, iEndNode);
 			bool insertingAtEnd = iEndNode == iNode;
 			iEndNode++; CHECK(iEndNode < frieCapacity, RESULT_CAPACITY_ERROR);
@@ -1492,9 +1447,9 @@ NextNameChar:
 			CHECKMSG(succ < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "succ offset:%d", succ);
 			u16 fail = insertingAtEnd ? succ + 1 : 1; // If inserting at end ERR token is 1 after succ, otherwise fail to next node
 			CHECKMSG(fail < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "fail offset:%d", fail);
-			pFrie[iNode] = (FrieNode){ 
-				.packed.tok  = TOK_DELIMIT, 
-				.packed.succ = succ, 
+			pFrie[iNode] = (FrieNode){
+				.packed.tok  = TOK_DELIMIT,
+				.packed.succ = succ,
 				.packed.fail = fail,
 			};
 			delim = true;
@@ -1505,10 +1460,9 @@ NextNameChar:
 		// End of Token Name. Write token go to next token!
 		if (cName == '\0') {
 			CHECKMSG(iNode == iEndNode, RESULT_ORDER_ERROR, "Trying to inset shorter token after longer token! %s %s", def.name, string_TOK(tok));
-			FRIE_LOG("Finish Token i%d end%d len%d %s %s\n", iNode, iEndNode, iName - delim, def.name, string_TOK(tok));
 			pFrie[iNode++] = (FrieNode){ .terminator.tok = tok, .terminator.kind = def.kind };
 			// If the token has a delimiter it will have an explicit end delimit node to signal match. If it gets past the delimiter node it's because there was no match and thus an error.
-			// If there is no delimiter it runs on maximal munch and whatever muched thus far should be the token. 
+			// If there is no delimiter it runs on maximal munch and whatever muched thus far should be the token.
 			if (munch) pFrie[iNode++] = (FrieNode){ .terminator.tok = TOK_MUNCH, .terminator.kind = TOK_KIND_ERROR };
 			else       pFrie[iNode++] = (FrieNode){ .terminator.tok = TOK_ERR,   .terminator.kind = TOK_KIND_ERROR };
 			iTok++;	iEndNode = iNode;
@@ -1517,15 +1471,13 @@ NextNameChar:
 
 		// Token char succesfully match with existing trie char
 		if (cName == node.packed.tok) {
-			FRIE_LOG("Char Succ i%d jump%d end%d %s %c==%c\n", iNode, node.packed.succ, iEndNode, def.name, cName, node.packed.tok);
 			iNodeFirstFail = TOK_KEYWORD_BEGIN;
 			iNode += node.packed.succ; iName++;
 			goto NextNameChar;
-		} 
+		}
 
 		// Token char fail to match with existing trie char
 		if (iNode < iEndNode) {
-			FRIE_LOG("Char Fail i%d jump%d end%d %s %c==%c\n", iNode, node.packed.fail, iEndNode, def.name, cName, node.packed.tok);
 			if (iNodeFirstFail == TOK_KEYWORD_BEGIN) iNodeFirstFail = iNode;
 			iNode += node.packed.fail;
 			goto NextNameChar;
@@ -1534,10 +1486,9 @@ NextNameChar:
 		{
 			u16 fail = (len + 1) - iName - delim; // +1 as err comes after tok
 			CHECKMSG(fail < FRIE_MAX_PACKED_OFFSET, RESULT_OFFSET_ERROR, "fail offset:%d", fail);
-			FRIE_LOG("Add Char iT:%d iN:%d fail:%d end:%d delim%d len:%d %s %c\n", iNode, iName, fail, iEndNode, delim, len, def.name, cName);
-			pFrie[iNode] = (FrieNode){ 
-				.packed.tok  = cName, 
-				.packed.succ = 1, 
+			pFrie[iNode] = (FrieNode){
+				.packed.tok  = cName,
+				.packed.succ = 1,
 				.packed.fail = fail,
 			};
 			iNode++; iEndNode++; iName++;
@@ -1593,7 +1544,7 @@ const char availableChars[] = "·¬ abcdefghijklmnopqrstuvwxyzABDCEFGHIJKLMNOPQR
 #define CARET_MAX_CAPACITY 8
 #define CARET_INVALID INT_MIN
 
-#define MASK_ASCII    0b00000000000000000000000011111111 
+#define MASK_ASCII    0b00000000000000000000000011111111
 #define KEY_SHIFT_MOD 0b10000000000000000000000000000000
 #define KEY_ALT_MOD   0b01000000000000000000000000000000
 #define KEY_CTRL_MOD  0b00100000000000000000000000000000
@@ -1676,7 +1627,7 @@ static inline Vector2 GetBoxLocalToWorld(Vector2 point, Rectangle rect) {
 	return (Vector2){ point.x + rect.x, point.y + rect.y };
 }
 
-static RESULT CodeBoxProcessMeta(CodeBox* pCode) 
+static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverride-init"
@@ -1689,20 +1640,21 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		[TOK_SPARSE_CHAR]   = &&TOK_SPARSE_CHAR,\
 		[TOK_PACKED_CHAR]   = &&TOK_PACKED_CHAR,\
 		[TOK_DELIMIT]       = &&TOK_DELIMIT,\
-		[TOK_WHITE_RANGE]   = &&TOK_SPARSE_CHAR,\
 		[TOK_ASCII_RANGE]   = &&TOK_SPARSE_CHAR,\
+		[TOK_WHITE_RANGE]   = &&TOK_SPARSE_WHITESPACE,\
+		[' ']               = &&TOK_SPARSE_WHITESPACE,\
 		[TOK_KEYWORD_RANGE] = &&TOK_ALL,
 
-	static void *baseDispatch[TOK_CAPACITY] = {	
+	static void *baseDispatch[TOK_CAPACITY] = {
 		DISPATCH_DEEFAULT
 		[TOK_SQUOTE]            = &&TOK_SQUOTE_BEGIN,
 		[TOK_DQUOTE]            = &&TOK_DQUOTE_BEGIN,
-		[TOK_LCOMMENT]          = &&TOK_OPEN_BLOCK_COMMENT,
-		[TOK_COMMENT]           = &&TOK_OPEN_LINE_COMMENT,
+		[TOK_LBLOCK_COMMENT]    = &&TOK_OPEN_BLOCK_COMMENT,
+		[TOK_LINE_COMMENT]      = &&TOK_OPEN_LINE_COMMENT,
 		[TOK_UPPER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER_BEGIN,
 		[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_IDENTIFIER_BEGIN,
 		['_']                   = &&TOK_SPARSE_IDENTIFIER_BEGIN,
-		[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_NUMBER_BEGIN, 
+		[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_NUMBER_BEGIN,
 		['{']                   = &&TOK_LBRACE,
 		['}']                   = &&TOK_RBRACE,
 		['[']                   = &&TOK_LBRACKET,
@@ -1725,42 +1677,60 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	const int  textCount = pCode->textCount;
 	char	  *pText     = pCode->pText;
 	TextMeta  *pMeta     = pCode->pTextMeta;
-	void      **basedisp = baseDispatch;
-	void      **disp     = baseDispatch;
+	void     **basedisp  = baseDispatch;
+	void     **disp      = baseDispatch;
 	FrieNode  *pFrie     = TOK_BASE_FRIE;
-	
+
 	/* Entry */
 	step.iT = 0;
 	step.cT = pText[step.iT];
 	step.nd = pFrie[(u8)step.cT];
 
 	/* Sparse Tokens */
+	TOK_SPARSE_STRING: {
+		step.meta.tok = (TokMeta){ TOK_STRING, TOK_KIND_STRING };
+		ZERO(&step.meta.tokOffset);
+		memcpy(pMeta + step.iT, &step.meta, sizeof(TextMeta));
+		step.iTStart  = step.iT;
+		goto TOK_SPARSE_DISP;
+	}
+
+	TOK_SPARSE_COMMENT: {
+		step.meta.tok = (TokMeta){ TOK_COMMENT, TOK_KIND_COMMENT };
+		ZERO(&step.meta.tokOffset);
+		memcpy(pMeta + step.iT, &step.meta, sizeof(TextMeta));
+		step.iTStart  = step.iT;
+		goto TOK_SPARSE_DISP;
+	}
+
+	TOK_SPARSE_WHITESPACE: {
+		step.nd.sparse.kind = TOK_KIND_WHITESPACE;
+	}
 	TOK_SPARSE_CHAR: {
 		step.meta.tok = (TokMeta){ step.cT, step.nd.sparse.kind };
 		ZERO(&step.meta.tokOffset);
 		memcpy(pMeta + step.iT, &step.meta, sizeof(TextMeta));
 		step.iTStart  = step.iT;
-		step.meta.tok = (TokMeta){ step.nd.sparse.tok, step.nd.sparse.kind };
 		// Fallthrough
 	}
 	TOK_SPARSE_DISP: {
 		bool jump = step.nd.sparse.succ > 0;
-		step.cT  = pText[++step.iT]; 
+		step.cT  = pText[++step.iT];
 		u8 cTok  = step.cT > 0 ? step.cT : TOK_ERR;
 		step.tok = jump ? TOK_PACKED_CHAR     : cTok;
 		step.iN  = jump ? step.nd.sparse.succ : cTok;
 		step.nd  = pFrie[step.iN];
-		goto *disp[step.tok]; 
+		goto *disp[step.tok];
 	}
 
 	TOK_SPARSE_STEP: {
 		step.cT  = pText[++step.iT];
 		step.tok = step.cT < 0 ? TOK_ERR : step.cT;
-		step.nd  = pFrie[step.tok]; 
+		step.nd  = pFrie[step.tok];
 		goto *disp[step.tok];
 	}
 	TOK_SPARSE_END: {
-		for (int i = step.iTStart; i < step.iT; ++i) { 
+		for (int i = step.iTStart; i < step.iT; ++i) {
 			step.meta.tokOffset = (SpanU16){ i - step.iTStart, (step.iT-1) - i };
 			pMeta[i] = step.meta;
 		}
@@ -1770,9 +1740,10 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* Sparse Number */
 	TOK_SPARSE_NUMBER_BEGIN: {
-		static void *numberDispatch[TOK_CAPACITY] = {	
+		static void *numberDispatch[TOK_CAPACITY] = {
 			DISPATCH_DEEFAULT
 			[TOK_WHITE_RANGE]       = &&TOK_SPARSE_END,
+			[' ']                   = &&TOK_SPARSE_END,
 			[TOK_ASCII_RANGE]       = &&TOK_SPARSE_END,
 			[TOK_UPPER_ALPHA_RANGE] = &&TOK_SPARSE_END,
 			[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_END,
@@ -1788,9 +1759,10 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* Sparse Identifier */
 	TOK_SPARSE_IDENTIFIER_BEGIN: {
-		static void *identifierDispatch[TOK_CAPACITY] = {	
+		static void *identifierDispatch[TOK_CAPACITY] = {
 			DISPATCH_DEEFAULT
 			[TOK_WHITE_RANGE]       = &&TOK_SPARSE_END,
+			[' ']                   = &&TOK_SPARSE_END,
 			[TOK_ASCII_RANGE]       = &&TOK_SPARSE_END,
 			[TOK_UPPER_ALPHA_RANGE] = &&TOK_SPARSE_STEP,
 			[TOK_LOWER_ALPHA_RANGE] = &&TOK_SPARSE_STEP,
@@ -1828,9 +1800,11 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* Quote Tokens */
 	TOK_SQUOTE_BEGIN: {
-		static void *squoteispatch[TOK_CAPACITY] = {	
+		static void *squoteispatch[TOK_CAPACITY] = {
 			DISPATCH_DEEFAULT
-			['\''] = &&TOK_QUOTE_END,
+			[TOK_ASCII_RANGE] = &&TOK_SPARSE_STRING,
+			[' ']             = &&TOK_SPARSE_WHITESPACE,
+			['\'']            = &&TOK_QUOTE_END,
 		};
 		basedisp = squoteispatch;
 		disp  = squoteispatch;
@@ -1838,9 +1812,11 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		goto TOK_SPARSE_CHAR;
 	}
 	TOK_DQUOTE_BEGIN: {
-		static void *dquoteDispatch[TOK_CAPACITY] = {	
+		static void *dquoteDispatch[TOK_CAPACITY] = {
 			DISPATCH_DEEFAULT
-			['"'] = &&TOK_QUOTE_END,
+			[TOK_ASCII_RANGE] = &&TOK_SPARSE_STRING,
+			[' ']             = &&TOK_SPARSE_WHITESPACE,
+			['"']             = &&TOK_QUOTE_END,
 		};
 		basedisp = dquoteDispatch;
 		disp  = dquoteDispatch;
@@ -1862,13 +1838,15 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		goto TOK_ALL;
 	}
 	TOK_OPEN_BLOCK_COMMENT: {
-		static void *blockCommentDispatch[TOK_CAPACITY] = {	
+		static void *blockCommentDispatch[TOK_CAPACITY] = {
 			DISPATCH_DEEFAULT
-			[TOK_RCOMMENT] = &&TOK_CLOSE_BLOCK_COMMENT,
+			[TOK_RBLOCK_COMMENT]    = &&TOK_CLOSE_BLOCK_COMMENT,
+			[TOK_ASCII_RANGE] = &&TOK_SPARSE_COMMENT,
+			[' ']             = &&TOK_SPARSE_WHITESPACE,
 		};
 		basedisp = blockCommentDispatch;
 		disp  = blockCommentDispatch;
-		pFrie = TOK_COMMENT_FRIE;
+		pFrie = TOK_LINE_COMMENT_FRIE;
 		goto TOK_ALL;
 	}
 	TOK_CLOSE_LINE_COMMENT:	{
@@ -1878,13 +1856,15 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		goto TOK_SPARSE_CHAR;
 	}
 	TOK_OPEN_LINE_COMMENT: {
-		static void *lineCommentDispatch[TOK_CAPACITY] = {	
+		static void *lineCommentDispatch[TOK_CAPACITY] = {
 			DISPATCH_DEEFAULT
-			[TOK_NEWLINE] = &&TOK_CLOSE_LINE_COMMENT,
+			[TOK_NEWLINE]     = &&TOK_CLOSE_LINE_COMMENT,
+			[TOK_ASCII_RANGE] = &&TOK_SPARSE_COMMENT,
+			[' ']             = &&TOK_SPARSE_WHITESPACE,
 		};
 		basedisp = lineCommentDispatch;
 		disp  = lineCommentDispatch;
-		pFrie = TOK_COMMENT_FRIE;
+		pFrie = TOK_LINE_COMMENT_FRIE;
 		goto TOK_ALL;
 	}
 
@@ -1901,10 +1881,11 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* End Tokens */
 	TOK_ALL: {
+		// LOG("TOK_ALL %d %c\n", step.iT, step.cT);
 		step.meta.tok = (TokMeta){ step.nd.terminator.tok, step.nd.terminator.kind };
 	}
 	TOK_MUNCH: {
-		for (int i = step.iTStart; i < step.iT; ++i) { 
+		for (int i = step.iTStart; i < step.iT; ++i) {
 			step.meta.tokOffset = (SpanU16){ i - step.iTStart, (step.iT-1) - i };
 			pMeta[i] = step.meta;
 		}
@@ -1916,10 +1897,11 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* Continue Tokens */
 	TOK_DELIMIT: {
+		// LOG("TOK_DELIMIT %d %c\n", step.iT, step.cT);
 		disp = basedisp;
 		bool delim = IS_DELIM_CHAR(step.cT);
 		step.iN += delim ? step.nd.packed.succ : step.nd.packed.fail;
-		step.nd  = pFrie[step.iN]; 
+		step.nd  = pFrie[step.iN];
 		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
 		goto *disp[step.tok];
 	}
@@ -1930,8 +1912,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	}
 
 	/* End Of File */
-	TOK_NONE: 
-		FRIE_LOG("TOK_NONE\n");
+	TOK_NONE:
 		goto RESULT_SUCCESS;
 
 #pragma GCC diagnostic pop // ignored "-Woverride-init"
@@ -1944,25 +1925,25 @@ RESULT_SUCCESS:
  * Codebox Text Search
  */
 
-// Find specified char. 
+// Find specified char.
 static int TextFindCharBackward(const char* text, int index, char c)
 {
-	while (index >= 0 && text[index] != c) index--;    
+	while (index >= 0 && text[index] != c) index--;
 	return index;
 }
 
-// Find specified char. 
+// Find specified char.
 static int TextFindCharForward(const char* pText, int index, char c)
 {
-	while (pText[index] != c && pText[index] != '\0') index++;    
+	while (pText[index] != c && pText[index] != '\0') index++;
 	return index;
 }
 
-// Find specified substring. 
+// Find specified substring.
 static int TextFindTextBackward(const char* text, int index, const char* find)
 {
 	while (index >= 0) {
-		int i = 0; while (text[index + i] == find[i]) 
+		int i = 0; while (text[index + i] == find[i])
 			if (find[++i] == '\0') return index;
 		index--;
 	}
@@ -1975,7 +1956,7 @@ static int TextFindTextForward(const char* text, int index, const char* find)
 	const char* s = text;
 	int foundIndex = index;
 	while (s[foundIndex] != '\0') {
-		int i = 0; while (s[foundIndex + i] == find[i]) 
+		int i = 0; while (s[foundIndex + i] == find[i])
 			if (find[++i] == '\0') return foundIndex;
 		foundIndex++;
 	}
@@ -2008,21 +1989,21 @@ static int TextEqualsText(const char* text, const char* equals)
 // Find first char which is not the specified char.
 static int TextNegateFindCharBackward(const char* text, int index, char find)
 {
-	while (index >= 0 && text[index] == find) index--;    
+	while (index >= 0 && text[index] == find) index--;
 	return index;
 }
 
 // Find first char which is not the specified char.
 static int TextNegateFindCharForward(const char* text, int index, char find)
 {
-	while (text[index] == find && text[index] != '\0') index++;    
+	while (text[index] == find && text[index] != '\0') index++;
 	return index;
 }
 
 static int TextFindCharsForward(const char* text, int index, const char* find)
 {
 	while (text[index] != '\0') {
-		int i = 0; while (find[i] != '\0') 
+		int i = 0; while (find[i] != '\0')
 			if (text[index] == find[i++]) return index;
 		index++;
 	}
@@ -2032,19 +2013,19 @@ static int TextFindCharsForward(const char* text, int index, const char* find)
 static int TextFindCharsBackward(const char* text, int index, const char* find)
 {
 	while (index >= 0) {
-		int i = 0; while (find[i] != '\0') 
+		int i = 0; while (find[i] != '\0')
 			if (text[index] == find[i++]) return index;
 		index--;
 	}
 	return index;
 }
 
-// Find char skipping a specified number of matches. 
+// Find char skipping a specified number of matches.
 static int TextFindCharSkipForward(const char* pText, char find, int skipCount)
 {
 	int index = 0;
 	while (pText[index] != '\0' && skipCount > 0) {
-		if (pText[index] == find) skipCount--;   
+		if (pText[index] == find) skipCount--;
 		index++;
 	}
 	return index;
@@ -2064,7 +2045,7 @@ static int TextCountCharForward(const char* text, int index, int range, char fin
 // Find char index and also count occurense of another char during scan.
 static bool TextFindCountCharForward(const char* pText, char searchChar, char countChar, int* pFoundIndex, int *pCount)
 {
-	int index = *pFoundIndex, count = *pCount; 
+	int index = *pFoundIndex, count = *pCount;
 	char c;	do {
 		c = pText[index++];
 		count += c == countChar;
@@ -2122,7 +2103,7 @@ static void CodeBoxFocusRow(CodeBox* pCode, int toRow)
 		pCode->focusStartRow = toRow - boxRowCount;
 		pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, '\n', pCode->focusStartRow);
 	}
-} 
+}
 
 static void CodeBoxIncrementFocusRow(CodeBox* pCode, int increment)
 {
@@ -2202,7 +2183,7 @@ static void CodeBoxDeleteCharAtIndex(CodeBox* pCode, int index)
 	pCode->textCount--;
 }
 
-static inline void CodeBoxDeleteChar(CodeBox* pCode) 
+static inline void CodeBoxDeleteChar(CodeBox* pCode)
 {
 	CodeBoxDeleteCharAtIndex(pCode, pCode->pCarets[0].index);
 }
@@ -2240,12 +2221,11 @@ static struct {
 
 int main(void)
 {
-	//  REQUIRE(ConstructFrie(NARRAY(TOK_BASE_DEFS), TOK_BASE_DEFS, NARRAY(TOK_BASE_FRIE), TOK_BASE_FRIE));
-	//  return 0;
-
 	#define CONSTRUCT_TOK_DEF_FRIE(_tok) REQUIRE(ConstructFrie(NARRAY(_tok##_DEFS), _tok##_DEFS, NARRAY(_tok##_FRIE), _tok##_FRIE));
 	#define CONSTRUCT_TOK_DEF_FRIE_ALL(_defs) _defs(CONSTRUCT_TOK_DEF_FRIE)
+
 		CONSTRUCT_TOK_DEF_FRIE_ALL(DEF_TOK_ALL_DEFINITIONS)
+
 	#undef CONSTRUCT_TOK_DEF_FRIE
 	#undef CONSTRUCT_TOK_DEF_FRIE_ALL
 
@@ -2254,18 +2234,20 @@ int main(void)
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
 	EnableEventWaiting();
 	InitWindow(rayde.windowSize.x, rayde.windowSize.y, "rayDE");
-	   
+
 	/* Font */
 	int codepointCount = 0;
 	int *codepoints = LoadCodepoints(availableChars, &codepointCount);
 	rayde.font = LoadFontEx("resources/JetBrainsMono-Regular.ttf", fontSize, codepoints, codepointCount);
 	SetTextureFilter(rayde.font.texture, TEXTURE_FILTER_BILINEAR);
-	SetTextLineSpacing(0); 
+	SetTextLineSpacing(0);
 
 	/* State */
 	CodeBox* pCode = &rayde.codeboxes[0];
 
 	struct {
+		bool mouseMarkActive;
+		Vector2 mousePos;
 		float scrollMouse;
 		bool  lMouse;
 		bool  lShift;
@@ -2287,8 +2269,9 @@ int main(void)
 	#define CODEBOX_ROW_CAPACITY 1024
 	#define CODEBOX_CARET_CAPACITY 128
 	pCode->pBoxRows   = XCALLOC(CODEBOX_ROW_CAPACITY, CodeRow);
-	pCode->pCarets    = XCALLOC(CODEBOX_CARET_CAPACITY, CodePos); 
+	pCode->pCarets    = XCALLOC(CODEBOX_CARET_CAPACITY, CodePos);
 	pCode->caretCount = 1;
+	CodeBoxSetRect(pCode, (Rectangle){ 0, 0, rayde.windowSize.x, rayde.windowSize.y });
 
 	/* File Load */
 	{
@@ -2340,9 +2323,13 @@ LoopBegin:
 	{
 		SetMouseCursor(mouseOnText ? MOUSE_CURSOR_IBEAM : MOUSE_CURSOR_DEFAULT);
 
+		Vector2 newMousePos = GetMousePosition();
+		if (input.mousePos.x != newMousePos.x || input.mousePos.y != newMousePos.y) {
+			input.mouseMarkActive = true;
+			input.mousePos = newMousePos;
+		}
 		input.scrollMouse = GetMouseWheelMove();
-
-		input.lMouse = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+		input.lMouse      = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
 		input.lShift = IsKeyDown(KEY_LEFT_SHIFT);
 		input.lAlt   = IsKeyDown(KEY_LEFT_ALT);
@@ -2352,7 +2339,7 @@ LoopBegin:
 		input.rAlt   = IsKeyDown(KEY_RIGHT_ALT);
 		input.rCtrl  = IsKeyDown(KEY_RIGHT_CONTROL) | IsKeyDown(KEY_RIGHT_SUPER);
 
-		input.modifierCombination = 
+		input.modifierCombination =
 			(input.lShift ? KEY_SHIFT_MOD : 0) |
 			(input.lAlt   ? KEY_ALT_MOD   : 0) |
 			(input.lCtrl  ? KEY_CTRL_MOD  : 0) |
@@ -2360,7 +2347,7 @@ LoopBegin:
 			(input.rShift ? KEY_SHIFT_MOD : 0) |
 			(input.rAlt   ? KEY_ALT_MOD   : 0) |
 			(input.rCtrl  ? KEY_CTRL_MOD  : 0);
-					
+
 		currentKey = GetKeyPressed();
 		if (currentKey == 0 && IsKeyPressedRepeat(priorKey))
 			currentKey = priorKey;
@@ -2384,9 +2371,9 @@ LoopBegin:
 			if (command.scanFoundIndex > 0 && !command.toggled) {
 				CommandFinish(pCode, &command);
 				LOG("Command Quick Scan Finish\n");
-			} 
+			}
 
-		} 
+		}
 
 	}
 
@@ -2394,7 +2381,7 @@ LoopBegin:
 
 		// LOG("Command Toggled\n");
 		input.lAlt = true;
-		input.modifierCombination = 
+		input.modifierCombination =
 			(input.lShift ? KEY_SHIFT_MOD : 0) |
 			(input.lAlt   ? KEY_ALT_MOD   : 0) |
 			(input.lCtrl  ? KEY_CTRL_MOD  : 0) |
@@ -2422,8 +2409,9 @@ LoopBegin:
 			switch (currentKey | input.modifierCombination) {
 
 				/* Move Left Keys */
-				case KEY_LEFT: 
+				case KEY_LEFT:
 				case KEY_A | KEY_ALT_MOD:
+					input.mouseMarkActive = false;
 					if (caret.index <= 0) break;
 					CodeSetMarkIndex(pCode, mark.index - 1);
 					CodeSyncCaretToMark(pCode, 0);
@@ -2431,6 +2419,7 @@ LoopBegin:
 
 				case KEY_LEFT | KEY_CTRL_MOD:
 				case KEY_A    | KEY_CTRL_MOD | KEY_ALT_MOD: {
+					input.mouseMarkActive = false;
 					if (caret.index <= 0) break;
 
 					int newIndex = CARET_INVALID;
@@ -2450,8 +2439,9 @@ LoopBegin:
 				}
 
 				/* Move Right Keys */
-				case KEY_RIGHT: 
+				case KEY_RIGHT:
 				case KEY_D | KEY_ALT_MOD:
+					input.mouseMarkActive = false;
 					if (caret.index >= pCode->textCount) break;
 					CodeSetMarkIndex(pCode, mark.index + 1);
 					CodeSyncCaretToMark(pCode, 0);
@@ -2459,6 +2449,7 @@ LoopBegin:
 
 				case KEY_RIGHT | KEY_CTRL_MOD:
 				case KEY_D     | KEY_CTRL_MOD | KEY_ALT_MOD: {
+					input.mouseMarkActive = false;
 					if (caret.index >= pCode->textCount) break;
 
 					int newIndex = CARET_INVALID;
@@ -2478,8 +2469,9 @@ LoopBegin:
 				}
 
 				/* Move Up Keys */
-				case KEY_UP: 
+				case KEY_UP:
 				case KEY_W | KEY_ALT_MOD:{
+					input.mouseMarkActive = false;
 					pMark->row--;
 					CodeSyncCaretToMarkRow(pCode, 0);
 					CodeBoxFocusMark(pCode);
@@ -2488,9 +2480,10 @@ LoopBegin:
 
 				case KEY_UP | KEY_CTRL_MOD:
 				case KEY_W  | KEY_CTRL_MOD | KEY_ALT_MOD: {
+					input.mouseMarkActive = false;
 					int startIndex      = pText[mark.index] == '\n' ? mark.index - endCharLength : mark.index;
 					int blockStartIndex = TextFindTextBackward(pText, startIndex, "\n\n");
-					int blockEndIndex   = TextNegateFindCharBackward(pText, blockStartIndex, '\n');  
+					int blockEndIndex   = TextNegateFindCharBackward(pText, blockStartIndex, '\n');
 					int newCaretIndex   = blockEndIndex + 1;
 					CodeSetMarkIndex(pCode, newCaretIndex);
 					CodeSyncCaretToMarkRow(pCode, 0);
@@ -2499,8 +2492,9 @@ LoopBegin:
 				}
 
 				/* Move Down Keys */
-				case KEY_DOWN: 
+				case KEY_DOWN:
 				case KEY_S | KEY_ALT_MOD: {
+					input.mouseMarkActive = false;
 					pMark->row++;
 					CodeSyncCaretToMarkRow(pCode, 0);
 					CodeBoxFocusMark(pCode);
@@ -2509,6 +2503,7 @@ LoopBegin:
 
 				case KEY_DOWN | KEY_CTRL_MOD:
 				case KEY_S    | KEY_CTRL_MOD | KEY_ALT_MOD: {
+					input.mouseMarkActive = false;
 					// Search"\n\n" to find where there is a new line gap
 					int blockEndIndex   = TextFindTextForward(pText, mark.index, "\n\n");
 					int blockStartIndex = TextNegateFindCharForward(pText, blockEndIndex, '\n');
@@ -2522,15 +2517,15 @@ LoopBegin:
 				}
 
 				/* Command Keys */
-				// case KEY_ALT_MOD | KEY_RIGHT_ALT: 
-				// case KEY_ALT_MOD | KEY_LEFT_ALT: 
+				// case KEY_ALT_MOD | KEY_RIGHT_ALT:
+				// case KEY_ALT_MOD | KEY_LEFT_ALT:
 				// 	if (!command.enabled) {
 				// 		LOG("Command Begin\n");
 				// 		command.enabled = true;
 				// 		command.scanFoundIndex = pCode->pActiveCaret->index;
 				// 		LOG("%d\n", command.scanFoundIndex);
 				// 		break;
-				// 	} 
+				// 	}
 
 				// 	if (command.enabled && command.toggled ) {
 				// 		LOG("Command Toggle Off\n");
@@ -2541,10 +2536,10 @@ LoopBegin:
 
 				// 	break;
 
-				// case KEY_ALT_MOD | KEY_CTRL_MOD | KEY_LEFT_CONTROL: 
+				// case KEY_ALT_MOD | KEY_CTRL_MOD | KEY_LEFT_CONTROL:
 				// 	break;
 
-				// case KEY_ALT_MOD | KEY_ENTER: 
+				// case KEY_ALT_MOD | KEY_ENTER:
 				// 	if (!command.enabled)
 				// 		break;
 
@@ -2553,11 +2548,11 @@ LoopBegin:
 
 				// 	break;
 
-				// case KEY_ALT_MOD | KEY_SHIFT_MOD | KEY_TAB: 
+				// case KEY_ALT_MOD | KEY_SHIFT_MOD | KEY_TAB:
 
 				// 	break;
 
-				// case KEY_ALT_MOD | KEY_TAB: 
+				// case KEY_ALT_MOD | KEY_TAB:
 				// 	if (!command.enabled)
 				// 		break;
 
@@ -2572,19 +2567,19 @@ LoopBegin:
 
 				// 	break;
 
-				// case '`'  | KEY_ALT_MOD: 
-				// case '-'  | KEY_ALT_MOD: 
-				// case '='  | KEY_ALT_MOD: 
-				// case '['  | KEY_ALT_MOD: 
-				// case ']'  | KEY_ALT_MOD: 
+				// case '`'  | KEY_ALT_MOD:
+				// case '-'  | KEY_ALT_MOD:
+				// case '='  | KEY_ALT_MOD:
+				// case '['  | KEY_ALT_MOD:
+				// case ']'  | KEY_ALT_MOD:
 				// case '\\' | KEY_ALT_MOD:
-				// case ';'  | KEY_ALT_MOD: 
+				// case ';'  | KEY_ALT_MOD:
 				// case '\'' | KEY_ALT_MOD:
-				// case ','  | KEY_ALT_MOD: 
-				// case '.'  | KEY_ALT_MOD: 
-				// case '/'  | KEY_ALT_MOD: 
+				// case ','  | KEY_ALT_MOD:
+				// case '.'  | KEY_ALT_MOD:
+				// case '/'  | KEY_ALT_MOD:
 
-				// case (KEY_ALT_MOD | '0') ... (KEY_ALT_MOD | '9'): 
+				// case (KEY_ALT_MOD | '0') ... (KEY_ALT_MOD | '9'):
 				// 	goto UpdateCommandKey;
 
 				// case '1'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '!'; goto UpdateCommandKey;
@@ -2609,16 +2604,16 @@ LoopBegin:
 				// case '.'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '>'; goto UpdateCommandKey;
 				// case '/'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '?'; goto UpdateCommandKey;
 
-				// case (KEY_ALT_MOD | 'A') ... (KEY_ALT_MOD | 'Z'): 
+				// case (KEY_ALT_MOD | 'A') ... (KEY_ALT_MOD | 'Z'):
 				// 	modifiedKey = TO_LOWER_C(currentKey);
 				// 	goto UpdateCommandKey;
 
-				// case (KEY_ALT_MOD | KEY_SHIFT_MOD | 'A') ... (KEY_ALT_MOD | KEY_SHIFT_MOD | 'Z'): 
+				// case (KEY_ALT_MOD | KEY_SHIFT_MOD | 'A') ... (KEY_ALT_MOD | KEY_SHIFT_MOD | 'Z'):
 				// 	goto UpdateCommandKey;
 
 				// case KEY_ALT_MOD | KEY_BACKSPACE:
 				// case KEY_ALT_MOD | KEY_SHIFT_MOD | KEY_BACKSPACE:
-				// 	command.firstKeyPressed = true; 
+				// 	command.firstKeyPressed = true;
 				// 	if (command.bufferCount > 0) command.bufferCount--;
 				// 	goto UpdateCommandScan;
 
@@ -2632,7 +2627,7 @@ LoopBegin:
 				// 	break;
 
 				UpdateCommandKey: {
-					if (!command.firstKeyPressed) command.firstKeyPressed = true;   
+					if (!command.firstKeyPressed) command.firstKeyPressed = true;
 					command.buffer[command.bufferCount++] = modifiedKey;
 					command.buffer[command.bufferCount] = '\0';
 				}
@@ -2650,11 +2645,11 @@ LoopBegin:
 				/* Character Delete Keys */
 				case KEY_DELETE: CodeBoxDeleteChar(pCode); break;
 				case KEY_BACKSPACE: {
-					CodeBoxDeleteChar(pCode); 
+					CodeBoxDeleteChar(pCode);
 					CodeSetMarkIndex(pCode, mark.index - 1);
 					CodeSyncCaretToMark(pCode, 0);
 					break;
-				}					 
+				}
 				/* Character Insert Keys */
 				case KEY_ENTER: CodeBoxInsertChar(pCode, '\n'); break;
 				case KEY_SPACE: CodeBoxInsertChar(pCode, ' '); break;
@@ -2702,7 +2697,7 @@ LoopBegin:
 
 				default: break;
 			}
-			
+
 			priorKey = currentKey;
 			currentKey = GetKeyPressed();
 		}
@@ -2713,13 +2708,12 @@ LoopBegin:
 	 */
 	BeginDrawing();
 	{
-		/* 
+		/*
 		 * Window
 		 */
 		ClearBackground(RAYWHITE);
-		const Vector2 hoverPos = GetMousePosition();
 
-		/* 
+		/*
 		 * Code Box
 		 */
 		#define LEFT_MARGIN_CAPACITY 16
@@ -2727,43 +2721,34 @@ LoopBegin:
 		#define RIGHT_MARGIN_SIZE  1
 		#define BOTTOM_MARGIN_SIZE 2
 
-		Rectangle boxRect = pCode->rect;
-		Rectangle statusMarginRect = { 
-			boxRect.x, boxRect.height - (fontYSpacing*BOTTOM_MARGIN_SIZE), 
+		const Rectangle boxRect = pCode->rect;
+		const Rectangle statusMarginRect = {
+			boxRect.x,     boxRect.height - (fontYSpacing*BOTTOM_MARGIN_SIZE),
 			boxRect.width, fontYSpacing
 		};
-		Rectangle commandMarginRect = { 
-			boxRect.x, 
-			statusMarginRect.y + statusMarginRect.height, 
-			boxRect.width, 
-			(fontYSpacing*BOTTOM_MARGIN_SIZE) - statusMarginRect.height
+		const Rectangle commandMarginRect = {
+			boxRect.x,     statusMarginRect.y + statusMarginRect.height,
+			boxRect.width, (fontYSpacing*BOTTOM_MARGIN_SIZE) - statusMarginRect.height
 		};
-		Rectangle bottomMarginRect = { 
-			boxRect.x, 
-			statusMarginRect.y, 
-			boxRect.width, 
-			statusMarginRect.height + commandMarginRect.height,
+		const Rectangle bottomMarginRect = {
+			boxRect.x,     statusMarginRect.y,
+			boxRect.width, statusMarginRect.height + commandMarginRect.height,
 		};
-		Rectangle leftMarginRect = {
-			boxRect.x,
-			boxRect.y, 
-			fontXSpacing * LEFT_MARGIN_SIZE,
-			boxRect.height - bottomMarginRect.height
+		const Rectangle leftMarginRect = {
+			boxRect.x,                       boxRect.y,
+			fontXSpacing * LEFT_MARGIN_SIZE, boxRect.height - bottomMarginRect.height
 		};
-		Rectangle rightMarginRect = {
-			boxRect.width - (fontXSpacing*RIGHT_MARGIN_SIZE),
-			boxRect.y, 
-			fontXSpacing * RIGHT_MARGIN_SIZE,
-			boxRect.height - bottomMarginRect.height
+		const Rectangle rightMarginRect = {
+			boxRect.width - (fontXSpacing*RIGHT_MARGIN_SIZE), boxRect.y,
+			fontXSpacing * RIGHT_MARGIN_SIZE,                 boxRect.height - bottomMarginRect.height
 		};
-		Rectangle codeRect = {boxRect.x + leftMarginRect.width,
-			boxRect.y, 
-			boxRect.width  - leftMarginRect.width - rightMarginRect.width,
-			boxRect.height - bottomMarginRect.height
+		const Rectangle codeRect = {
+			boxRect.x + leftMarginRect.width,                              boxRect.y,
+			boxRect.width  - leftMarginRect.width - rightMarginRect.width, boxRect.height - bottomMarginRect.height
 		};
 
-		const bool    boxHovering = CheckCollisionPointRec(hoverPos, codeRect);
-		const Vector2 hoverBoxPos = GetWorldToBoxLocal(hoverPos, codeRect);
+		const bool    boxHovering = CheckCollisionPointRec(input.mousePos, codeRect);
+		const Vector2 hoverBoxPos = GetWorldToBoxLocal(input.mousePos, codeRect);
 
 		const int       count = pCode->textCount;
 		const char*     pText = pCode->pText;
@@ -2772,19 +2757,13 @@ LoopBegin:
 		const int boxRowCount = pCode->boxRowCount;
 		const int boxColCount = pCode->boxColCount;
 		const int focusStartRow = pCode->focusStartRow;
-		
+
 		const int fontXSpacingHalf = (fontXSpacing / 2);
 		const int fontYSpacingHalf = (fontYSpacing / 2);
 
-		const int iHoverBoxCol = hoverBoxPos.x / fontXSpacing;
-		const int iHoverBoxRow = hoverBoxPos.y / fontYSpacing;
-		const int iHoverCol = iHoverBoxCol;
-		const int iHoverRow = focusStartRow + iHoverBoxRow;
-		const CodeRow hoverRow = pCode->pTextRows[iHoverRow];
-		const int iHoverChar = MIN(hoverRow.startIndex + iHoverBoxCol, hoverRow.endIndex);
-		const char hoverChar = pText[iHoverChar];
-		const TextMeta hoverMeta = pMeta[iHoverChar];
-		
+		const CodePos  mainCaret = pCode->pCarets[0];
+		const TextMeta caretMeta = pMeta[mainCaret.index];
+
 		int iChar = pCode->focusStartRowIndex;
 
 		Vector2 scanFoundPosition = { -1, -1}; // TODO compute deterministically
@@ -2793,9 +2772,9 @@ LoopBegin:
 		DrawRectangleRec(codeRect, COLOR_BACKGROUND);
 		// goto NextTextRow;
 		for (int iRow = 0; iRow < boxRowCount; ++iRow) {
-			Vector2 charPos = (Vector2){ leftMarginRect.x, leftMarginRect.y + (fontYSpacing * iRow) };			
+			Vector2 charPos = (Vector2){ leftMarginRect.x, leftMarginRect.y + (fontYSpacing * iRow) };
 			static char leftMarginText[LEFT_MARGIN_CAPACITY];
-			snprintf(leftMarginText, LEFT_MARGIN_CAPACITY, "%5d", iRow + focusStartRow), 
+			snprintf(leftMarginText, LEFT_MARGIN_CAPACITY, "%5d", iRow + focusStartRow),
 			DrawTextEx(rayde.font, leftMarginText, charPos, fontSize, 0, COLOR_BACKGROUND_BRIGHT);
 
 			char      currentChar = 0;
@@ -2804,17 +2783,17 @@ LoopBegin:
 			for (int iCol = 0; iCol < boxColCount; ++iCol) {
 				currentChar = pText[iChar];
 				currentMeta = pMeta[iChar];
-				charPos = (Vector2){ codeRect.x + (fontXSpacing * iCol), codeRect.y + (fontYSpacing * iRow) };		
-				
+				charPos = (Vector2){ codeRect.x + (fontXSpacing * iCol), codeRect.y + (fontYSpacing * iRow) };
+
 				char displayChar = currentChar;
-				switch (currentChar) 
+				switch (currentChar)
 				{
 					case '\0': goto DrawTextEnd;
 
 					/* Whitespace Symbols */
 					case ' ':
 					case '\t': {
-						DrawTriangle((Vector2){charPos.x, charPos.y + fontYSpacingHalf}, (Vector2){charPos.x, charPos.y + fontYSpacingHalf + 1}, (Vector2){charPos.x + fontXSpacing, charPos.y + fontYSpacingHalf + 1}, TOK_KIND_COLOR[TOK_KIND_WHITESPACE]);
+						DrawTriangle((Vector2){charPos.x, charPos.y + fontYSpacingHalf}, (Vector2){charPos.x, charPos.y + fontYSpacingHalf + 1}, (Vector2){charPos.x + fontXSpacing, charPos.y + fontYSpacingHalf + 1}, TOK_KIND_COLOR[currentMeta.tok.kind]);
 						iChar++;
 						goto DrawTextNextChar;
 					}
@@ -2822,10 +2801,10 @@ LoopBegin:
 					case '\v':
 					case '\f':
 					case '\n': {
-						DrawTriangle((Vector2){charPos.x+2, charPos.y + fontYSpacingHalf}, (Vector2){charPos.x+2, charPos.y + fontYSpacing}, (Vector2){charPos.x + fontXSpacing, charPos.y + fontYSpacingHalf}, TOK_KIND_COLOR[TOK_KIND_WHITESPACE]);
+						DrawTriangle((Vector2){charPos.x+2, charPos.y + fontYSpacingHalf}, (Vector2){charPos.x+2, charPos.y + fontYSpacing}, (Vector2){charPos.x + fontXSpacing, charPos.y + fontYSpacingHalf}, TOK_KIND_COLOR[currentMeta.tok.kind]);
 						iChar++;
 						goto DrawTextNextRow;
-					}					
+					}
 					/* Scope Rainbow Highlight */
 					case '[':
 					case ']': {
@@ -2844,8 +2823,8 @@ LoopBegin:
 					}
 					/* Highlight Sibling Tokens */
 					default: {
-						if (hoverMeta.tok.val == currentMeta.tok.val  && currentMeta.tokOffset.iStart == 0 && 
-							hoverMeta.tok.kind != TOK_KIND_IDENTIFIER && hoverMeta.tok.kind != TOK_KIND_NUMBER) {
+						if (caretMeta.tok.val == currentMeta.tok.val  && currentMeta.tokOffset.iStart == 0 &&
+							caretMeta.tok.kind != TOK_KIND_IDENTIFIER && caretMeta.tok.kind != TOK_KIND_NUMBER) {
 							CodeRow currentRow = pRows[iRow + focusStartRow];
 							int iEndCol = iCol + currentMeta.tokOffset.iEnd;
 							Vector2 startBoxPos = (Vector2){ (iCol        * fontXSpacing), (iRow * fontYSpacing) };
@@ -2866,40 +2845,57 @@ LoopBegin:
 					}
 				}
 
-			DrawTextNextChar:	
+			DrawTextNextChar:
 			} // iCol
 
 		DrawTextNextRow:
 			// If we are wrapping not on a newline, skip index to next new line so text doesn't wrap
 			if (currentChar != '\n') iChar = TextFindCharForward(pText, iChar, '\n') + 1;
 
-		} // iRow   
+		} // iRow
 
 	DrawTextEnd:
 
-		/* Hover */
-		#define DIAGNOSTIC_TEXT_CAPACITY 256
-		static char tokenDiagnosticText[DIAGNOSTIC_TEXT_CAPACITY];
-		if (boxHovering) {
-			Vector2 hoverSnapBoxPos = (Vector2){ (iHoverBoxCol * fontXSpacing), (iHoverBoxRow * fontYSpacing) };
-			Vector2 hoverSnapPos    = GetBoxLocalToWorld(hoverSnapBoxPos, codeRect);
-			DrawRectangleRec((Rectangle){hoverSnapPos.x, hoverSnapPos.y, fontXSpacing, fontYSpacing}, COLOR_HOVER);
+		/* Margins */
+		{
+			DrawRectangleRec(rightMarginRect,   COLOR_BACKGROUND_DIM);
+			DrawRectangleRec(statusMarginRect,  COLOR_BACKGROUND_BRIGHT);
+			DrawRectangleRec(commandMarginRect, COLOR_BACKGROUND_DIM);
+		}
 
-			int iLScopeRow = iHoverRow;
-			int iRScopeRow = iHoverRow;
-			int iLScope = iHoverChar;
-			int iRScope = iHoverChar;
+		bool markPress = false;
+		CodePos mark = pCode->mark;
 
-			switch (hoverChar) 
-			{		
+		if (boxHovering && input.mouseMarkActive) {
+			int iHoverBoxCol = hoverBoxPos.x / fontXSpacing;
+			int iHoverBoxRow = hoverBoxPos.y / fontYSpacing;
+			mark.col = iHoverBoxCol;
+			mark.row = focusStartRow + iHoverBoxRow;
+			CodeRow markRow = pRows[mark.row];
+			mark.index = MIN(markRow.startIndex + iHoverBoxCol, markRow.endIndex);
+			markPress = input.lMouse;
+		}
+
+		/* Mark Sibling Highlight */
+		{
+			char markChar = pText[mark.index];
+			TextMeta markMeta = pMeta[mark.index];
+
+			int iLScopeRow = mark.row;
+			int iRScopeRow = mark.row;
+			int iLScope = mark.index;
+			int iRScope = mark.index;
+
+			switch (markChar)
+			{
 			#define SCOPE_HIGHLIGHT_CASE(_forwardC, _backwardC, _level)\
 				case _forwardC: {\
-					while (pMeta[iRScope+1]._level != hoverMeta._level - 1 && iRScope++ < count)\
+					while (pMeta[iRScope+1]._level != markMeta._level - 1 && iRScope++ < count)\
 						if (pText[iRScope] == '\n') iRScopeRow++;\
 					goto DrawHighlight;\
 				}\
 				case _backwardC: {\
-					while (pMeta[iLScope-1]._level != hoverMeta._level - 1 && iLScope-- >= 0)\
+					while (pMeta[iLScope-1]._level != markMeta._level - 1 && iLScope-- >= 0)\
 						if (pText[iLScope] == '\n') iLScopeRow--;\
 					goto DrawHighlight;\
 				}
@@ -2907,18 +2903,18 @@ LoopBegin:
 				SCOPE_HIGHLIGHT_CASE('{', '}', braceLevel)
 				SCOPE_HIGHLIGHT_CASE('(', ')', parenLevel)
 				SCOPE_HIGHLIGHT_CASE('[', ']', bracketLevel)
-				
+
 			#undef SCOPE_HIGHLIGHT_CASE
 
 				default: {
-					iLScope = iHoverChar - hoverMeta.tokOffset.iStart;
-					iRScope = iHoverChar + hoverMeta.tokOffset.iEnd;
+					iLScope = mark.index - markMeta.tokOffset.iStart;
+					iRScope = mark.index + markMeta.tokOffset.iEnd;
 					// fallthrough
 				}
 				DrawHighlight: {
 					int iStartChar = iLScope;
-					for (int iHighlightRow = iLScopeRow, iHighlightBoxRow = iHighlightRow - focusStartRow; 
-							iHighlightRow <= iRScopeRow && iHighlightBoxRow <= boxRowCount; 
+					for (int iHighlightRow = iLScopeRow, iHighlightBoxRow = iHighlightRow - focusStartRow;
+							iHighlightRow <= iRScopeRow && iHighlightBoxRow <= boxRowCount;
 							++iHighlightRow, iHighlightBoxRow = iHighlightRow - focusStartRow) {
 						CodeRow highlightRow = pRows[iHighlightRow];
 						int iStartCol = iStartChar - highlightRow.startIndex;
@@ -2933,71 +2929,66 @@ LoopBegin:
 					break;
 				}
 			}
-
-			if (input.lMouse) {
-				pCode->mark.col = iHoverCol;
-				pCode->mark.row = iHoverRow;
-				CodeSyncCaretToMarkRow(pCode, 0);
-
-				char c     = pCode->pText[pCode->pCarets[0].index];
-				TextMeta m = pCode->pTextMeta[pCode->pCarets[0].index];
-				snprintf(tokenDiagnosticText, DIAGNOSTIC_TEXT_CAPACITY, "%s %s start: %d end: %d brace: %d bracket: %d paren: %d lscope: %d rscope: %d\n", 
-					string_TOK(m.tok.val), string_TOK_KIND(m.tok.kind), m.tokOffset.iStart, m.tokOffset.iEnd, m.braceLevel, m.bracketLevel, m.parenLevel, iLScope, iRScope);
-			}
 		}
 
-		/* Mark */
+		if (markPress) {
+			pCode->mark.index = mark.index;
+			pCode->mark.col = mark.col;
+			pCode->mark.row = mark.row;
+			CodeSyncCaretToMarkRow(pCode, 0);
+		}
+
+		/* Draw Mark */
+		#define CARET_VERTICAL_EXTEND 2
 		{
-			Vector2 markBoxPos = (Vector2){ (pCode->mark.col * fontXSpacing), ((pCode->mark.row - pCode->focusStartRow) * fontYSpacing) };
+			Vector2 markBoxPos = (Vector2){ (mark.col * fontXSpacing), ((mark.row - focusStartRow) * fontYSpacing) };
 			Vector2 markPos    = GetBoxLocalToWorld(markBoxPos, codeRect);
 			DrawLineEx(
-				(Vector2){markPos.x, markPos.y}, 
-				(Vector2){markPos.x, markPos.y + fontYSpacing}, 
-				2, GREEN);
+				(Vector2){markPos.x, markPos.y + CARET_VERTICAL_EXTEND},
+				(Vector2){markPos.x, markPos.y + fontYSpacing - CARET_VERTICAL_EXTEND},
+				1, COLOR_CARET_DIM);
 		}
 
 		/* Caret */
 		Vector2 caretBoxPos = (Vector2){ (pCode->pCarets[0].col * fontXSpacing), ((pCode->pCarets[0].row - pCode->focusStartRow) * fontYSpacing) };
 		Vector2 caretPos    = GetBoxLocalToWorld(caretBoxPos, codeRect);
 		{
-			#define CARET_VERTICAL_EXTEND 2
 			DrawLineEx(
-				(Vector2){caretPos.x, caretPos.y - CARET_VERTICAL_EXTEND}, 
-				(Vector2){caretPos.x, caretPos.y + fontYSpacing + CARET_VERTICAL_EXTEND}, 
+				(Vector2){caretPos.x, caretPos.y - CARET_VERTICAL_EXTEND},
+				(Vector2){caretPos.x, caretPos.y + fontYSpacing + CARET_VERTICAL_EXTEND},
 				2, COLOR_CARET);
 		}
 
-		/* Margin */
-		{
-			DrawRectangleRec(rightMarginRect,   COLOR_BACKGROUND_DIM);
-			DrawRectangleRec(statusMarginRect,  COLOR_BACKGROUND_BRIGHT);
-			DrawRectangleRec(commandMarginRect, COLOR_BACKGROUND_DIM);
+		#define DIAGNOSTIC_TEXT_CAPACITY 256
+		static char tokenDiagnosticText[DIAGNOSTIC_TEXT_CAPACITY];
+		char c     = pCode->pText[pCode->pCarets[0].index];
+		TextMeta m = pCode->pTextMeta[pCode->pCarets[0].index];
+		snprintf(tokenDiagnosticText, DIAGNOSTIC_TEXT_CAPACITY, "%s %s start: %d end: %d brace: %d bracket: %d paren: %d\n",
+		string_TOK(m.tok.val), string_TOK_KIND(m.tok.kind), m.tokOffset.iStart, m.tokOffset.iEnd, m.braceLevel, m.bracketLevel, m.parenLevel);
 
+		/* Status Line  */
+		{
 			#define STATUS_TEXT_CAPACITY 1024
 			static char statusText[STATUS_TEXT_CAPACITY];
-			snprintf(statusText, STATUS_TEXT_CAPACITY, "mark col:%-4i row:%-4i index:%-4i hoverPos x:%-6.1f y:%-6.1f c:%-4i r:%-4i token: %s", 
-					pCode->mark.col, pCode->mark.row, pCode->pCarets[0].index, hoverBoxPos.x, hoverBoxPos.y, iHoverBoxCol, iHoverBoxRow, tokenDiagnosticText), 
+			snprintf(statusText, STATUS_TEXT_CAPACITY, "mark col:%-4i row:%-4i index:%-4i token: %s",
+					pCode->mark.col, pCode->mark.row, pCode->pCarets[0].index, tokenDiagnosticText),
 			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, HIGHLIGHT_COMMENT);
 
 			if (boxHovering)
 				DrawRectangleLines((int)codeRect.x, (int)codeRect.y, (int)codeRect.width, (int)codeRect.height, COLOR_BACKGROUND_BRIGHT);
 		}
 
-		/*
-		 * Command
-		 */
-
 		/* Scan Highlight */
 		if (command.enabled && command.scanFoundIndex > 0) {
 			DrawRectangleRec((Rectangle){
-					.x = scanFoundPosition.x, 
-					.y = scanFoundPosition.y, 
-					.width = fontXSpacing * command.bufferCount, 
-					.height = fontYSpacing}, 
+					.x = scanFoundPosition.x,
+					.y = scanFoundPosition.y,
+					.width = fontXSpacing * command.bufferCount,
+					.height = fontYSpacing},
 				FIND_HIGHLIGHT_COLOR);
 			DrawLineEx(
-				(Vector2){scanFoundPosition.x, scanFoundPosition.y}, 
-				(Vector2){scanFoundPosition.x, scanFoundPosition.y + fontYSpacing}, 
+				(Vector2){scanFoundPosition.x, scanFoundPosition.y},
+				(Vector2){scanFoundPosition.x, scanFoundPosition.y + fontYSpacing},
 				4, FIND_CARET_COLOR);
 		}
 
@@ -3007,7 +2998,7 @@ LoopBegin:
 			Rectangle commandBoxRect = {
 				.x = caretPos.x - commandBoxExpand,
 				.y = caretPos.y - commandBoxExpand,
-				.width = fontXSpacing * command.bufferCount + commandBoxExpand * 2, 
+				.width = fontXSpacing * command.bufferCount + commandBoxExpand * 2,
 				.height = fontYSpacing + commandBoxExpand * 2,
 			};
 
@@ -3018,14 +3009,14 @@ LoopBegin:
 				char c = command.buffer[iCommand];
 				int codePointSize;
 				int codePoint = GetCodepoint(&c, &codePointSize);
-				Vector2 charPos = { caretPos.x + (fontXSpacing * iCommand), caretPos.y };								
+				Vector2 charPos = { caretPos.x + (fontXSpacing * iCommand), caretPos.y };
 				DrawTextCodepoint(rayde.font, codePoint, charPos, fontSize, WHITE);
 			}
 		}
 	}
 	EndDrawing();
 
-	if(!WindowShouldClose()) 
+	if(!WindowShouldClose())
 		goto LoopBegin;
 
 	/*
@@ -3035,6 +3026,3 @@ LoopBegin:
 
 	return 0;
 }
-
-
-
