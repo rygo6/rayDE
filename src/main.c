@@ -1881,7 +1881,6 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* End Tokens */
 	TOK_ALL: {
-		// LOG("TOK_ALL %d %c\n", step.iT, step.cT);
 		step.meta.tok = (TokMeta){ step.nd.terminator.tok, step.nd.terminator.kind };
 	}
 	TOK_MUNCH: {
@@ -1897,7 +1896,6 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* Continue Tokens */
 	TOK_DELIMIT: {
-		// LOG("TOK_DELIMIT %d %c\n", step.iT, step.cT);
 		disp = basedisp;
 		bool delim = IS_DELIM_CHAR(step.cT);
 		step.iN += delim ? step.nd.packed.succ : step.nd.packed.fail;
@@ -2786,7 +2784,7 @@ LoopBegin:
 				charPos = (Vector2){ codeRect.x + (fontXSpacing * iCol), codeRect.y + (fontYSpacing * iRow) };
 
 				char displayChar = currentChar;
-				switch (currentChar)
+				switch (currentMeta.tok.val)
 				{
 					case '\0': goto DrawTextEnd;
 
@@ -2878,7 +2876,6 @@ LoopBegin:
 
 		/* Mark Sibling Highlight */
 		{
-			char markChar = pText[mark.index];
 			TextMeta markMeta = pMeta[mark.index];
 
 			int iLScopeRow = mark.row;
@@ -2886,7 +2883,7 @@ LoopBegin:
 			int iLScope = mark.index;
 			int iRScope = mark.index;
 
-			switch (markChar)
+			switch (markMeta.tok.val)
 			{
 			#define SCOPE_HIGHLIGHT_CASE(_forwardC, _backwardC, _level)\
 				case _forwardC: {\
