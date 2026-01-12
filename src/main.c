@@ -1595,7 +1595,6 @@ typedef struct CodeBox {
 
 	int boxRowCount;
 	int boxColCount;
-	CodeRow* pBoxRows;
 
 	int textRowCount;
 	int textCount;
@@ -2137,6 +2136,11 @@ static void CodeSetMarkIndex(CodeBox* pCode, int newMarkIndex)
 	assert(pCode->mark.col   >= 0);
 }
 
+static void CodeSyncMarkToCaret(CodeBox* pCode, u8 iCaret)
+{
+	memcpy(&pCode->mark, pCode->pCarets + iCaret, sizeof(CodePos));
+}
+
 /* Sync Current Mark To Specified Caret  */
 static void CodeSyncCaretToMark(CodeBox* pCode, u8 iCaret)
 {
@@ -2157,33 +2161,108 @@ static void CodeSyncCaretToMarkRow(CodeBox* pCode, u8 iCaret)
 	pCode->mark.index = newIndex;
 }
 
-static void CodeBoxInsertCharAtIndex(CodeBox* pCode, int index, char c)
+static void CodeBoxInsertNewlineAtCaret(CodeBox* pCode, CodePos caret)
 {
-	memmove(pCode->pText + index + 1, pCode->pText + index, pCode->textCount - index - 1);
+	memmove(pCode->pText + caret.index + 1,   pCode->pText + caret.index,   (pCode->textCount - caret.index - 1)  * sizeof(char));
+	memmove(pCode->pTextRows + caret.row + 1, pCode->pTextRows + caret.row, (pCode->textRowCount - caret.row - 1) * sizeof(CodeRow));
 	pCode->dirty = true;
-	pCode->pText[index] = c;
+	pCode->pText[caret.index] = '\n';
 	pCode->textCount++;
-	pCode->pCarets[0].index++;
-	pCode->pCarets[0].col++;
-	pCode->textRowCount += c == '\n';
+	pCode->textRowCount++;
+
+	// TODO should I really keep this updated like this? Maybe simpler and not expensive to determine rowStart each time?
+	pCode->pTextRows[caret.row].endIndex = caret.index;
+	pCode->pTextRows[caret.row+1].startIndex = caret.index+1;
+	pCode->pTextRows[caret.row+1].endIndex++;
+	for (int i = caret.row+2; i < pCode->textRowCount; ++i) {
+		pCode->pTextRows[i].startIndex++;
+		pCode->pTextRows[i].endIndex++;
+	}
+
+	// TODO this needs to run incrementally
+	CodeBoxProcessMeta(pCode);
+}
+
+static inline void CodeBoxInsertNewLine(CodeBox* pCode)
+{
+	CodeBoxInsertNewlineAtCaret(pCode, pCode->pCarets[0]);
+	CodeSetMarkIndex(pCode, pCode->mark.index + 1);
+	CodeSyncCaretToMark(pCode, 0);
+}
+
+static void CodeBoxInsertCharAtCaret(CodeBox* pCode, CodePos caret, char c)
+{
+	memmove(pCode->pText + caret.index + 1, pCode->pText + caret.index, pCode->textCount - caret.index - 1);
+	pCode->dirty = true;
+	pCode->pText[caret.index] = c;
+	pCode->textCount++;
+
+	// TODO should I really keep this updated like this? Maybe simpler and not expensive to determine rowStart each time?
+	pCode->pTextRows[caret.row].endIndex++;
+	for (int i = caret.row + 1; i < pCode->textRowCount; ++i) {
+		pCode->pTextRows[i].startIndex++;
+		pCode->pTextRows[i].endIndex++;
+	}
+
+	// TODO this needs to run incrementally
+	CodeBoxProcessMeta(pCode);
 }
 
 static inline void CodeBoxInsertChar(CodeBox* pCode, char c)
 {
-	CodeBoxInsertCharAtIndex(pCode, pCode->pCarets[0].index, c);
+	CodeBoxInsertCharAtCaret(pCode, pCode->pCarets[0], c);
+	CodeSetMarkIndex(pCode, pCode->mark.index + 1);
+	CodeSyncCaretToMark(pCode, 0);
 }
 
-static void CodeBoxDeleteCharAtIndex(CodeBox* pCode, int index)
+static void CodeBoxDeleteNewlineAtCaret(CodeBox* pCode, CodePos caret)
 {
 	if (pCode->textCount == 0) return;
-	memmove(pCode->pText + index - 1, pCode->pText + index, pCode->textCount - index);
-	pCode->textRowCount -= pCode->pText[index - 1] == '\n';
+
+	// TODO should I really keep this updated like this? Maybe simpler and not expensive to determine rowStart each time?
+	pCode->pTextRows[caret.row-1].endIndex = pCode->pTextRows[caret.row].endIndex-1;
+	for (int i = caret.row; i < pCode->textRowCount; ++i) {
+		pCode->pTextRows[i].startIndex--;
+		pCode->pTextRows[i].endIndex--;
+	}
+
+	memmove(pCode->pText + caret.index-1, pCode->pText + caret.index, (pCode->textCount - caret.index)  * sizeof(char));
+	memmove(pCode->pTextRows + caret.row, pCode->pTextRows + caret.row+1, (pCode->textRowCount - caret.row) * sizeof(CodeRow));
+	pCode->dirty = true;
 	pCode->textCount--;
+	pCode->textRowCount--;
+
+	// TODO this needs to run incrementally
+	CodeBoxProcessMeta(pCode);
+}
+
+static void CodeBoxDeleteCharAtCaret(CodeBox* pCode, CodePos caret)
+{
+	if (pCode->textCount == 0) return;
+	if (caret.index == 0) return;
+	if (pCode->pText[caret.index - 1] == '\n') {
+		// TODO don't like this?
+		CodeBoxDeleteNewlineAtCaret(pCode, caret);
+		return;
+	}
+
+	memmove(pCode->pText + caret.index - 1, pCode->pText + caret.index, pCode->textCount - caret.index);
+	pCode->textCount--;
+
+	// TODO should I really keep this updated like this? Maybe simpler and not expensive to determine rowStart each time?
+	pCode->pTextRows[caret.row].endIndex--;
+	for (int i = caret.row + 1; i < pCode->textRowCount; ++i) {
+		pCode->pTextRows[i].startIndex--;
+		pCode->pTextRows[i].endIndex--;
+	}
+
+	// TODO this needs to run incrementally
+	CodeBoxProcessMeta(pCode);
 }
 
 static inline void CodeBoxDeleteChar(CodeBox* pCode)
 {
-	CodeBoxDeleteCharAtIndex(pCode, pCode->pCarets[0].index);
+	CodeBoxDeleteCharAtCaret(pCode, pCode->pCarets[0]);
 }
 
 static void CommandFinish(CodeBox* pCode, Command* pCommand)
@@ -2266,7 +2345,6 @@ int main(void)
 
 	#define CODEBOX_ROW_CAPACITY 1024
 	#define CODEBOX_CARET_CAPACITY 128
-	pCode->pBoxRows   = XCALLOC(CODEBOX_ROW_CAPACITY, CodeRow);
 	pCode->pCarets    = XCALLOC(CODEBOX_CARET_CAPACITY, CodePos);
 	pCode->caretCount = 1;
 	CodeBoxSetRect(pCode, (Rectangle){ 0, 0, rayde.windowSize.x, rayde.windowSize.y });
@@ -2641,7 +2719,10 @@ LoopBegin:
 					break;
 				}
 				/* Character Delete Keys */
-				case KEY_DELETE: CodeBoxDeleteChar(pCode); break;
+				case KEY_DELETE: {
+					CodeBoxDeleteChar(pCode); 
+					break;
+				}
 				case KEY_BACKSPACE: {
 					CodeBoxDeleteChar(pCode);
 					CodeSetMarkIndex(pCode, mark.index - 1);
@@ -2649,8 +2730,11 @@ LoopBegin:
 					break;
 				}
 				/* Character Insert Keys */
-				case KEY_ENTER: CodeBoxInsertChar(pCode, '\n'); break;
-				case KEY_SPACE: CodeBoxInsertChar(pCode, ' '); break;
+				case KEY_ENTER: {
+					CodeBoxInsertNewLine(pCode);
+					break;
+				}
+				case KEY_SPACE: CodeBoxInsertChar(pCode, ' ');  break;
 				case KEY_TAB:   CodeBoxInsertChar(pCode, '\t'); break;
 
 				case 'A' ... 'Z': CodeBoxInsertChar(pCode, 'a' + (currentKey - KEY_A)); break;
@@ -2956,19 +3040,16 @@ LoopBegin:
 				2, COLOR_CARET);
 		}
 
-		#define DIAGNOSTIC_TEXT_CAPACITY 256
-		static char tokenDiagnosticText[DIAGNOSTIC_TEXT_CAPACITY];
-		char c     = pCode->pText[pCode->pCarets[0].index];
-		TextMeta m = pCode->pTextMeta[pCode->pCarets[0].index];
-		snprintf(tokenDiagnosticText, DIAGNOSTIC_TEXT_CAPACITY, "%s %s start: %d end: %d brace: %d bracket: %d paren: %d\n",
-		string_TOK(m.tok.val), string_TOK_KIND(m.tok.kind), m.tokOffset.iStart, m.tokOffset.iEnd, m.braceLevel, m.bracketLevel, m.parenLevel);
-
 		/* Status Line  */
 		{
 			#define STATUS_TEXT_CAPACITY 1024
 			static char statusText[STATUS_TEXT_CAPACITY];
-			snprintf(statusText, STATUS_TEXT_CAPACITY, "mark col:%-4i row:%-4i index:%-4i token: %s",
-					pCode->mark.col, pCode->mark.row, pCode->pCarets[0].index, tokenDiagnosticText),
+			CodePos caret = pCode->pCarets[0];
+			char c = pCode->pText[caret.index];
+			TextMeta m = pCode->pTextMeta[caret.index];
+			CodeRow r = pCode->pTextRows[caret.row];
+			snprintf(statusText, STATUS_TEXT_CAPACITY, "caret0: index:%-4i icol:%-4i irow:%-4i lrow:%-4i rrow:%-4i token: %s %s start: %d end: %d brace: %d bracket: %d paren: %d\n",
+					caret.index, caret.col, caret.row, r.startIndex, r.endIndex, string_TOK(m.tok.val), string_TOK_KIND(m.tok.kind), m.tokOffset.iStart, m.tokOffset.iEnd, m.braceLevel, m.bracketLevel, m.parenLevel),
 			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, HIGHLIGHT_COMMENT);
 
 			if (boxHovering)
