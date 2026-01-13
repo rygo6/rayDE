@@ -475,120 +475,125 @@ DEF_ENUM(SCOPE);
  */
 #define DEFINE_SCHEME_BORING
 
-#define FIND_CARET_COLOR     (Color){   0, 255,   0, 255 }
-#define FIND_HIGHLIGHT_COLOR (Color){   0, 255,   0, 64  }
-#define COLOR_COMMAND_BOX    (Color){  20,  20,   2, 200 }
-#define COLOR_TEXT_BOX       (Color){  37,  37,  38, 255 }
-#define HIGHLIGHT_NONE       (Color){   0,   0,   0, 255 }
-
+#define FIND_CARET_COLOR  (Color){   0, 255,   0, 255 }
+#define FIND_COLOR_COLOR  (Color){   0, 255,   0, 64  }
+#define COLOR_COMMAND_BOX (Color){  20,  20,   2, 200 }
+#define COLOR_TEXT_BOX    (Color){  37,  37,  38, 255 }
+#define COLOR_NONE        (Color){   0,   0,   0, 255 }
+#define COLOR_CLEAR (Color){ 0, 0, 0, 0 }
 
 #define LERP(_a, _b, _t) (((_b - _a) * _t) + _a)
+#define COLOR_A(_color, _a) (Color){ _color.r, _color.g, _color.b, _a }
 
-#define DIM_RATIO    0.9f
-#define BRIGHT_RATIO 0.1f
+#define DIM_RATIO        0.9f
+#define BRIGHT_RATIO     0.1f
+#define ALPHA_HIGHLIGHT  48
 
 #ifdef DEFINE_SCHEME_BORING
 #define DEF_SCHEME(DEF)\
-	DEF(COLOR_CARET,          240, 180,  88, 255)  /* #f0b458 */\
-	DEF(COLOR_HOVER,          153, 199, 148,  48)  /* #99c794 */\
-	DEF(COLOR_BACKGROUND,      48,  56,  65, 255)  /* #303841 */\
-	DEF(HIGHLIGHT_IDENTIFIER, 216, 222, 233, 255)  /* #d8dee9 */\
-	DEF(HIGHLIGHT_ERROR,      232,  96,  96, 255)  /* #e86060 */\
-	DEF(HIGHLIGHT_PREPROCESS, 135, 132, 219, 255)  /* #8784db */\
-	DEF(HIGHLIGHT_CONTINUE,   148,  99, 148, 255)  /* #946394 */\
-	DEF(HIGHLIGHT_NUMBER,     249, 174,  87, 255)  /* #f9ae57 */\
-	DEF(HIGHLIGHT_STRING,     153, 199, 148, 255)  /* #99c794 */\
-	DEF(HIGHLIGHT_COMMENT,    166, 172, 185, 255)  /* #a6acb9 */\
-	DEF(HIGHLIGHT_OPERATOR,   200, 160, 140, 255)  /* #c8a08c */\
-	DEF(HIGHLIGHT_ESCAPE,     198, 149, 198, 255)  /* #c695c6 */\
-	DEF(HIGHLIGHT_QUOTE,       96, 180, 180, 255)  /* #60b4b4 */\
-	DEF(HIGHLIGHT_SCOPE,      184, 164, 132, 255)  /* #b8a484 */\
-	DEF(HIGHLIGHT_KEYWORD,    236,  96, 102, 255)  /* #ec6066 */\
-	DEF(HIGHLIGHT_TYPE,       198, 149, 198, 255)  /* #c695c6 */
+	DEF(COLOR_CARET,      240, 180,  88)  /* #f0b458 */\
+	DEF(COLOR_HOVER,      153, 199, 148)  /* #99c794 */\
+	DEF(COLOR_BACKGROUND,  48,  56,  65)  /* #303841 */\
+	DEF(COLOR_IDENTIFIER, 216, 222, 233)  /* #d8dee9 */\
+	DEF(COLOR_ERROR,      232,  96,  96)  /* #e86060 */\
+	DEF(COLOR_PREPROCESS, 135, 132, 219)  /* #8784db */\
+	DEF(COLOR_CONTINUE,   148,  99, 148)  /* #946394 */\
+	DEF(COLOR_NUMBER,     249, 174,  87)  /* #f9ae57 */\
+	DEF(COLOR_STRING,     153, 199, 148)  /* #99c794 */\
+	DEF(COLOR_COMMENT,    166, 172, 185)  /* #a6acb9 */\
+	DEF(COLOR_OPERATOR,   200, 160, 140)  /* #c8a08c */\
+	DEF(COLOR_ESCAPE,     198, 149, 198)  /* #c695c6 */\
+	DEF(COLOR_QUOTE,       96, 180, 180)  /* #60b4b4 */\
+	DEF(COLOR_SCOPE,      184, 164, 132)  /* #b8a484 */\
+	DEF(COLOR_KEYWORD,    236,  96, 102)  /* #ec6066 */\
+	DEF(COLOR_TYPE,       198, 149, 198)  /* #c695c6 */
 #endif
 
 #ifdef DEFINE_SCHEME_PERCEPTUA
 #define DEF_SCHEME(DEF)\
-	DEF(COLOR_CARET,          230, 180, 100, 255)  /* #e6b464 */\
-	DEF(COLOR_HOVER,          122, 162, 247,  48)  /* #7aa2f7 */\
-	DEF(COLOR_BACKGROUND,      26,  27,  38, 255)  /* #1a1b26 */\
-	DEF(HIGHLIGHT_IDENTIFIER, 176, 184, 220, 255)  /* #b0b8dc */\
-	DEF(HIGHLIGHT_ERROR,      247, 118, 142, 255)  /* #f7768e */\
-	DEF(HIGHLIGHT_PREPROCESS, 192, 202, 245, 255)  /* #c0caf5 */\
-	DEF(HIGHLIGHT_CONTINUE,   192, 160, 245, 255)  /* #c0a0f5 */\
-	DEF(HIGHLIGHT_NUMBER,     192, 160, 245, 255)  /* #c0a0f5 */\
-	DEF(HIGHLIGHT_STRING,     166, 212, 112, 255)  /* #a6d470 */\
-	DEF(HIGHLIGHT_COMMENT,     99, 109, 166, 255)  /* #636da6 */\
-	DEF(HIGHLIGHT_OPERATOR,   192, 180, 160, 255)  /* #c0b4a0 */\
-	DEF(HIGHLIGHT_ESCAPE,     255, 168, 100, 255)  /* #ffa864 */\
-	DEF(HIGHLIGHT_QUOTE,      137, 221, 255, 255)  /* #89ddff */\
-	DEF(HIGHLIGHT_SCOPE,      208, 184, 140, 255)  /* #d0b88c */\
-	DEF(HIGHLIGHT_KEYWORD,    132, 172, 250, 255)  /* #84acfa */\
-	DEF(HIGHLIGHT_TYPE,        60, 200, 220, 255)  /* #3cc8dc */
+	DEF(COLOR_CARET,      230, 180, 100)  /* #e6b464 */\
+	DEF(COLOR_HOVER,      122, 162, 247)  /* #7aa2f7 */\
+	DEF(COLOR_BACKGROUND,  26,  27,  38)  /* #1a1b26 */\
+	DEF(COLOR_IDENTIFIER, 176, 184, 220)  /* #b0b8dc */\
+	DEF(COLOR_ERROR,      247, 118, 142)  /* #f7768e */\
+	DEF(COLOR_PREPROCESS, 192, 202, 245)  /* #c0caf5 */\
+	DEF(COLOR_CONTINUE,   192, 160, 245)  /* #c0a0f5 */\
+	DEF(COLOR_NUMBER,     192, 160, 245)  /* #c0a0f5 */\
+	DEF(COLOR_STRING,     166, 212, 112)  /* #a6d470 */\
+	DEF(COLOR_COMMENT,     99, 109, 166)  /* #636da6 */\
+	DEF(COLOR_OPERATOR,   192, 180, 160)  /* #c0b4a0 */\
+	DEF(COLOR_ESCAPE,     255, 168, 100)  /* #ffa864 */\
+	DEF(COLOR_QUOTE,      137, 221, 255)  /* #89ddff */\
+	DEF(COLOR_SCOPE,      208, 184, 140)  /* #d0b88c */\
+	DEF(COLOR_KEYWORD,    132, 172, 250)  /* #84acfa */\
+	DEF(COLOR_TYPE,        60, 200, 220)  /* #3cc8dc */
 #endif
 
 #ifdef DEFINE_SCHEME_PERCEPTUA_SOLARIZED
 #define DEF_SCHEME(DEF)\
-	DEF(COLOR_CARET,          240, 208, 140, 255)  /* #f0d08c */\
-	DEF(COLOR_HOVER,          172, 200, 148,  48)  /* #acc894 */\
-	DEF(COLOR_BACKGROUND,      40,  44,  52, 255)  /* #282c34 */\
-	DEF(HIGHLIGHT_IDENTIFIER, 220, 226, 236, 255)  /* #dce2ec */\
-	DEF(HIGHLIGHT_ERROR,      200, 108, 108, 255)  /* #c86c6c */\
-	DEF(HIGHLIGHT_PREPROCESS, 188, 148, 180, 255)  /* #bc94b4 */\
-	DEF(HIGHLIGHT_NUMBER,     216, 144, 116, 255)  /* #d89074 */\
-	DEF(HIGHLIGHT_STRING,     172, 200, 148, 255)  /* #acc894 */\
-	DEF(HIGHLIGHT_COMMENT,    107, 112, 127, 255)  /* #6b707f */\
-	DEF(HIGHLIGHT_OPERATOR,   192, 176, 156, 255)  /* #c0b09c */\
-	DEF(HIGHLIGHT_ESCAPE,     240, 208, 140, 255)  /* #f0d08c */\
-	DEF(HIGHLIGHT_SCOPE,      176, 192, 168, 255)  /* #b0c0a8 */\
-	DEF(HIGHLIGHT_KEYWORD,    240, 208, 140, 255)  /* #f0d08c */\
-	DEF(HIGHLIGHT_TYPE,       152, 196, 196, 255)  /* #98c4c4 */
+	DEF(COLOR_CARET,      240, 208, 140)  /* #f0d08c */\
+	DEF(COLOR_HOVER,      172, 200, 148)  /* #acc894 */\
+	DEF(COLOR_BACKGROUND,  40,  44,  52)  /* #282c34 */\
+	DEF(COLOR_IDENTIFIER, 220, 226, 236)  /* #dce2ec */\
+	DEF(COLOR_ERROR,      200, 108, 108)  /* #c86c6c */\
+	DEF(COLOR_PREPROCESS, 188, 148, 180)  /* #bc94b4 */\
+	DEF(COLOR_NUMBER,     216, 144, 116)  /* #d89074 */\
+	DEF(COLOR_STRING,     172, 200, 148)  /* #acc894 */\
+	DEF(COLOR_COMMENT,    107, 112, 127)  /* #6b707f */\
+	DEF(COLOR_OPERATOR,   192, 176, 156)  /* #c0b09c */\
+	DEF(COLOR_ESCAPE,     240, 208, 140)  /* #f0d08c */\
+	DEF(COLOR_SCOPE,      176, 192, 168)  /* #b0c0a8 */\
+	DEF(COLOR_KEYWORD,    240, 208, 140)  /* #f0d08c */\
+	DEF(COLOR_TYPE,       152, 196, 196)  /* #98c4c4 */
 #endif
 
 #ifdef DEFINE_SCHEME_PATINA
 #define DEF_SCHEME(DEF)\
-	DEF(COLOR_CARET,          224, 172,  84, 255)  /* #e0ac54 */\
-	DEF(COLOR_HOVER,          172, 196, 124,  48)  /* #acc47c */\
-	DEF(COLOR_BACKGROUND,      26,  24,  21, 255)  /* #1a1815 */\
-	DEF(HIGHLIGHT_IDENTIFIER, 220, 208, 188, 255)  /* #dcd0bc */\
-	DEF(HIGHLIGHT_ERROR,      200, 120, 100, 255)  /* #c87864 */\
-	DEF(HIGHLIGHT_PREPROCESS, 208, 168, 132, 255)  /* #d0a884 */\
-	DEF(HIGHLIGHT_NUMBER,     212, 188,  96, 255)  /* #d4bc60 */\
-	DEF(HIGHLIGHT_STRING,     172, 196, 124, 255)  /* #acc47c */\
-	DEF(HIGHLIGHT_COMMENT,    116, 106,  92, 255)  /* #746a5c */\
-	DEF(HIGHLIGHT_OPERATOR,   188, 168, 136, 255)  /* #bca888 */\
-	DEF(HIGHLIGHT_ESCAPE,     232, 200, 100, 255)  /* #e8c864 */\
-	DEF(HIGHLIGHT_QUOTE,      172, 196, 124, 255)  /* #acc47c */\
-	DEF(HIGHLIGHT_SCOPE,      176, 176, 140, 255)  /* #b0b08c */\
-	DEF(HIGHLIGHT_KEYWORD,    224, 172,  84, 255)  /* #e0ac54 */\
-	DEF(HIGHLIGHT_TYPE,       152, 196, 148, 255)  /* #98c494 */
+	DEF(COLOR_CARET,      224, 172,  84)  /* #e0ac54 */\
+	DEF(COLOR_HOVER,      172, 196, 124)  /* #acc47c */\
+	DEF(COLOR_BACKGROUND,  26,  24,  21)  /* #1a1815 */\
+	DEF(COLOR_IDENTIFIER, 220, 208, 188)  /* #dcd0bc */\
+	DEF(COLOR_ERROR,      200, 120, 100)  /* #c87864 */\
+	DEF(COLOR_PREPROCESS, 208, 168, 132)  /* #d0a884 */\
+	DEF(COLOR_NUMBER,     212, 188,  96)  /* #d4bc60 */\
+	DEF(COLOR_STRING,     172, 196, 124)  /* #acc47c */\
+	DEF(COLOR_COMMENT,    116, 106,  92)  /* #746a5c */\
+	DEF(COLOR_OPERATOR,   188, 168, 136)  /* #bca888 */\
+	DEF(COLOR_ESCAPE,     232, 200, 100)  /* #e8c864 */\
+	DEF(COLOR_QUOTE,      172, 196, 124)  /* #acc47c */\
+	DEF(COLOR_SCOPE,      176, 176, 140)  /* #b0b08c */\
+	DEF(COLOR_KEYWORD,    224, 172,  84)  /* #e0ac54 */\
+	DEF(COLOR_TYPE,       152, 196, 148)  /* #98c494 */
 #endif
 
 #ifdef DEFINE_SCHEME_GLADE
 #define DEF_SCHEME(DEF)\
-	DEF(COLOR_CARET,          248, 200,  80, 255)  /* #f8c850 */\
-	DEF(COLOR_HOVER,          148, 208, 108,  48)  /* #94d06c */\
-	DEF(COLOR_BACKGROUND,      38,  40,  42, 255)  /* #26282a */\
-	DEF(HIGHLIGHT_IDENTIFIER, 236, 238, 232, 255)  /* #eceee8 */\
-	DEF(HIGHLIGHT_ERROR,      224, 104, 104, 255)  /* #e06868 */\
-	DEF(HIGHLIGHT_PREPROCESS, 208, 168, 124, 255)  /* #d0a87c */\
-	DEF(HIGHLIGHT_NUMBER,     248, 200,  80, 255)  /* #f8c850 */\
-	DEF(HIGHLIGHT_STRING,     148, 208, 108, 255)  /* #94d06c */\
-	DEF(HIGHLIGHT_COMMENT,    128, 132, 136, 255)  /* #808488 */\
-	DEF(HIGHLIGHT_OPERATOR,   176, 180, 160, 255)  /* #b0b4a0 */\
-	DEF(HIGHLIGHT_ESCAPE,     248, 200,  80, 255)  /* #f8c850 */\
-	DEF(HIGHLIGHT_QUOTE,      148, 208, 108, 255)  /* #94d06c */\
-	DEF(HIGHLIGHT_SCOPE,      188, 176, 136, 255)  /* #bcb088 */\
-	DEF(HIGHLIGHT_KEYWORD,    104, 188, 208, 255)  /* #68bcd0 */\
-	DEF(HIGHLIGHT_TYPE,       112, 200, 168, 255)  /* #70c8a8 */
+	DEF(COLOR_CARET,      248, 200,  80)  /* #f8c850 */\
+	DEF(COLOR_HOVER,      148, 208, 108)  /* #94d06c */\
+	DEF(COLOR_BACKGROUND,  38,  40,  42)  /* #26282a */\
+	DEF(COLOR_IDENTIFIER, 236, 238, 232)  /* #eceee8 */\
+	DEF(COLOR_ERROR,      224, 104, 104)  /* #e06868 */\
+	DEF(COLOR_PREPROCESS, 208, 168, 124)  /* #d0a87c */\
+	DEF(COLOR_NUMBER,     248, 200,  80)  /* #f8c850 */\
+	DEF(COLOR_STRING,     148, 208, 108)  /* #94d06c */\
+	DEF(COLOR_COMMENT,    128, 132, 136)  /* #808488 */\
+	DEF(COLOR_OPERATOR,   176, 180, 160)  /* #b0b4a0 */\
+	DEF(COLOR_ESCAPE,     248, 200,  80)  /* #f8c850 */\
+	DEF(COLOR_QUOTE,      148, 208, 108)  /* #94d06c */\
+	DEF(COLOR_SCOPE,      188, 176, 136)  /* #bcb088 */\
+	DEF(COLOR_KEYWORD,    104, 188, 208)  /* #68bcd0 */\
+	DEF(COLOR_TYPE,       112, 200, 168)  /* #70c8a8 */
 #endif
 
-#define DEF_COLOR(_name, _r, _g, _b, _a)\
-	static const Color _name##_BRIGHT = { LERP(_r, 255, BRIGHT_RATIO), LERP(_g, 255, BRIGHT_RATIO), LERP(_b, 255, BRIGHT_RATIO), _a };\
-	static const Color _name##_DIM    = { LERP( 0, _r,     DIM_RATIO), LERP( 0,  _g,    DIM_RATIO), LERP( 0,  _b,    DIM_RATIO), _a };\
-    static const Color _name          = { _r, _g, _b, _a };
+#define DEF_COLOR(_name, _r, _g, _b)\
+	static const Color _name##_HIGHLIGHT = { LERP( 0, _r,     DIM_RATIO), LERP( 0,  _g,    DIM_RATIO), LERP( 0,  _b,    DIM_RATIO), ALPHA_HIGHLIGHT };\
+	static const Color _name##_BRIGHT    = { LERP(_r, 255, BRIGHT_RATIO), LERP(_g, 255, BRIGHT_RATIO), LERP(_b, 255, BRIGHT_RATIO), 255 };\
+	static const Color _name##_DIM       = { LERP( 0, _r,     DIM_RATIO), LERP( 0,  _g,    DIM_RATIO), LERP( 0,  _b,    DIM_RATIO), 255 };\
+    static const Color _name             = { _r, _g, _b, 255 };
 
 DEF_SCHEME(DEF_COLOR)
+
+#undef DEF_COLOR
 
 /*
  * Lex Token Constants
@@ -633,7 +638,7 @@ DEF_SCHEME(DEF_COLOR)
 #define IS_DELIM_TOKEN(_c)   (_c == TOK_DELIMIT)
 #define IS_SPECIAL_TOKEN(_c) (_c <= TOK_FRIE_SECIAL_END)
 #define IS_KEYWORD_TOKEN(_c) (_c >= TOK_KEYWORD_BEGIN)
-#define IS_TOKEN(_c)         (((i8)_c) <= TOK_SPECIAL_END)
+#define IS_KEYWORD_OR_SPECIAL_TOKEN(_c) (((i8)_c) <= TOK_SPECIAL_END)
 
 static const bool IDENT_CHAR[128] = {
 	['a'...'z'] = 1,
@@ -676,34 +681,58 @@ static const bool IDENT_CHAR[128] = {
 DEF_ENUM(TOK_KIND);
 
 static const Color TOK_KIND_COLOR[] = {
-	[TOK_KIND_NONE]        = HIGHLIGHT_NONE,
-	[TOK_KIND_ERROR]       = HIGHLIGHT_ERROR,
-	[TOK_KIND_ALPHA]       = HIGHLIGHT_ERROR,
-	[TOK_KIND_DIGIT]       = HIGHLIGHT_ERROR,
-	[TOK_KIND_TYPE]        = HIGHLIGHT_TYPE,
-	[TOK_KIND_NUMBER]      = HIGHLIGHT_NUMBER,
-	[TOK_KIND_IDENTIFIER]  = HIGHLIGHT_IDENTIFIER,
-	[TOK_KIND_KEYWORD]     = HIGHLIGHT_KEYWORD,
+	[TOK_KIND_NONE]        = COLOR_NONE,
+	[TOK_KIND_ERROR]       = COLOR_ERROR,
+	[TOK_KIND_ALPHA]       = COLOR_ERROR,
+	[TOK_KIND_DIGIT]       = COLOR_ERROR,
+	[TOK_KIND_TYPE]        = COLOR_TYPE,
+	[TOK_KIND_NUMBER]      = COLOR_NUMBER,
+	[TOK_KIND_IDENTIFIER]  = COLOR_IDENTIFIER,
+	[TOK_KIND_KEYWORD]     = COLOR_KEYWORD,
 	[TOK_KIND_WHITESPACE]  = COLOR_BACKGROUND_BRIGHT,
-	[TOK_KIND_STATEMENT]   = HIGHLIGHT_OPERATOR,
-	[TOK_KIND_ASSIGN]      = HIGHLIGHT_OPERATOR,
-	[TOK_KIND_OPERATOR]    = HIGHLIGHT_OPERATOR,
-	[TOK_KIND_PP]          = HIGHLIGHT_PREPROCESS,
-	[TOK_KIND_SCOPE]       = HIGHLIGHT_SCOPE,
-	[TOK_KIND_SCOPE_FADE]  = HIGHLIGHT_TYPE_DIM,
-	[TOK_KIND_QUOTE]       = HIGHLIGHT_QUOTE,
-	[TOK_KIND_STRING]      = HIGHLIGHT_STRING,
-	[TOK_KIND_ESCAPE]      = HIGHLIGHT_ESCAPE,
-	[TOK_KIND_COMMENT]     = HIGHLIGHT_COMMENT,
+	[TOK_KIND_STATEMENT]   = COLOR_OPERATOR,
+	[TOK_KIND_ASSIGN]      = COLOR_OPERATOR,
+	[TOK_KIND_OPERATOR]    = COLOR_OPERATOR,
+	[TOK_KIND_PP]          = COLOR_PREPROCESS,
+	[TOK_KIND_SCOPE]       = COLOR_SCOPE,
+	[TOK_KIND_SCOPE_FADE]  = COLOR_TYPE_DIM,
+	[TOK_KIND_QUOTE]       = COLOR_QUOTE,
+	[TOK_KIND_STRING]      = COLOR_STRING,
+	[TOK_KIND_ESCAPE]      = COLOR_ESCAPE,
+	[TOK_KIND_COMMENT]     = COLOR_COMMENT,
 };
 STATIC_ASSERT(NARRAY(TOK_KIND_COLOR) == TOK_KIND_COUNT);
 
+static const Color TOK_KIND_HIGHLIGHT_COLOR[] = {
+	[TOK_KIND_NONE]        = COLOR_NONE,
+	[TOK_KIND_ERROR]       = COLOR_ERROR_HIGHLIGHT,
+	[TOK_KIND_ALPHA]       = COLOR_ERROR_HIGHLIGHT,
+	[TOK_KIND_DIGIT]       = COLOR_ERROR_HIGHLIGHT,
+	[TOK_KIND_TYPE]        = COLOR_TYPE_HIGHLIGHT,
+	[TOK_KIND_NUMBER]      = COLOR_NUMBER_HIGHLIGHT,
+	[TOK_KIND_IDENTIFIER]  = COLOR_IDENTIFIER_HIGHLIGHT,
+	[TOK_KIND_KEYWORD]     = COLOR_KEYWORD_HIGHLIGHT,
+	[TOK_KIND_WHITESPACE]  = COLOR_BACKGROUND_HIGHLIGHT,
+	[TOK_KIND_STATEMENT]   = COLOR_OPERATOR_HIGHLIGHT,
+	[TOK_KIND_ASSIGN]      = COLOR_OPERATOR_HIGHLIGHT,
+	[TOK_KIND_OPERATOR]    = COLOR_OPERATOR_HIGHLIGHT,
+	[TOK_KIND_PP]          = COLOR_PREPROCESS_HIGHLIGHT,
+	[TOK_KIND_SCOPE]       = COLOR_SCOPE_HIGHLIGHT,
+	[TOK_KIND_SCOPE_FADE]  = COLOR_TYPE_HIGHLIGHT,
+	[TOK_KIND_QUOTE]       = COLOR_QUOTE_HIGHLIGHT,
+	[TOK_KIND_STRING]      = COLOR_CLEAR,
+	[TOK_KIND_ESCAPE]      = COLOR_ESCAPE_HIGHLIGHT,
+	[TOK_KIND_COMMENT]     = COLOR_CLEAR,
+};
+STATIC_ASSERT(NARRAY(TOK_KIND_HIGHLIGHT_COLOR) == TOK_KIND_COUNT);
+
+
 static const Color TOK_SCOPE_COLORS[] = {
-	HIGHLIGHT_PREPROCESS_DIM,
-	HIGHLIGHT_SCOPE_DIM,
-	HIGHLIGHT_OPERATOR_DIM,
-	HIGHLIGHT_ESCAPE_DIM,
-	HIGHLIGHT_QUOTE_DIM,
+	COLOR_PREPROCESS_DIM,
+	COLOR_SCOPE_DIM,
+	COLOR_OPERATOR_DIM,
+	COLOR_ESCAPE_DIM,
+	COLOR_QUOTE_DIM,
 };
 
 #define DEF_TOK(DEF)\
@@ -1222,7 +1251,7 @@ static void FrieLog(FrieNode* trie)
 				ANSI_BRIGHT_BLACK "|"
 				ANSI_RESET,
 				iNode, string_TOK(node.packed.tok), node.packed.succ, node.packed.succ+iNode, node.packed.fail, node.packed.fail+iNode);
-		else if (IS_TOKEN(node.packed.tok))
+		else if (IS_KEYWORD_OR_SPECIAL_TOKEN(node.packed.tok))
 			fprintf(stderr,
 				ANSI_DIM ANSI_YELLOW ANSI_UNDERLINE "%d"
 				ANSI_RESET ANSI_DIM ANSI_WHITE ANSI_ITALIC "%s"
@@ -1261,44 +1290,42 @@ static TOK FrieGet(const char *pText, FrieNode *pFrie)
 #pragma GCC diagnostic pop
 
 	struct PACKED {
-		int      iT;
-		int      iN;
+		int      iText;
+		int      iPack;
 		int      startTok;
 		int      tok;
-		FrieNode nd;
-		char     cT;
+		FrieNode node;
+		char     cText;
 	} step; ZERO(&step);
 
 	{
-		step.cT = pText[0];
-		step.nd = pFrie[(u8)step.cT];
-		step.startTok = step.nd.sparse.tok;
-		bool jump = step.nd.sparse.succ > 0;
-		step.iN  = step.nd.sparse.succ;
-		step.tok = jump ? TOK_PACKED_CHAR :step.nd.sparse.tok;
-		step.cT  = pText[++step.iT];
-		step.nd  = pFrie[step.iN];
+		step.cText = pText[0];
+		step.node = pFrie[(u8)step.cText];
+		step.startTok = step.node.sparse.tok;
+		bool jump = step.node.sparse.succ > 0;
+		step.iPack  = step.node.sparse.succ;
+		step.tok = jump ? TOK_PACKED_CHAR :step.node.sparse.tok;
+		step.cText  = pText[++step.iText];
+		step.node  = pFrie[step.iPack];
 		goto *dispatch[step.tok];
 	}
 
 TOK_PACKED_CHAR:
 	{
-		// Determine node match and retrieve next node.
-		bool match = step.nd.packed.tok == step.cT;
-		step.iN += match ? step.nd.packed.succ : step.nd.packed.fail;
-		step.nd   = pFrie[step.iN];
-		// Progress to next text char if matched.
-		step.iT += match; step.cT = pText[step.iT];
-		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
+		bool match = step.node.packed.tok == step.cText;
+		step.iPack += match ? step.node.packed.succ : step.node.packed.fail;
+		step.node   = pFrie[step.iPack];
+		step.iText += match; step.cText = pText[step.iText];
+		step.tok = IS_KEYWORD_OR_SPECIAL_TOKEN(step.node.packed.tok) ? step.node.packed.tok : TOK_PACKED_CHAR;
 		goto *dispatch[step.tok];
 	}
 
 TOK_DELIMIT:
 	{
-		bool delim = IS_DELIM_CHAR(step.cT);
-		step.iN += delim ? step.nd.packed.succ : step.nd.packed.fail;
-		step.nd  = pFrie[step.iN];
-		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
+		bool delim = IS_DELIM_CHAR(step.cText);
+		step.iPack += delim ? step.node.packed.succ : step.node.packed.fail;
+		step.node  = pFrie[step.iPack];
+		step.tok = IS_KEYWORD_OR_SPECIAL_TOKEN(step.node.packed.tok) ? step.node.packed.tok : TOK_PACKED_CHAR;
 		goto *dispatch[step.tok];
 	}
 
@@ -1549,10 +1576,10 @@ const char availableChars[] = "·¬ abcdefghijklmnopqrstuvwxyzABDCEFGHIJKLMNOPQR
 #define KEY_ALT_MOD   0b01000000000000000000000000000000
 #define KEY_CTRL_MOD  0b00100000000000000000000000000000
 
-typedef struct SpanU16 {
+typedef struct u8_span {
 	u8 iStart;
 	u8 iEnd;
-} SpanU16;
+} u8_span;
 
 typedef struct TokMeta {
 	TOK 	 val;
@@ -1560,8 +1587,8 @@ typedef struct TokMeta {
 } TokMeta;
 
 typedef struct PACKED TextMeta {
-	TokMeta  tok;
- 	SpanU16  tokOffset;
+	TokMeta tok;
+ 	u8_span tokOffset;
 	u8 braceLevel;
 	u8 bracketLevel;
 	u8 parenLevel;
@@ -1664,11 +1691,11 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 
 	/* State */
 	struct PACKED {
-		FrieNode nd;
-		char     cT;
-		int      iT;
-		int      iN;
-		int      iTStart;
+		FrieNode node;
+		char     cText;
+		int      iText;
+		int      iPack;
+		int      iTextStart;
 		TOK      tok;
 		TextMeta meta;
 	} step;	ZERO(&step);
@@ -1681,60 +1708,58 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	FrieNode  *pFrie     = TOK_BASE_FRIE;
 
 	/* Entry */
-	step.iT = 0;
-	step.cT = pText[step.iT];
-	step.nd = pFrie[(u8)step.cT];
+	step.iText = 0;
+	step.cText = pText[step.iText];
+	step.node = pFrie[(u8)step.cText];
 
-	/* Sparse Tokens */
-	TOK_SPARSE_STRING: {
-		step.meta.tok = (TokMeta){ TOK_STRING, TOK_KIND_STRING };
-		ZERO(&step.meta.tokOffset);
-		memcpy(pMeta + step.iT, &step.meta, sizeof(TextMeta));
-		step.iTStart  = step.iT;
-		goto TOK_SPARSE_DISP;
-	}
-
-	TOK_SPARSE_COMMENT: {
-		step.meta.tok = (TokMeta){ TOK_COMMENT, TOK_KIND_COMMENT };
-		ZERO(&step.meta.tokOffset);
-		memcpy(pMeta + step.iT, &step.meta, sizeof(TextMeta));
-		step.iTStart  = step.iT;
-		goto TOK_SPARSE_DISP;
-	}
-
-	TOK_SPARSE_WHITESPACE: {
-		step.nd.sparse.kind = TOK_KIND_WHITESPACE;
+	/* Sparse Char Tokens */
+	TOK_SPARSE_WHITESPACE: { 
+		// White space is most common see we rely on fallthrough.
+		step.node.sparse.kind = TOK_KIND_WHITESPACE;
+		// Fallthrough
 	}
 	TOK_SPARSE_CHAR: {
-		step.meta.tok = (TokMeta){ step.cT, step.nd.sparse.kind };
+		step.meta.tok = (TokMeta){ step.cText, step.node.sparse.kind };
+		// Fallthrough
+	}
+	TOK_SPARSE_META_COPY: {
 		ZERO(&step.meta.tokOffset);
-		memcpy(pMeta + step.iT, &step.meta, sizeof(TextMeta));
-		step.iTStart  = step.iT;
+		memcpy(pMeta + step.iText, &step.meta, sizeof(TextMeta));
+		step.iTextStart  = step.iText;
 		// Fallthrough
 	}
 	TOK_SPARSE_DISP: {
-		bool jump = step.nd.sparse.succ > 0;
-		step.cT  = pText[++step.iT];
-		u8 cTok  = step.cT > 0 ? step.cT : TOK_ERR;
-		step.tok = jump ? TOK_PACKED_CHAR     : cTok;
-		step.iN  = jump ? step.nd.sparse.succ : cTok;
-		step.nd  = pFrie[step.iN];
+		bool jump  = step.node.sparse.succ > 0;
+		step.cText = pText[++step.iText];
+		u8 cTok    = step.cText > 0 ? step.cText : TOK_ERR;
+		step.tok   = jump ? TOK_PACKED_CHAR : cTok;
+		step.iPack = jump ? step.node.sparse.succ : cTok;
+		step.node  = pFrie[step.iPack];
 		goto *disp[step.tok];
 	}
-
 	TOK_SPARSE_STEP: {
-		step.cT  = pText[++step.iT];
-		step.tok = step.cT < 0 ? TOK_ERR : step.cT;
-		step.nd  = pFrie[step.tok];
+		step.cText = pText[++step.iText];
+		step.tok   = step.cText < 0 ? TOK_ERR : step.cText;
+		step.node  = pFrie[step.tok];
 		goto *disp[step.tok];
 	}
 	TOK_SPARSE_END: {
-		for (int i = step.iTStart; i < step.iT; ++i) {
-			step.meta.tokOffset = (SpanU16){ i - step.iTStart, (step.iT-1) - i };
+		for (int i = step.iTextStart; i < step.iText; ++i) {
+			step.meta.tokOffset = (u8_span){ i - step.iTextStart, (step.iText-1) - i };
 			pMeta[i] = step.meta;
 		}
 		disp = baseDispatch;
 		goto *disp[step.tok];
+	}
+
+	/* Alternate Sparse Char Tokens */
+	TOK_SPARSE_STRING: {
+		step.meta.tok = (TokMeta){ TOK_STRING, TOK_KIND_STRING };
+		goto TOK_SPARSE_META_COPY;
+	}
+	TOK_SPARSE_COMMENT: {
+		step.meta.tok = (TokMeta){ TOK_COMMENT, TOK_KIND_COMMENT };
+		goto TOK_SPARSE_META_COPY;
 	}
 
 	/* Sparse Number */
@@ -1750,7 +1775,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 			[TOK_NUMBER_HEX]        = &&TOK_SPARSE_STEP,
 			[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_STEP,
 		};
-		step.iTStart   = step.iT;
+		step.iTextStart   = step.iText;
 		step.meta.tok = (TokMeta){ TOK_NUMBER, TOK_KIND_NUMBER };
 		disp = numberDispatch;
 		goto TOK_SPARSE_DISP;
@@ -1768,7 +1793,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 			['_']                   = &&TOK_SPARSE_STEP,
 			[TOK_DIGIT_RANGE]       = &&TOK_SPARSE_STEP,
 		};
-		step.iTStart   = step.iT;
+		step.iTextStart   = step.iText;
 		step.meta.tok = (TokMeta){ TOK_IDENTIFIER, TOK_KIND_IDENTIFIER };
 		disp = identifierDispatch;
 		goto TOK_SPARSE_DISP;
@@ -1780,13 +1805,13 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 		step.meta.tok = (TokMeta){ _ltok, TOK_KIND_SCOPE };\
 		step.meta._level++;\
 		ZERO(&step.meta.tokOffset);\
-		pMeta[step.iT] = step.meta;\
+		pMeta[step.iText] = step.meta;\
 		goto TOK_SPARSE_DISP;\
 	}\
 	_rtok: {\
 		step.meta.tok = (TokMeta){ _rtok, TOK_KIND_SCOPE };\
 		ZERO(&step.meta.tokOffset);\
-		pMeta[step.iT] = step.meta;\
+		pMeta[step.iText] = step.meta;\
 		step.meta._level--;\
 		goto TOK_SPARSE_DISP;\
 	}
@@ -1806,7 +1831,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 			['\'']            = &&TOK_QUOTE_END,
 		};
 		basedisp = squoteispatch;
-		disp  = squoteispatch;
+		disp     = squoteispatch;
 		pFrie = TOK_QUOTE_FRIE;
 		goto TOK_SPARSE_CHAR;
 	}
@@ -1818,21 +1843,21 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 			['"']             = &&TOK_QUOTE_END,
 		};
 		basedisp = dquoteDispatch;
-		disp  = dquoteDispatch;
+		disp     = dquoteDispatch;
 		pFrie = TOK_QUOTE_FRIE;
 		goto TOK_SPARSE_CHAR;
 	}
 	TOK_QUOTE_END: {
-		basedisp  = baseDispatch;
-		disp  = baseDispatch;
+		basedisp = baseDispatch;
+		disp     = baseDispatch;
 		pFrie = TOK_BASE_FRIE;
 		goto TOK_SPARSE_CHAR;
 	}
 
 	/* Comment Tokens */
 	TOK_CLOSE_BLOCK_COMMENT: {
-		basedisp  = baseDispatch;
-		disp  = baseDispatch;
+		basedisp = baseDispatch;
+		disp     = baseDispatch;
 		pFrie = TOK_BASE_FRIE;
 		goto TOK_ALL;
 	}
@@ -1844,7 +1869,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 			[' ']             = &&TOK_SPARSE_WHITESPACE,
 		};
 		basedisp = blockCommentDispatch;
-		disp  = blockCommentDispatch;
+		disp     = blockCommentDispatch;
 		pFrie = TOK_LINE_COMMENT_FRIE;
 		goto TOK_ALL;
 	}
@@ -1862,49 +1887,50 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 			[' ']             = &&TOK_SPARSE_WHITESPACE,
 		};
 		basedisp = lineCommentDispatch;
-		disp  = lineCommentDispatch;
+		disp     = lineCommentDispatch;
 		pFrie = TOK_LINE_COMMENT_FRIE;
 		goto TOK_ALL;
 	}
 
 	/* Packed Tokens */
 	TOK_PACKED_CHAR: {
-		bool match = step.nd.packed.tok == step.cT;
-		step.iN += match ? step.nd.packed.succ : step.nd.packed.fail;
-		step.nd  = pFrie[step.iN];
-		step.iT += match;
-		step.cT  = pText[step.iT];
-		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
+		bool match = step.node.packed.tok == step.cText;
+		step.iPack += match ? step.node.packed.succ : step.node.packed.fail;
+		step.iText += match;
+		step.node  = pFrie[step.iPack];
+		step.cText = pText[step.iText];
+		// Single char tokens are dispatched from SPARSE_DISP. Continue as PACKED if in single char ASCII range.
+		step.tok = IS_KEYWORD_OR_SPECIAL_TOKEN(step.node.packed.tok) ? step.node.packed.tok : TOK_PACKED_CHAR;
 		goto *disp[step.tok];
 	}
 
 	/* End Tokens */
 	TOK_ALL: {
-		step.meta.tok = (TokMeta){ step.nd.terminator.tok, step.nd.terminator.kind };
+		step.meta.tok = (TokMeta){ step.node.terminator.tok, step.node.terminator.kind };
 	}
 	TOK_MUNCH: {
-		for (int i = step.iTStart; i < step.iT; ++i) {
-			step.meta.tokOffset = (SpanU16){ i - step.iTStart, (step.iT-1) - i };
+		for (int i = step.iTextStart; i < step.iText; ++i) {
+			step.meta.tokOffset = (u8_span){ i - step.iTextStart, (step.iText-1) - i };
 			pMeta[i] = step.meta;
 		}
 		disp = basedisp;
-		step.tok = step.cT < 0 ? TOK_ERR : step.cT;
-		step.nd  = pFrie[step.tok];
+		step.tok  = step.cText < 0 ? TOK_ERR : step.cText;
+		step.node = pFrie[step.tok];
 		goto *disp[step.tok];
 	}
 
 	/* Continue Tokens */
 	TOK_DELIMIT: {
 		disp = basedisp;
-		bool delim = IS_DELIM_CHAR(step.cT);
-		step.iN += delim ? step.nd.packed.succ : step.nd.packed.fail;
-		step.nd  = pFrie[step.iN];
-		step.tok = IS_TOKEN(step.nd.packed.tok) ? step.nd.packed.tok : TOK_PACKED_CHAR;
+		step.iPack += IS_DELIM_CHAR(step.cText) ? step.node.packed.succ : step.node.packed.fail;
+		step.node   = pFrie[step.iPack];
+		// Single char tokens are dispatched from SPARSE_DISP. Continue as PACKED if in single char ASCII range.
+		step.tok = IS_KEYWORD_OR_SPECIAL_TOKEN(step.node.packed.tok) ? step.node.packed.tok : TOK_PACKED_CHAR;
 		goto *disp[step.tok];
 	}
 	TOK_ERR: {
-		step.tok = step.cT < 0 ? TOK_SPARSE_CHAR : step.cT;
-		step.nd = pFrie[step.tok];
+		step.tok  = step.cText < 0 ? TOK_SPARSE_CHAR : step.cText;
+		step.node = pFrie[step.tok];
 		goto *disp[step.tok];
 	}
 
@@ -2473,12 +2499,12 @@ LoopBegin:
 	 */
 	{
 		// TODO pull this into struct function to be used solely for text input
-		const int iCaret = 0;
-		const CodePos mark = pCode->mark;
+		int iCaret = 0;
+		CodePos  mark   =  pCode->mark;
 		CodePos *pMark  = &pCode->mark;
-		CodePos  caret  = pCode->pCarets[0];
-		CodePos *pCaret = &pCode->pCarets[0];
-		char* pText = pCode->pText;
+		CodePos  caret  =  pCode->pCarets[iCaret];
+		CodePos *pCaret = &pCode->pCarets[iCaret];
+		char*    pText  =  pCode->pText;
 		while (currentKey > 0)
 		{
 			int modifiedKey = currentKey;
@@ -2786,18 +2812,14 @@ LoopBegin:
 	}
 
 	/*
-	 * Render
+	 * Render CodeBox
 	 */
 	BeginDrawing();
 	{
-		/*
-		 * Window
-		 */
+		/* window */
 		ClearBackground(RAYWHITE);
 
-		/*
-		 * Code Box
-		 */
+		/* Background Fill */
 		#define LEFT_MARGIN_CAPACITY 16
 		#define LEFT_MARGIN_SIZE   6
 		#define RIGHT_MARGIN_SIZE  1
@@ -2829,6 +2851,10 @@ LoopBegin:
 			boxRect.width  - leftMarginRect.width - rightMarginRect.width, boxRect.height - bottomMarginRect.height
 		};
 
+		DrawRectangleRec(leftMarginRect, COLOR_BACKGROUND_DIM);
+		DrawRectangleRec(codeRect, COLOR_BACKGROUND);
+
+		/* Draw Text */
 		const bool    boxHovering = CheckCollisionPointRec(input.mousePos, codeRect);
 		const Vector2 hoverBoxPos = GetWorldToBoxLocal(input.mousePos, codeRect);
 
@@ -2844,110 +2870,15 @@ LoopBegin:
 		const int fontYSpacingHalf = (fontYSpacing / 2);
 
 		const CodePos  mainCaret = pCode->pCarets[0];
+		const char     caretChar = pText[mainCaret.index];
 		const TextMeta caretMeta = pMeta[mainCaret.index];
-
-		int iChar = pCode->focusStartRowIndex;
+		const CodeRow  caretRow  = pRows[mainCaret.index];
 
 		Vector2 scanFoundPosition = { -1, -1}; // TODO compute deterministically
 
-		DrawRectangleRec(leftMarginRect, COLOR_BACKGROUND_DIM);
-		DrawRectangleRec(codeRect, COLOR_BACKGROUND);
-		// goto NextTextRow;
-		for (int iRow = 0; iRow < boxRowCount; ++iRow) {
-			Vector2 charPos = (Vector2){ leftMarginRect.x, leftMarginRect.y + (fontYSpacing * iRow) };
-			static char leftMarginText[LEFT_MARGIN_CAPACITY];
-			snprintf(leftMarginText, LEFT_MARGIN_CAPACITY, "%5d", iRow + focusStartRow),
-			DrawTextEx(rayde.font, leftMarginText, charPos, fontSize, 0, COLOR_BACKGROUND_BRIGHT);
-
-			char      currentChar = 0;
-			Color     currentColor;
-			TextMeta  currentMeta;
-			for (int iCol = 0; iCol < boxColCount; ++iCol) {
-				currentChar = pText[iChar];
-				currentMeta = pMeta[iChar];
-				charPos = (Vector2){ codeRect.x + (fontXSpacing * iCol), codeRect.y + (fontYSpacing * iRow) };
-
-				char displayChar = currentChar;
-				switch (currentMeta.tok.val)
-				{
-					case '\0': goto DrawTextEnd;
-
-					/* Whitespace Symbols */
-					case ' ':
-					case '\t': {
-						DrawTriangle((Vector2){charPos.x, charPos.y + fontYSpacingHalf}, (Vector2){charPos.x, charPos.y + fontYSpacingHalf + 1}, (Vector2){charPos.x + fontXSpacing, charPos.y + fontYSpacingHalf + 1}, TOK_KIND_COLOR[currentMeta.tok.kind]);
-						iChar++;
-						goto DrawTextNextChar;
-					}
-					case '\r':
-					case '\v':
-					case '\f':
-					case '\n': {
-						DrawTriangle((Vector2){charPos.x+2, charPos.y + fontYSpacingHalf}, (Vector2){charPos.x+2, charPos.y + fontYSpacing}, (Vector2){charPos.x + fontXSpacing, charPos.y + fontYSpacingHalf}, TOK_KIND_COLOR[currentMeta.tok.kind]);
-						iChar++;
-						goto DrawTextNextRow;
-					}
-					/* Scope Rainbow Highlight */
-					case '[':
-					case ']': {
-						currentColor = TOK_SCOPE_COLORS[currentMeta.bracketLevel % NARRAY(TOK_SCOPE_COLORS)];
-						goto DrawChar;
-					}
-					case '(':
-					case ')': {
-						currentColor = TOK_SCOPE_COLORS[currentMeta.parenLevel % NARRAY(TOK_SCOPE_COLORS)];
-						goto DrawChar;
-					}
-					case '{':
-					case '}': {
-						currentColor = TOK_SCOPE_COLORS[currentMeta.braceLevel % NARRAY(TOK_SCOPE_COLORS)];
-						goto DrawChar;
-					}
-					/* Highlight Sibling Tokens */
-					default: {
-						if (caretMeta.tok.val == currentMeta.tok.val  && currentMeta.tokOffset.iStart == 0 &&
-							caretMeta.tok.kind != TOK_KIND_IDENTIFIER && caretMeta.tok.kind != TOK_KIND_NUMBER) {
-							CodeRow currentRow = pRows[iRow + focusStartRow];
-							int iEndCol = iCol + currentMeta.tokOffset.iEnd;
-							Vector2 startBoxPos = (Vector2){ (iCol        * fontXSpacing), (iRow * fontYSpacing) };
-							Vector2 endBoxPos   = (Vector2){ ((iEndCol+1) * fontXSpacing), (iRow * fontYSpacing) };
-							Vector2 startPos    = GetBoxLocalToWorld(startBoxPos, codeRect);
-							Vector2 endPos      = GetBoxLocalToWorld(endBoxPos,   codeRect);
-							DrawRectangleRec((Rectangle){ startPos.x, startPos.y, endPos.x - startPos.x, fontYSpacing }, COLOR_HOVER);
-						}
-						currentColor = TOK_KIND_COLOR[currentMeta.tok.kind];
-						// fallthrough
-					}
-					DrawChar: {
-						int codePointSize;
-						int codePoint = GetCodepoint(&displayChar, &codePointSize);
-						DrawTextCodepoint(rayde.font, codePoint, charPos, fontSize, currentColor);
-						iChar++;
-						break;
-					}
-				}
-
-			DrawTextNextChar:
-			} // iCol
-
-		DrawTextNextRow:
-			// If we are wrapping not on a newline, skip index to next new line so text doesn't wrap
-			if (currentChar != '\n') iChar = TextFindCharForward(pText, iChar, '\n') + 1;
-
-		} // iRow
-
-	DrawTextEnd:
-
-		/* Margins */
-		{
-			DrawRectangleRec(rightMarginRect,   COLOR_BACKGROUND_DIM);
-			DrawRectangleRec(statusMarginRect,  COLOR_BACKGROUND_BRIGHT);
-			DrawRectangleRec(commandMarginRect, COLOR_BACKGROUND_DIM);
-		}
-
-		bool markPress = false;
-		CodePos mark = pCode->mark;
-
+		/* Mark Mouse Input */
+		bool    markPress = false;
+		CodePos mark      = pCode->mark;
 		if (boxHovering && input.mouseMarkActive) {
 			int iHoverBoxCol = hoverBoxPos.x / fontXSpacing;
 			int iHoverBoxRow = hoverBoxPos.y / fontYSpacing;
@@ -2958,10 +2889,9 @@ LoopBegin:
 			markPress = input.lMouse;
 		}
 
-		/* Mark Sibling Highlight */
+		/* Mark Highlight */
 		{
 			TextMeta markMeta = pMeta[mark.index];
-
 			int iLScopeRow = mark.row;
 			int iRScopeRow = mark.row;
 			int iLScope = mark.index;
@@ -2969,7 +2899,7 @@ LoopBegin:
 
 			switch (markMeta.tok.val)
 			{
-			#define SCOPE_HIGHLIGHT_CASE(_forwardC, _backwardC, _level)\
+			#define SCOPE_COLOR_CASE(_forwardC, _backwardC, _level)\
 				case _forwardC: {\
 					while (pMeta[iRScope+1]._level != markMeta._level - 1 && iRScope++ < count)\
 						if (pText[iRScope] == '\n') iRScopeRow++;\
@@ -2981,11 +2911,11 @@ LoopBegin:
 					goto DrawHighlight;\
 				}
 
-				SCOPE_HIGHLIGHT_CASE('{', '}', braceLevel)
-				SCOPE_HIGHLIGHT_CASE('(', ')', parenLevel)
-				SCOPE_HIGHLIGHT_CASE('[', ']', bracketLevel)
+				SCOPE_COLOR_CASE('{', '}', braceLevel)
+				SCOPE_COLOR_CASE('(', ')', parenLevel)
+				SCOPE_COLOR_CASE('[', ']', bracketLevel)
 
-			#undef SCOPE_HIGHLIGHT_CASE
+			#undef SCOPE_COLOR_CASE
 
 				default: {
 					iLScope = mark.index - markMeta.tokOffset.iStart;
@@ -3004,19 +2934,114 @@ LoopBegin:
 						Vector2 endBoxPos   = (Vector2){ ((iEndCol+1) * fontXSpacing), (iHighlightBoxRow * fontYSpacing) };
 						Vector2 startPos    = GetBoxLocalToWorld(startBoxPos, codeRect);
 						Vector2 endPos      = GetBoxLocalToWorld(endBoxPos,   codeRect);
-						DrawRectangleRec((Rectangle){ startPos.x, startPos.y, endPos.x - startPos.x, fontYSpacing }, COLOR_HOVER);
+						Rectangle highlightRect = { startPos.x, startPos.y, endPos.x - startPos.x, fontYSpacing };
+						DrawRectangleRec(highlightRect, COLOR_HOVER_HIGHLIGHT);
 						iStartChar = highlightRow.endIndex+1;
 					}
 					break;
 				}
 			}
+
+			if (markPress) {
+				pCode->mark.index = mark.index;
+				pCode->mark.col = mark.col;
+				pCode->mark.row = mark.row;
+				CodeSyncCaretToMarkRow(pCode, 0);
+			}
 		}
 
-		if (markPress) {
-			pCode->mark.index = mark.index;
-			pCode->mark.col = mark.col;
-			pCode->mark.row = mark.row;
-			CodeSyncCaretToMarkRow(pCode, 0);
+		/* Draw Text */
+		int iText = pCode->focusStartRowIndex;
+		for (int iRow = 0; iRow < boxRowCount; ++iRow) {
+			Vector2 charPos = (Vector2){ leftMarginRect.x, leftMarginRect.y + (fontYSpacing * iRow) };
+			static char leftMarginText[LEFT_MARGIN_CAPACITY];
+			snprintf(leftMarginText, LEFT_MARGIN_CAPACITY, "%5d", iRow + focusStartRow),
+			DrawTextEx(rayde.font, leftMarginText, charPos, fontSize, 0, COLOR_BACKGROUND_BRIGHT);
+
+			char      currentChar = 0;
+			Color     currentColor;
+			TextMeta  currentMeta;
+			for (int iCol = 0; iCol < boxColCount; ++iCol) {
+				currentChar = pText[iText];
+				currentMeta = pMeta[iText];
+				charPos = (Vector2){ codeRect.x + (fontXSpacing * iCol), codeRect.y + (fontYSpacing * iRow) };
+
+				char displayChar = currentChar;
+				switch (currentMeta.tok.val)
+				{
+					case '\0': goto DrawTextEnd;
+
+					/* Whitespace Symbols */
+					case ' ':
+					case '\t': {
+						DrawTriangle((Vector2){charPos.x, charPos.y + fontYSpacingHalf}, (Vector2){charPos.x, charPos.y + fontYSpacingHalf + 1}, (Vector2){charPos.x + fontXSpacing, charPos.y + fontYSpacingHalf + 1}, TOK_KIND_COLOR[currentMeta.tok.kind]);
+						iText++;
+						goto DrawTextNextChar;
+					}
+					case '\r':
+					case '\v':
+					case '\f':
+					case '\n': {
+						DrawTriangle((Vector2){charPos.x+2, charPos.y + fontYSpacingHalf}, (Vector2){charPos.x+2, charPos.y + fontYSpacing}, (Vector2){charPos.x + fontXSpacing, charPos.y + fontYSpacingHalf}, TOK_KIND_COLOR[currentMeta.tok.kind]);
+						iText++;
+						goto DrawTextNextRow;
+					}
+					/* Scope Rainbow Highlight */
+					case '[': case ']': {
+						currentColor = TOK_SCOPE_COLORS[currentMeta.bracketLevel % NARRAY(TOK_SCOPE_COLORS)];
+						goto DrawChar;
+					}
+					case '(': case ')': {
+						currentColor = TOK_SCOPE_COLORS[currentMeta.parenLevel % NARRAY(TOK_SCOPE_COLORS)];
+						goto DrawChar;
+					}
+					case '{': case '}': {
+						currentColor = TOK_SCOPE_COLORS[currentMeta.braceLevel % NARRAY(TOK_SCOPE_COLORS)];
+						goto DrawChar;
+					}
+					/* Highlight Sibling Tokens */
+					default: {
+						currentColor = TOK_KIND_COLOR[currentMeta.tok.kind];
+						if (caretMeta.tok.val == currentMeta.tok.val  && currentMeta.tokOffset.iStart == 0 &&
+							caretMeta.tok.kind != TOK_KIND_IDENTIFIER && caretMeta.tok.kind != TOK_KIND_NUMBER) {
+							CodeRow currentRow = pRows[iRow + focusStartRow];
+							int iEndCol = iCol + currentMeta.tokOffset.iEnd;
+							Vector2 startBoxPos = (Vector2){ (iCol        * fontXSpacing), (iRow * fontYSpacing) };
+							Vector2 endBoxPos   = (Vector2){ ((iEndCol+1) * fontXSpacing), (iRow * fontYSpacing) };
+							Vector2 startPos    = GetBoxLocalToWorld(startBoxPos, codeRect);
+							Vector2 endPos      = GetBoxLocalToWorld(endBoxPos,   codeRect);
+							Color     highlightColor = TOK_KIND_HIGHLIGHT_COLOR[currentMeta.tok.kind];
+							Rectangle highlightRect  = { startPos.x, startPos.y, endPos.x - startPos.x, fontYSpacing };
+							DrawRectangleRec(highlightRect, highlightColor);
+						}
+						// fallthrough
+					}
+					DrawChar: {
+						int codePointSize;
+						int codePoint = GetCodepoint(&displayChar, &codePointSize);
+						DrawTextCodepoint(rayde.font, codePoint, charPos, fontSize, currentColor);
+						iText++;
+						break;
+					}
+				}
+
+			DrawTextNextChar:
+			} // iCol
+
+		DrawTextNextRow:
+			// If we are wrapping not on a newline, skip index to next new line so text doesn't wrap
+			if (currentChar != '\n') iText = TextFindCharForward(pText, iText, '\n') + 1;
+
+		} // iRow
+
+	DrawTextEnd:
+
+		/* Draw Margins */
+		{
+			DrawRectangleRec(rightMarginRect,   COLOR_BACKGROUND_DIM);
+			DrawRectangleRec(statusMarginRect,  COLOR_BACKGROUND_BRIGHT);
+			DrawRectangleRec(commandMarginRect, COLOR_BACKGROUND_DIM);
+			DrawRectangleLines((int)codeRect.x, (int)codeRect.y, (int)codeRect.width, (int)codeRect.height, COLOR_BACKGROUND_BRIGHT);
 		}
 
 		/* Draw Mark */
@@ -3044,16 +3069,9 @@ LoopBegin:
 		{
 			#define STATUS_TEXT_CAPACITY 1024
 			static char statusText[STATUS_TEXT_CAPACITY];
-			CodePos caret = pCode->pCarets[0];
-			char c = pCode->pText[caret.index];
-			TextMeta m = pCode->pTextMeta[caret.index];
-			CodeRow r = pCode->pTextRows[caret.row];
 			snprintf(statusText, STATUS_TEXT_CAPACITY, "caret0: index:%-4i icol:%-4i irow:%-4i lrow:%-4i rrow:%-4i token: %s %s start: %d end: %d brace: %d bracket: %d paren: %d\n",
-					caret.index, caret.col, caret.row, r.startIndex, r.endIndex, string_TOK(m.tok.val), string_TOK_KIND(m.tok.kind), m.tokOffset.iStart, m.tokOffset.iEnd, m.braceLevel, m.bracketLevel, m.parenLevel),
-			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, HIGHLIGHT_COMMENT);
-
-			if (boxHovering)
-				DrawRectangleLines((int)codeRect.x, (int)codeRect.y, (int)codeRect.width, (int)codeRect.height, COLOR_BACKGROUND_BRIGHT);
+				mainCaret.index, mainCaret.col, mainCaret.row, caretRow.startIndex, caretRow.endIndex, string_TOK(caretMeta.tok.val), string_TOK_KIND(caretMeta.tok.kind), caretMeta.tokOffset.iStart, caretMeta.tokOffset.iEnd, caretMeta.braceLevel, caretMeta.bracketLevel, caretMeta.parenLevel),
+			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, COLOR_COMMENT);
 		}
 
 		/* Scan Highlight */
@@ -3063,7 +3081,7 @@ LoopBegin:
 					.y = scanFoundPosition.y,
 					.width = fontXSpacing * command.bufferCount,
 					.height = fontYSpacing},
-				FIND_HIGHLIGHT_COLOR);
+				FIND_COLOR_COLOR);
 			DrawLineEx(
 				(Vector2){scanFoundPosition.x, scanFoundPosition.y},
 				(Vector2){scanFoundPosition.x, scanFoundPosition.y + fontYSpacing},
