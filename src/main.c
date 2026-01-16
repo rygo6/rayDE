@@ -936,7 +936,7 @@ static const Color TOK_SCOPE_COLORS[] = {
 	DEF(TOK_SUB_ASSIGN,    /* -=  */)\
 	DEF(TOK_MUL_ASSIGN,    /* *=  */)\
 	DEF(TOK_DIV_ASSIGN,    /* /=  */)\
-	DEF(TOK_MOD_ASSIGN,    /* %=  */)\
+	DEF(TOK_MASK_ASSIGN,    /* %=  */)\
 	DEF(TOK_AND_ASSIGN,    /* &=  */)\
 	DEF(TOK_OR_ASSIGN,     /* |=  */)\
 	DEF(TOK_XOR_ASSIGN,    /* ^=  */)\
@@ -1027,7 +1027,7 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 	DEF("-="  , TOK_SUB_ASSIGN    , TOK_KIND_OPERATOR)\
 	DEF("*="  , TOK_MUL_ASSIGN    , TOK_KIND_OPERATOR)\
 	DEF("/="  , TOK_DIV_ASSIGN    , TOK_KIND_OPERATOR)\
-	DEF("%="  , TOK_MOD_ASSIGN    , TOK_KIND_OPERATOR)\
+	DEF("%="  , TOK_MASK_ASSIGN    , TOK_KIND_OPERATOR)\
 	DEF("&="  , TOK_AND_ASSIGN    , TOK_KIND_OPERATOR)\
 	DEF("|="  , TOK_OR_ASSIGN     , TOK_KIND_OPERATOR)\
 	DEF("^="  , TOK_XOR_ASSIGN    , TOK_KIND_OPERATOR)\
@@ -1167,9 +1167,9 @@ STATIC_ASSERT(TOK_COUNT < TOK_CAPACITY, "Not setup to support more than 256 toke
 typedef union PACKED FrieNode {
 	/* First 128 ASCII chars are sparse nodes. Char token is index. */
 	struct PACKED {
-		u32  tok :  8;  // If single char token this will be set. Typically to its own char value. Otherwise it is TOK_ERR.
+		u32  tok :  8;  // If single char token this will be set. Otherwise it is TOK_ERR.
 		u32  succ : 16; // Amount to jump into packed tokens.
-		u32  kind : 8;  // Token Category.
+		u32  kind : 8;  // Token Kind if it is a token.
 	} sparse;
 	/* All tokens past first 128 ASCII chars are packed nodes. Can contain TOK_DELIMIT or TOK_MUNCH nodes. */
 	struct PACKED {
@@ -1570,11 +1570,15 @@ const char availableChars[] = "·¬ abcdefghijklmnopqrstuvwxyzABDCEFGHIJKLMNOPQR
 
 #define CARET_MAX_CAPACITY 8
 #define CARET_INVALID INT_MIN
-
-#define MASK_ASCII    0b00000000000000000000000011111111
-#define KEY_SHIFT_MOD 0b10000000000000000000000000000000
-#define KEY_ALT_MOD   0b01000000000000000000000000000000
-#define KEY_CTRL_MOD  0b00100000000000000000000000000000
+            
+//                   0b0000111122223333
+#define MASK_ASCII   0b0000000011111111
+#define MASK_KEYS    0b0000001111111111
+#define MASK_SHIFT    0b1000000000000000
+#define MASK_ALT      0b0100000000000000
+#define MASK_CTRL     0b0010000000000000
+#define MASK_ALT_CTRL 0b0001000000000000
+#define MASK_CTRL_ALT 0b0000100000000000
 
 typedef struct u8_span {
 	u8 iStart;
@@ -1655,6 +1659,8 @@ static inline Vector2 GetBoxLocalToWorld(Vector2 point, Rectangle rect) {
 
 static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 {
+// Dispatch tables are built by filling in ranges of defaults
+// and subsequent assignments overriding what they need.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverride-init"
 
@@ -1710,11 +1716,11 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	/* Entry */
 	step.iText = 0;
 	step.cText = pText[step.iText];
-	step.node = pFrie[(u8)step.cText];
+	step.node  = pFrie[(u8)step.cText];
 
 	/* Sparse Char Tokens */
 	TOK_SPARSE_WHITESPACE: { 
-		// White space is most common see we rely on fallthrough.
+		// White space is most common so we rely on fallthrough.
 		step.node.sparse.kind = TOK_KIND_WHITESPACE;
 		// Fallthrough
 	}
@@ -1864,9 +1870,9 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	TOK_OPEN_BLOCK_COMMENT: {
 		static void *blockCommentDispatch[TOK_CAPACITY] = {
 			DISPATCH_DEEFAULT
-			[TOK_RBLOCK_COMMENT]    = &&TOK_CLOSE_BLOCK_COMMENT,
-			[TOK_ASCII_RANGE] = &&TOK_SPARSE_COMMENT,
-			[' ']             = &&TOK_SPARSE_WHITESPACE,
+			[TOK_RBLOCK_COMMENT] = &&TOK_CLOSE_BLOCK_COMMENT,
+			[TOK_ASCII_RANGE]    = &&TOK_SPARSE_COMMENT,
+			[' ']                = &&TOK_SPARSE_WHITESPACE,
 		};
 		basedisp = blockCommentDispatch;
 		disp     = blockCommentDispatch;
@@ -1907,6 +1913,7 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	/* End Tokens */
 	TOK_ALL: {
 		step.meta.tok = (TokMeta){ step.node.terminator.tok, step.node.terminator.kind };
+		// fallthrough
 	}
 	TOK_MUNCH: {
 		for (int i = step.iTextStart; i < step.iText; ++i) {
@@ -1973,7 +1980,7 @@ static int TextFindTextBackward(const char* text, int index, const char* find)
 	return index;
 }
 
-// Find specified substring. Will return end null terminator index if it doesn't find.
+/* Find specified substring. Will return end null terminator index if it doesn't find. */
 static int TextFindTextForward(const char* text, int index, const char* find)
 {
 	const char* s = text;
@@ -1999,7 +2006,7 @@ static int TextFindTextsForward(const char* text, int index, const char** finds)
 	return -1;
 }
 
-// Test if Text exactly equals given text. 0 if false. strlen of equals if true.
+/* Test if Text exactly equals given text. 0 if false. strlen of equals if true. */
 static int TextEqualsText(const char* text, const char* equals)
 {
 	assert(equals[0] != '\0');
@@ -2009,14 +2016,14 @@ static int TextEqualsText(const char* text, const char* equals)
 	return 0;
 }
 
-// Find first char which is not the specified char.
+/* Find first char which is not the specified char. */
 static int TextNegateFindCharBackward(const char* text, int index, char find)
 {
 	while (index >= 0 && text[index] == find) index--;
 	return index;
 }
 
-// Find first char which is not the specified char.
+/* Find first char which is not the specified char. */
 static int TextNegateFindCharForward(const char* text, int index, char find)
 {
 	while (text[index] == find && text[index] != '\0') index++;
@@ -2043,7 +2050,7 @@ static int TextFindCharsBackward(const char* text, int index, const char* find)
 	return index;
 }
 
-// Find char skipping a specified number of matches.
+/*/ Find char skipping a specified number of matches. */
 static int TextFindCharSkipForward(const char* pText, char find, int skipCount)
 {
 	int index = 0;
@@ -2054,7 +2061,7 @@ static int TextFindCharSkipForward(const char* pText, char find, int skipCount)
 	return index;
 }
 
-// Count occurances of char.
+/* Count occurances of char. */
 static int TextCountCharForward(const char* text, int index, int range, char find)
 {
 	int count = 0;
@@ -2065,7 +2072,7 @@ static int TextCountCharForward(const char* text, int index, int range, char fin
 	return count;
 }
 
-// Find char index and also count occurense of another char during scan.
+/* Find char index and also count occurense of another char during scan. */
 static bool TextFindCountCharForward(const char* pText, char searchChar, char countChar, int* pFoundIndex, int *pCount)
 {
 	int index = *pFoundIndex, count = *pCount;
@@ -2077,7 +2084,7 @@ static bool TextFindCountCharForward(const char* pText, char searchChar, char co
 	return c == searchChar;
 }
 
-// Find char index and also count occurense of another char during scan.
+/* Find char index and also count occurense of another char during scan. */
 static bool TextFindCountCharBackward(const char* pText, char searchChar, char countChar, int* pFoundIndex, int *pCount)
 {
 	int index = *pFoundIndex;
@@ -2090,6 +2097,7 @@ static bool TextFindCountCharBackward(const char* pText, char searchChar, char c
 	return true;
 }
 
+/* Set size rect of CodeBox. */
 static void CodeBoxSetRect(CodeBox *pCode, Rectangle rect)
 {
 	pCode->rect = rect;
@@ -2097,20 +2105,20 @@ static void CodeBoxSetRect(CodeBox *pCode, Rectangle rect)
 	pCode->boxRowCount = (int)(pCode->rect.height / fontYSpacing);
 }
 
-// The index of char on current line
+/* The index of char on current line. */
 static inline int CodeBoxIndexCol(const CodeBox* pCode, int index)
 {
 	int lineStartIndex = TextFindCharBackward(pCode->pText, index - 1, '\n') + endCharLength;
 	return index - lineStartIndex;
 }
 
-// Line given index is on
+/* Line specified index is on. */
 static inline int CodeBoxIndexRow(const CodeBox* pCode, int index)
 {
 	return TextCountCharForward(pCode->pText, 0, index, '\n');
 }
 
-// Focus on a given row.
+/* Focus on a given row. */
 static void CodeBoxFocusRow(CodeBox* pCode, int toRow)
 {
 	int boxRowCount = (int)pCode->boxRowCount;
@@ -2136,7 +2144,7 @@ static void CodeBoxIncrementFocusRow(CodeBox* pCode, int increment)
 	pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, '\n', pCode->focusStartRow);
 }
 
-// Focus on a given character index.
+/* Focus on a given character index. */
 static inline void CodeBoxFocusIndex(CodeBox* pCode, int toIndex)
 {
 	int toRow = CodeBoxIndexRow(pCode, toIndex);
@@ -2353,21 +2361,20 @@ int main(void)
 		Vector2 mousePos;
 		float scrollMouse;
 		bool  lMouse;
-		bool  lShift;
-		bool  lCtrl;
-		bool  lAlt;
-		bool  rShift;
-		bool  rCtrl;
-		bool  rAlt;
+		bool  Shift;
+		bool  Ctrl;
+		bool  CtrlAlt;
+		bool  Alt;
+		bool  AltCtrl;
 		u32   modifierCombination;
-	} input = {};
+	} input; ZERO(&input);
 
-	Command command = {};
+	Command command; ZERO(&command);
 
-	bool mouseOnText = false;
+	bool mouseOnText  = false;
 	int framesCounter = 0;
-	int currentKey = 0;
-	int priorKey = 0;
+	u16 currentKey    = 0; // todo move into input
+	u16 priorKey      = 0;
 
 	#define CODEBOX_ROW_CAPACITY 1024
 	#define CODEBOX_CARET_CAPACITY 128
@@ -2399,7 +2406,7 @@ int main(void)
 		pCode->textRowCount = rowIndex;
 		pCode->textCount = index;
 		LOG("Loaded Buffer Size %d\n", pCode->textCount);
-		ASSERTMSG(pCode->textCount < TEXT_BUFFER_CAPACITY, "Loaded buffer size too big!");
+		ASSERTMSG(pCode->textCount < TEXT_BUFFER_CAPACITY, "Loaded buffer size %d bigger than capacity %d!", pCode->textCount, TEXT_BUFFER_CAPACITY);
 
 		memcpy(pCode->pText, loadedFile, pCode->textCount + 1);
 		free(loadedFile);
@@ -2433,22 +2440,22 @@ LoopBegin:
 		input.scrollMouse = GetMouseWheelMove();
 		input.lMouse      = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
-		input.lShift = IsKeyDown(KEY_LEFT_SHIFT);
-		input.lAlt   = IsKeyDown(KEY_LEFT_ALT);
-		input.lCtrl  = IsKeyDown(KEY_LEFT_CONTROL) | IsKeyDown(KEY_LEFT_SUPER);
+		input.Shift   = IsKeyDown(KEY_LEFT_SHIFT)   | IsKeyDown(KEY_RIGHT_SHIFT);
+		bool altDown  = IsKeyDown(KEY_LEFT_ALT)     | IsKeyDown(KEY_RIGHT_ALT);
+		bool ctrlDown = IsKeyDown(KEY_LEFT_CONTROL) | IsKeyDown(KEY_RIGHT_CONTROL);
+		input.AltCtrl = input.Alt  && altDown  && ctrlDown && !input.CtrlAlt;
+		input.CtrlAlt = input.Ctrl && ctrlDown && altDown  && !input.AltCtrl;
+		input.Alt  = altDown;
+		input.Ctrl = ctrlDown;
 
-		input.rShift = IsKeyDown(KEY_RIGHT_SHIFT);
-		input.rAlt   = IsKeyDown(KEY_RIGHT_ALT);
-		input.rCtrl  = IsKeyDown(KEY_RIGHT_CONTROL) | IsKeyDown(KEY_RIGHT_SUPER);
+		LOG("alt:%d ctrl:%d ctrlalt:%d altctrl:%d\n", input.Alt, input.Ctrl, input.CtrlAlt, input.AltCtrl);
 
 		input.modifierCombination =
-			(input.lShift ? KEY_SHIFT_MOD : 0) |
-			(input.lAlt   ? KEY_ALT_MOD   : 0) |
-			(input.lCtrl  ? KEY_CTRL_MOD  : 0) |
-
-			(input.rShift ? KEY_SHIFT_MOD : 0) |
-			(input.rAlt   ? KEY_ALT_MOD   : 0) |
-			(input.rCtrl  ? KEY_CTRL_MOD  : 0);
+			(input.Shift   ? MASK_SHIFT    : 0) |
+			(input.Alt     ? MASK_ALT      : 0) |
+			(input.Ctrl    ? MASK_CTRL     : 0) |
+			(input.AltCtrl ? MASK_ALT_CTRL : 0) |
+			(input.CtrlAlt ? MASK_CTRL_ALT : 0);
 
 		currentKey = GetKeyPressed();
 		if (currentKey == 0 && IsKeyPressedRepeat(priorKey))
@@ -2482,15 +2489,11 @@ LoopBegin:
 	if (command.toggled) {
 
 		// LOG("Command Toggled\n");
-		input.lAlt = true;
+		input.Alt = true;
 		input.modifierCombination =
-			(input.lShift ? KEY_SHIFT_MOD : 0) |
-			(input.lAlt   ? KEY_ALT_MOD   : 0) |
-			(input.lCtrl  ? KEY_CTRL_MOD  : 0) |
-
-			(input.rShift ? KEY_SHIFT_MOD : 0) |
-			(input.rAlt   ? KEY_ALT_MOD   : 0) |
-			(input.rCtrl  ? KEY_CTRL_MOD  : 0);
+			(input.Shift ? MASK_SHIFT : 0) |
+			(input.Alt   ? MASK_ALT   : 0) |
+			(input.Ctrl  ? MASK_CTRL  : 0);
 
 	}
 
@@ -2498,6 +2501,12 @@ LoopBegin:
 	 * Input Process
 	 */
 	{
+	#define SHIFT   MASK_SHIFT
+	#define CTRL    MASK_CTRL
+	#define ALT     MASK_ALT
+	#define CTRLALT MASK_CTRL | MASK_ALT  | MASK_CTRL_ALT
+	#define ALTCTRL MASK_ALT  | MASK_CTRL | MASK_ALT_CTRL
+
 		// TODO pull this into struct function to be used solely for text input
 		int iCaret = 0;
 		CodePos  mark   =  pCode->mark;
@@ -2505,83 +2514,91 @@ LoopBegin:
 		CodePos  caret  =  pCode->pCarets[iCaret];
 		CodePos *pCaret = &pCode->pCarets[iCaret];
 		char*    pText  =  pCode->pText;
-		while (currentKey > 0)
-		{
+		while (currentKey > 0) {
+			ASSERTMSG(currentKey < MASK_KEYS, "Input key %d should not be greater than %d!", currentKey, MASK_KEYS);
 			int modifiedKey = currentKey;
-			switch (currentKey | input.modifierCombination) {
-
-				/* Move Left Keys */
+			switch (currentKey | input.modifierCombination) 
+			{
+				/* Move Left One Char */
 				case KEY_LEFT:
-				case KEY_A | KEY_ALT_MOD:
+				case KEY_J | CTRL: {
 					input.mouseMarkActive = false;
 					if (caret.index <= 0) break;
 					CodeSetMarkIndex(pCode, mark.index - 1);
 					CodeSyncCaretToMark(pCode, 0);
 					break;
-
-				case KEY_LEFT | KEY_CTRL_MOD:
-				case KEY_A    | KEY_CTRL_MOD | KEY_ALT_MOD: {
+				}
+				/* Move Left One Word */
+				case KEY_LEFT | CTRL:
+				case KEY_J    | CTRLALT: {
 					input.mouseMarkActive = false;
 					if (caret.index <= 0) break;
-
 					int newIndex = CARET_INVALID;
 					switch(pText[mark.index - 1]){
 						case ' ':  newIndex = TextNegateFindCharBackward(pText, mark.index - 1, ' ');  break;
 						case '\n': newIndex = TextNegateFindCharBackward(pText, mark.index - 1, '\n'); break;
 						default:   newIndex = TextFindCharsBackward(pText, mark.index - 1, " \n");     break;
 					}
-
 					if (newIndex != CARET_INVALID) {
 						CodeSetMarkIndex(pCode, newIndex + 1);
 						CodeSyncCaretToMarkRow(pCode, 0);
 						CodeBoxFocusMark(pCode);
 					}
-
 					break;
 				}
-
-				/* Move Right Keys */
+				/* Move To Line Beginning */
+				case KEY_COMMA | CTRL: {
+					input.mouseMarkActive = false;
+					if (caret.index >= pCode->textCount) break;
+					int newIndex = CARET_INVALID;
+					switch(pText[mark.index]){
+						case '\n': newIndex = TextFindCharBackward(pText, mark.index-1, '\n') + 1; break;
+						default:   newIndex = TextFindCharsBackward(pText, mark.index, " \n") + 1; break;
+					} 
+					if (newIndex != CARET_INVALID) {
+						CodeSetMarkIndex(pCode, newIndex);
+						CodeSyncCaretToMarkRow(pCode, 0);
+					}
+					break;
+				}
+				/* Move Right One Char */
 				case KEY_RIGHT:
-				case KEY_D | KEY_ALT_MOD:
+				case KEY_L | CTRL: {
 					input.mouseMarkActive = false;
 					if (caret.index >= pCode->textCount) break;
 					CodeSetMarkIndex(pCode, mark.index + 1);
 					CodeSyncCaretToMark(pCode, 0);
 					break;
-
-				case KEY_RIGHT | KEY_CTRL_MOD:
-				case KEY_D     | KEY_CTRL_MOD | KEY_ALT_MOD: {
+				}
+				/* Move Right One Word */
+				case KEY_RIGHT | CTRL:
+				case KEY_L     | CTRLALT: {
 					input.mouseMarkActive = false;
 					if (caret.index >= pCode->textCount) break;
-
 					int newIndex = CARET_INVALID;
 					switch(pText[mark.index]){
 						case ' ':  newIndex = TextNegateFindCharForward(pText, mark.index, ' ');  break;
 						case '\n': newIndex = TextNegateFindCharForward(pText, mark.index, '\n'); break;
 						default:   newIndex = TextFindCharsForward(pText, mark.index, " \n");     break;
 					}
-
 					if (newIndex != CARET_INVALID) {
 						CodeSetMarkIndex(pCode, newIndex);
 						CodeSyncCaretToMarkRow(pCode, 0);
 						CodeBoxFocusMark(pCode);
 					}
-
 					break;
 				}
-
 				/* Move Up Keys */
 				case KEY_UP:
-				case KEY_W | KEY_ALT_MOD:{
+				case KEY_I | CTRL:{
 					input.mouseMarkActive = false;
 					pMark->row--;
 					CodeSyncCaretToMarkRow(pCode, 0);
 					CodeBoxFocusMark(pCode);
 					break;
 				}
-
-				case KEY_UP | KEY_CTRL_MOD:
-				case KEY_W  | KEY_CTRL_MOD | KEY_ALT_MOD: {
+				case KEY_UP | CTRL:
+				case KEY_I  | CTRLALT: {
 					input.mouseMarkActive = false;
 					int startIndex      = pText[mark.index] == '\n' ? mark.index - endCharLength : mark.index;
 					int blockStartIndex = TextFindTextBackward(pText, startIndex, "\n\n");
@@ -2592,19 +2609,17 @@ LoopBegin:
 					CodeBoxFocusMark(pCode);
 					break;
 				}
-
 				/* Move Down Keys */
 				case KEY_DOWN:
-				case KEY_S | KEY_ALT_MOD: {
+				case KEY_K | CTRL: {
 					input.mouseMarkActive = false;
 					pMark->row++;
 					CodeSyncCaretToMarkRow(pCode, 0);
 					CodeBoxFocusMark(pCode);
 					break;
 				}
-
-				case KEY_DOWN | KEY_CTRL_MOD:
-				case KEY_S    | KEY_CTRL_MOD | KEY_ALT_MOD: {
+				case KEY_DOWN | CTRL:
+				case KEY_K    | CTRLALT: {
 					input.mouseMarkActive = false;
 					// Search"\n\n" to find where there is a new line gap
 					int blockEndIndex   = TextFindTextForward(pText, mark.index, "\n\n");
@@ -2617,10 +2632,9 @@ LoopBegin:
 					CodeBoxFocusMark(pCode);
 					break;
 				}
-
 				/* Command Keys */
-				// case KEY_ALT_MOD | KEY_RIGHT_ALT:
-				// case KEY_ALT_MOD | KEY_LEFT_ALT:
+				// case ALT | KEY_RIGHT_ALT:
+				// case ALT | KEY_LEFT_ALT:
 				// 	if (!command.enabled) {
 				// 		LOG("Command Begin\n");
 				// 		command.enabled = true;
@@ -2638,10 +2652,10 @@ LoopBegin:
 
 				// 	break;
 
-				// case KEY_ALT_MOD | KEY_CTRL_MOD | KEY_LEFT_CONTROL:
+				// case ALT | CTRL | KEY_LEFT_CONTROL:
 				// 	break;
 
-				// case KEY_ALT_MOD | KEY_ENTER:
+				// case ALT | KEY_ENTER:
 				// 	if (!command.enabled)
 				// 		break;
 
@@ -2650,11 +2664,11 @@ LoopBegin:
 
 				// 	break;
 
-				// case KEY_ALT_MOD | KEY_SHIFT_MOD | KEY_TAB:
+				// case ALT | SHIFT | KEY_TAB:
 
 				// 	break;
 
-				// case KEY_ALT_MOD | KEY_TAB:
+				// case ALT | KEY_TAB:
 				// 	if (!command.enabled)
 				// 		break;
 
@@ -2669,59 +2683,59 @@ LoopBegin:
 
 				// 	break;
 
-				// case '`'  | KEY_ALT_MOD:
-				// case '-'  | KEY_ALT_MOD:
-				// case '='  | KEY_ALT_MOD:
-				// case '['  | KEY_ALT_MOD:
-				// case ']'  | KEY_ALT_MOD:
-				// case '\\' | KEY_ALT_MOD:
-				// case ';'  | KEY_ALT_MOD:
-				// case '\'' | KEY_ALT_MOD:
-				// case ','  | KEY_ALT_MOD:
-				// case '.'  | KEY_ALT_MOD:
-				// case '/'  | KEY_ALT_MOD:
+				// case '`'  | ALT:
+				// case '-'  | ALT:
+				// case '='  | ALT:
+				// case '['  | ALT:
+				// case ']'  | ALT:
+				// case '\\' | ALT:
+				// case ';'  | ALT:
+				// case '\'' | ALT:
+				// case ','  | ALT:
+				// case '.'  | ALT:
+				// case '/'  | ALT:
 
-				// case (KEY_ALT_MOD | '0') ... (KEY_ALT_MOD | '9'):
+				// case (ALT | '0') ... (ALT | '9'):
 				// 	goto UpdateCommandKey;
 
-				// case '1'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '!'; goto UpdateCommandKey;
-				// case '2'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '@'; goto UpdateCommandKey;
-				// case '3'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '#'; goto UpdateCommandKey;
-				// case '4'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '$'; goto UpdateCommandKey;
-				// case '5'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '%'; goto UpdateCommandKey;
-				// case '6'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '^'; goto UpdateCommandKey;
-				// case '7'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '&'; goto UpdateCommandKey;
-				// case '8'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '*'; goto UpdateCommandKey;
-				// case '9'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '('; goto UpdateCommandKey;
-				// case '0'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = ')'; goto UpdateCommandKey;
-				// case '`'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '~'; goto UpdateCommandKey;
-				// case '-'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '_'; goto UpdateCommandKey;
-				// case '='  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '+'; goto UpdateCommandKey;
-				// case '['  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '{'; goto UpdateCommandKey;
-				// case ']'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '}'; goto UpdateCommandKey;
-				// case '\\' | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '|'; goto UpdateCommandKey;
-				// case ';'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = ':'; goto UpdateCommandKey;
-				// case '\'' | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '"'; goto UpdateCommandKey;
-				// case ','  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '<'; goto UpdateCommandKey;
-				// case '.'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '>'; goto UpdateCommandKey;
-				// case '/'  | KEY_ALT_MOD | KEY_SHIFT_MOD: modifiedKey = '?'; goto UpdateCommandKey;
+				// case '1'  | ALT | SHIFT: modifiedKey = '!'; goto UpdateCommandKey;
+				// case '2'  | ALT | SHIFT: modifiedKey = '@'; goto UpdateCommandKey;
+				// case '3'  | ALT | SHIFT: modifiedKey = '#'; goto UpdateCommandKey;
+				// case '4'  | ALT | SHIFT: modifiedKey = '$'; goto UpdateCommandKey;
+				// case '5'  | ALT | SHIFT: modifiedKey = '%'; goto UpdateCommandKey;
+				// case '6'  | ALT | SHIFT: modifiedKey = '^'; goto UpdateCommandKey;
+				// case '7'  | ALT | SHIFT: modifiedKey = '&'; goto UpdateCommandKey;
+				// case '8'  | ALT | SHIFT: modifiedKey = '*'; goto UpdateCommandKey;
+				// case '9'  | ALT | SHIFT: modifiedKey = '('; goto UpdateCommandKey;
+				// case '0'  | ALT | SHIFT: modifiedKey = ')'; goto UpdateCommandKey;
+				// case '`'  | ALT | SHIFT: modifiedKey = '~'; goto UpdateCommandKey;
+				// case '-'  | ALT | SHIFT: modifiedKey = '_'; goto UpdateCommandKey;
+				// case '='  | ALT | SHIFT: modifiedKey = '+'; goto UpdateCommandKey;
+				// case '['  | ALT | SHIFT: modifiedKey = '{'; goto UpdateCommandKey;
+				// case ']'  | ALT | SHIFT: modifiedKey = '}'; goto UpdateCommandKey;
+				// case '\\' | ALT | SHIFT: modifiedKey = '|'; goto UpdateCommandKey;
+				// case ';'  | ALT | SHIFT: modifiedKey = ':'; goto UpdateCommandKey;
+				// case '\'' | ALT | SHIFT: modifiedKey = '"'; goto UpdateCommandKey;
+				// case ','  | ALT | SHIFT: modifiedKey = '<'; goto UpdateCommandKey;
+				// case '.'  | ALT | SHIFT: modifiedKey = '>'; goto UpdateCommandKey;
+				// case '/'  | ALT | SHIFT: modifiedKey = '?'; goto UpdateCommandKey;
 
-				// case (KEY_ALT_MOD | 'A') ... (KEY_ALT_MOD | 'Z'):
+				// case (ALT | 'A') ... (ALT | 'Z'):
 				// 	modifiedKey = TO_LOWER_C(currentKey);
 				// 	goto UpdateCommandKey;
 
-				// case (KEY_ALT_MOD | KEY_SHIFT_MOD | 'A') ... (KEY_ALT_MOD | KEY_SHIFT_MOD | 'Z'):
+				// case (ALT | SHIFT | 'A') ... (ALT | SHIFT | 'Z'):
 				// 	goto UpdateCommandKey;
 
-				// case KEY_ALT_MOD | KEY_BACKSPACE:
-				// case KEY_ALT_MOD | KEY_SHIFT_MOD | KEY_BACKSPACE:
+				// case ALT | KEY_BACKSPACE:
+				// case ALT | SHIFT | KEY_BACKSPACE:
 				// 	command.firstKeyPressed = true;
 				// 	if (command.bufferCount > 0) command.bufferCount--;
 				// 	goto UpdateCommandScan;
 
-				// case KEY_ALT_MOD | KEY_CTRL_MOD | KEY_BACKSPACE:
-				// case KEY_ALT_MOD | KEY_CTRL_MOD | KEY_SHIFT_MOD | KEY_BACKSPACE:
-				// case KEY_ALT_MOD | KEY_DELETE:
+				// case ALT | CTRL | KEY_BACKSPACE:
+				// case ALT | CTRL | SHIFT | KEY_BACKSPACE:
+				// case ALT | KEY_DELETE:
 				// 	command.firstKeyPressed = true;
 				// 	command.bufferCount = 0;
 				// 	command.scanFoundIndex = 0;
@@ -2739,12 +2753,12 @@ LoopBegin:
 					break;
 				}
 				/* Utility Keys */
-				case KEY_CTRL_MOD | KEY_S: {
+				case CTRL | KEY_S: {
 					LOG("Saving: %s", pCode->path);
 					SaveFileText(pCode->path, pCode->pText);
 					break;
 				}
-				/* Character Delete Keys */
+				/* Delete Char */
 				case KEY_DELETE: {
 					CodeBoxDeleteChar(pCode); 
 					break;
@@ -2755,20 +2769,27 @@ LoopBegin:
 					CodeSyncCaretToMark(pCode, 0);
 					break;
 				}
-				/* Character Insert Keys */
+				/* Insert Char */
 				case KEY_ENTER: {
 					CodeBoxInsertNewLine(pCode);
 					break;
 				}
 				case KEY_SPACE: CodeBoxInsertChar(pCode, ' ');  break;
 				case KEY_TAB:   CodeBoxInsertChar(pCode, '\t'); break;
-
 				case 'A' ... 'Z': CodeBoxInsertChar(pCode, 'a' + (currentKey - KEY_A)); break;
-				case '0' ... '9': CodeBoxInsertChar(pCode, currentKey); break;
-
-				case (KEY_SHIFT_MOD | 'A') ... (KEY_SHIFT_MOD | 'Z'): CodeBoxInsertChar(pCode, currentKey); break;
+				case (SHIFT | 'A') ... (SHIFT | 'Z'): CodeBoxInsertChar(pCode, currentKey); break;
 				case KEY_KP_0 ... KEY_KP_9: CodeBoxInsertChar(pCode, '0' + (currentKey - KEY_KP_0)); break;
-
+				case '0' ... '9': CodeBoxInsertChar(pCode, currentKey); break;
+				case SHIFT | '1':  CodeBoxInsertChar(pCode, '!'); break;
+				case SHIFT | '2':  CodeBoxInsertChar(pCode, '@'); break;
+				case SHIFT | '3':  CodeBoxInsertChar(pCode, '#'); break;
+				case SHIFT | '4':  CodeBoxInsertChar(pCode, '$'); break;
+				case SHIFT | '5':  CodeBoxInsertChar(pCode, '%'); break;
+				case SHIFT | '6':  CodeBoxInsertChar(pCode, '^'); break;
+				case SHIFT | '7':  CodeBoxInsertChar(pCode, '&'); break;
+				case SHIFT | '8':  CodeBoxInsertChar(pCode, '*'); break;
+				case SHIFT | '9':  CodeBoxInsertChar(pCode, '('); break;
+				case SHIFT | '0':  CodeBoxInsertChar(pCode, ')'); break;
 				case '`':  CodeBoxInsertChar(pCode, currentKey); break;
 				case '-':  CodeBoxInsertChar(pCode, currentKey); break;
 				case '=':  CodeBoxInsertChar(pCode, currentKey); break;
@@ -2780,35 +2801,134 @@ LoopBegin:
 				case ',':  CodeBoxInsertChar(pCode, currentKey); break;
 				case '.':  CodeBoxInsertChar(pCode, currentKey); break;
 				case '/':  CodeBoxInsertChar(pCode, currentKey); break;
+				case SHIFT | '`':  CodeBoxInsertChar(pCode, '~'); break;
+				case SHIFT | '-':  CodeBoxInsertChar(pCode, '_'); break;
+				case SHIFT | '=':  CodeBoxInsertChar(pCode, '+'); break;
+				case SHIFT | '[':  CodeBoxInsertChar(pCode, '{'); break;
+				case SHIFT | ']':  CodeBoxInsertChar(pCode, '}'); break;
+				case SHIFT | '\\': CodeBoxInsertChar(pCode, '|'); break;
+				case SHIFT | ';':  CodeBoxInsertChar(pCode, ':'); break;
+				case SHIFT | '\'': CodeBoxInsertChar(pCode, '"'); break;
+				case SHIFT | ',':  CodeBoxInsertChar(pCode, '<'); break;
+				case SHIFT | '.':  CodeBoxInsertChar(pCode, '>'); break;
+				case SHIFT | '/':  CodeBoxInsertChar(pCode, '?'); break;
 
-				case KEY_SHIFT_MOD | '1':  CodeBoxInsertChar(pCode, '!'); break;
-				case KEY_SHIFT_MOD | '2':  CodeBoxInsertChar(pCode, '@'); break;
-				case KEY_SHIFT_MOD | '3':  CodeBoxInsertChar(pCode, '#'); break;
-				case KEY_SHIFT_MOD | '4':  CodeBoxInsertChar(pCode, '$'); break;
-				case KEY_SHIFT_MOD | '5':  CodeBoxInsertChar(pCode, '%'); break;
-				case KEY_SHIFT_MOD | '6':  CodeBoxInsertChar(pCode, '^'); break;
-				case KEY_SHIFT_MOD | '7':  CodeBoxInsertChar(pCode, '&'); break;
-				case KEY_SHIFT_MOD | '8':  CodeBoxInsertChar(pCode, '*'); break;
-				case KEY_SHIFT_MOD | '9':  CodeBoxInsertChar(pCode, '('); break;
-				case KEY_SHIFT_MOD | '0':  CodeBoxInsertChar(pCode, ')'); break;
-				case KEY_SHIFT_MOD | '`':  CodeBoxInsertChar(pCode, '~'); break;
-				case KEY_SHIFT_MOD | '-':  CodeBoxInsertChar(pCode, '_'); break;
-				case KEY_SHIFT_MOD | '=':  CodeBoxInsertChar(pCode, '+'); break;
-				case KEY_SHIFT_MOD | '[':  CodeBoxInsertChar(pCode, '{'); break;
-				case KEY_SHIFT_MOD | ']':  CodeBoxInsertChar(pCode, '}'); break;
-				case KEY_SHIFT_MOD | '\\': CodeBoxInsertChar(pCode, '|'); break;
-				case KEY_SHIFT_MOD | ';':  CodeBoxInsertChar(pCode, ':'); break;
-				case KEY_SHIFT_MOD | '\'': CodeBoxInsertChar(pCode, '"'); break;
-				case KEY_SHIFT_MOD | ',':  CodeBoxInsertChar(pCode, '<'); break;
-				case KEY_SHIFT_MOD | '.':  CodeBoxInsertChar(pCode, '>'); break;
-				case KEY_SHIFT_MOD | '/':  CodeBoxInsertChar(pCode, '?'); break;
-
+				/* Jump Forward To Char */
+				case ('A' | SHIFT | ALT) ... ('Z' | SHIFT | ALT): {
+					modifiedKey = currentKey; 
+					goto JumpForwardToChar;
+				}
+				case ('A' | ALT) ... ('Z' | ALT): {
+					modifiedKey = 'a' + (currentKey - KEY_A); 
+					goto JumpForwardToChar;
+				}
+				case KEY_ENTER    | ALT: modifiedKey = '\n'; goto JumpForwardToChar;
+				case '1'  | SHIFT | ALT: modifiedKey = '!';  goto JumpForwardToChar;
+				case '2'  | SHIFT | ALT: modifiedKey = '@';  goto JumpForwardToChar;
+				case '3'  | SHIFT | ALT: modifiedKey = '#';  goto JumpForwardToChar;
+				case '4'  | SHIFT | ALT: modifiedKey = '$';  goto JumpForwardToChar;
+				case '5'  | SHIFT | ALT: modifiedKey = '%';  goto JumpForwardToChar;
+				case '6'  | SHIFT | ALT: modifiedKey = '^';  goto JumpForwardToChar;
+				case '7'  | SHIFT | ALT: modifiedKey = '&';  goto JumpForwardToChar;
+				case '8'  | SHIFT | ALT: modifiedKey = '*';  goto JumpForwardToChar;
+				case '9'  | SHIFT | ALT: modifiedKey = '(';  goto JumpForwardToChar;
+				case '0'  | SHIFT | ALT: modifiedKey = ')';  goto JumpForwardToChar;
+				case '`'  | SHIFT | ALT: modifiedKey = '~';  goto JumpForwardToChar;
+				case '-'  | SHIFT | ALT: modifiedKey = '_';  goto JumpForwardToChar;
+				case '='  | SHIFT | ALT: modifiedKey = '+';  goto JumpForwardToChar;
+				case '['  | SHIFT | ALT: modifiedKey = '{';  goto JumpForwardToChar;
+				case ']'  | SHIFT | ALT: modifiedKey = '}';  goto JumpForwardToChar;
+				case '\\' | SHIFT | ALT: modifiedKey = '|';  goto JumpForwardToChar;
+				case ';'  | SHIFT | ALT: modifiedKey = ':';  goto JumpForwardToChar;
+				case '\'' | SHIFT | ALT: modifiedKey = '"';  goto JumpForwardToChar;
+				case ','  | SHIFT | ALT: modifiedKey = '<';  goto JumpForwardToChar;
+				case '.'  | SHIFT | ALT: modifiedKey = '>';  goto JumpForwardToChar;
+				case '/'  | SHIFT | ALT: modifiedKey = '?';  goto JumpForwardToChar;
+				case ('0' | ALT) ... ('9' | ALT): 
+				case '`'  | ALT:                
+				case '-'  | ALT:
+				case '='  | ALT:
+				case '['  | ALT:
+				case ']'  | ALT:
+				case '\\' | ALT:
+				case ';'  | ALT:
+				case '\'' | ALT:
+				case ','  | ALT:
+				case '.'  | ALT:
+				case '/'  | ALT: modifiedKey = currentKey;
+				JumpForwardToChar: {
+					input.mouseMarkActive = false;
+					if (caret.index >= pCode->textCount) break;
+					int newIndex = TextFindCharForward(pText, mark.index+1, modifiedKey);
+					CodeSetMarkIndex(pCode, newIndex);
+					CodeSyncCaretToMarkRow(pCode, 0);
+					CodeBoxFocusMark(pCode);
+					break;
+				}
+				/* Jump Backward To Char */
+				case ('A' | SHIFT | ALTCTRL) ... ('Z' | SHIFT | ALTCTRL): {
+					modifiedKey = currentKey; 
+					goto JumpBackwardToChar;
+				}
+				case ('A' | ALTCTRL) ... ('Z' | ALTCTRL): {
+					modifiedKey = 'a' + (currentKey - KEY_A); 
+					goto JumpBackwardToChar;
+				}
+				case KEY_ENTER    | ALTCTRL: modifiedKey = '\n'; goto JumpBackwardToChar;
+				case '1'  | SHIFT | ALTCTRL: modifiedKey = '!';  goto JumpBackwardToChar;
+				case '2'  | SHIFT | ALTCTRL: modifiedKey = '@';  goto JumpBackwardToChar;
+				case '3'  | SHIFT | ALTCTRL: modifiedKey = '#';  goto JumpBackwardToChar;
+				case '4'  | SHIFT | ALTCTRL: modifiedKey = '$';  goto JumpBackwardToChar;
+				case '5'  | SHIFT | ALTCTRL: modifiedKey = '%';  goto JumpBackwardToChar;
+				case '6'  | SHIFT | ALTCTRL: modifiedKey = '^';  goto JumpBackwardToChar;
+				case '7'  | SHIFT | ALTCTRL: modifiedKey = '&';  goto JumpBackwardToChar;
+				case '8'  | SHIFT | ALTCTRL: modifiedKey = '*';  goto JumpBackwardToChar;
+				case '9'  | SHIFT | ALTCTRL: modifiedKey = '(';  goto JumpBackwardToChar;
+				case '0'  | SHIFT | ALTCTRL: modifiedKey = ')';  goto JumpBackwardToChar;
+				case '`'  | SHIFT | ALTCTRL: modifiedKey = '~';  goto JumpBackwardToChar;
+				case '-'  | SHIFT | ALTCTRL: modifiedKey = '_';  goto JumpBackwardToChar;
+				case '='  | SHIFT | ALTCTRL: modifiedKey = '+';  goto JumpBackwardToChar;
+				case '['  | SHIFT | ALTCTRL: modifiedKey = '{';  goto JumpBackwardToChar;
+				case ']'  | SHIFT | ALTCTRL: modifiedKey = '}';  goto JumpBackwardToChar;
+				case '\\' | SHIFT | ALTCTRL: modifiedKey = '|';  goto JumpBackwardToChar;
+				case ';'  | SHIFT | ALTCTRL: modifiedKey = ':';  goto JumpBackwardToChar;
+				case '\'' | SHIFT | ALTCTRL: modifiedKey = '"';  goto JumpBackwardToChar;
+				case ','  | SHIFT | ALTCTRL: modifiedKey = '<';  goto JumpBackwardToChar;
+				case '.'  | SHIFT | ALTCTRL: modifiedKey = '>';  goto JumpBackwardToChar;
+				case '/'  | SHIFT | ALTCTRL: modifiedKey = '?';  goto JumpBackwardToChar;
+				case ('0' | ALTCTRL) ... ('9' | ALTCTRL): 
+				case '`'  | ALTCTRL:                
+				case '-'  | ALTCTRL:
+				case '='  | ALTCTRL:
+				case '['  | ALTCTRL:
+				case ']'  | ALTCTRL:
+				case '\\' | ALTCTRL:
+				case ';'  | ALTCTRL:
+				case '\'' | ALTCTRL:
+				case ','  | ALTCTRL:
+				case '.'  | ALTCTRL:
+				case '/'  | ALTCTRL: modifiedKey = currentKey;
+				JumpBackwardToChar: {
+					input.mouseMarkActive = false;
+					if (caret.index <= 0) break;
+					int newIndex = TextFindCharBackward(pText, mark.index-2, modifiedKey) + 1;
+					CodeSetMarkIndex(pCode, newIndex);
+					CodeSyncCaretToMarkRow(pCode, 0);
+					CodeBoxFocusMark(pCode);
+					break;
+				}
 				default: break;
 			}
 
 			priorKey = currentKey;
 			currentKey = GetKeyPressed();
 		}
+
+	#undef SHIFT
+	#undef CTRL
+	#undef ALT
+	#undef CTRLALT
+	#undef ALTCTRL
 	}
 
 	/*
@@ -2847,8 +2967,8 @@ LoopBegin:
 			fontXSpacing * RIGHT_MARGIN_SIZE,                 boxRect.height - bottomMarginRect.height
 		};
 		const Rectangle codeRect = {
-			boxRect.x + leftMarginRect.width,                              boxRect.y,
-			boxRect.width  - leftMarginRect.width - rightMarginRect.width, boxRect.height - bottomMarginRect.height
+			boxRect.x + leftMarginRect.width,                             boxRect.y,
+			boxRect.width - leftMarginRect.width - rightMarginRect.width, boxRect.height - bottomMarginRect.height
 		};
 
 		DrawRectangleRec(leftMarginRect, COLOR_BACKGROUND_DIM);
