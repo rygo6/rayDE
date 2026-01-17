@@ -2051,9 +2051,8 @@ static int TextFindCharsBackward(const char* text, int index, const char* find)
 }
 
 /*/ Find char skipping a specified number of matches. */
-static int TextFindCharSkipForward(const char* pText, char find, int skipCount)
+static int TextFindCharSkipForward(const char* pText, int index, char find, int skipCount)
 {
-	int index = 0;
 	while (pText[index] != '\0' && skipCount > 0) {
 		if (pText[index] == find) skipCount--;
 		index++;
@@ -2126,13 +2125,13 @@ static void CodeBoxFocusRow(CodeBox* pCode, int toRow)
 	int yMin = pCode->focusStartRow;
 	if (toRow < yMin) {
 		pCode->focusStartRow = toRow;
-		pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, '\n', pCode->focusStartRow);
+		pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, 0, '\n', pCode->focusStartRow);
 	}
 
 	int yMax = yMin + boxRowCount;
 	if (toRow > yMax) {
 		pCode->focusStartRow = toRow - boxRowCount;
-		pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, '\n', pCode->focusStartRow);
+		pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, 0, '\n', pCode->focusStartRow);
 	}
 }
 
@@ -2141,7 +2140,7 @@ static void CodeBoxIncrementFocusRow(CodeBox* pCode, int increment)
 	pCode->focusStartRow -= increment;
 	pCode->focusStartRow = MAX(pCode->focusStartRow, 0);
 	pCode->focusStartRow = MIN(pCode->focusStartRow, pCode->textRowCount);
-	pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, '\n', pCode->focusStartRow);
+	pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, 0, '\n', pCode->focusStartRow);
 }
 
 /* Focus on a given character index. */
@@ -2217,13 +2216,6 @@ static void CodeBoxInsertNewlineAtCaret(CodeBox* pCode, CodePos caret)
 	CodeBoxProcessMeta(pCode);
 }
 
-static inline void CodeBoxInsertNewLine(CodeBox* pCode)
-{
-	CodeBoxInsertNewlineAtCaret(pCode, pCode->pCarets[0]);
-	CodeSetMarkIndex(pCode, pCode->mark.index + 1);
-	CodeSyncCaretToMark(pCode, 0);
-}
-
 static void CodeBoxInsertCharAtCaret(CodeBox* pCode, CodePos caret, char c)
 {
 	memmove(pCode->pText + caret.index + 1, pCode->pText + caret.index, pCode->textCount - caret.index - 1);
@@ -2240,13 +2232,6 @@ static void CodeBoxInsertCharAtCaret(CodeBox* pCode, CodePos caret, char c)
 
 	// TODO this needs to run incrementally
 	CodeBoxProcessMeta(pCode);
-}
-
-static inline void CodeBoxInsertChar(CodeBox* pCode, char c)
-{
-	CodeBoxInsertCharAtCaret(pCode, pCode->pCarets[0], c);
-	CodeSetMarkIndex(pCode, pCode->mark.index + 1);
-	CodeSyncCaretToMark(pCode, 0);
 }
 
 static void CodeBoxDeleteNewlineAtCaret(CodeBox* pCode, CodePos caret)
@@ -2294,9 +2279,12 @@ static void CodeBoxDeleteCharAtCaret(CodeBox* pCode, CodePos caret)
 	CodeBoxProcessMeta(pCode);
 }
 
-static inline void CodeBoxDeleteChar(CodeBox* pCode)
+static CodeRow CodeRowFromIndex(const char *pText, int index)
 {
-	CodeBoxDeleteCharAtCaret(pCode, pCode->pCarets[0]);
+	return (CodeRow){
+		.startIndex = TextFindCharBackward(pText, index, '\n')+1,
+		.endIndex   = TextFindCharForward(pText, index, '\n'),
+	};
 }
 
 static void CommandFinish(CodeBox* pCode, Command* pCommand)
@@ -2448,8 +2436,6 @@ LoopBegin:
 		input.Alt  = altDown;
 		input.Ctrl = ctrlDown;
 
-		LOG("alt:%d ctrl:%d ctrlalt:%d altctrl:%d\n", input.Alt, input.Ctrl, input.CtrlAlt, input.AltCtrl);
-
 		input.modifierCombination =
 			(input.Shift   ? MASK_SHIFT    : 0) |
 			(input.Alt     ? MASK_ALT      : 0) |
@@ -2546,21 +2532,6 @@ LoopBegin:
 					}
 					break;
 				}
-				/* Move To Line Beginning */
-				case KEY_COMMA | CTRL: {
-					input.mouseMarkActive = false;
-					if (caret.index >= pCode->textCount) break;
-					int newIndex = CARET_INVALID;
-					switch(pText[mark.index]){
-						case '\n': newIndex = TextFindCharBackward(pText, mark.index-1, '\n') + 1; break;
-						default:   newIndex = TextFindCharsBackward(pText, mark.index, " \n") + 1; break;
-					} 
-					if (newIndex != CARET_INVALID) {
-						CodeSetMarkIndex(pCode, newIndex);
-						CodeSyncCaretToMarkRow(pCode, 0);
-					}
-					break;
-				}
 				/* Move Right One Char */
 				case KEY_RIGHT:
 				case KEY_L | CTRL: {
@@ -2588,7 +2559,7 @@ LoopBegin:
 					}
 					break;
 				}
-				/* Move Up Keys */
+				/* Move Up One Char */
 				case KEY_UP:
 				case KEY_I | CTRL:{
 					input.mouseMarkActive = false;
@@ -2597,6 +2568,7 @@ LoopBegin:
 					CodeBoxFocusMark(pCode);
 					break;
 				}
+				/* Move Up One Word */
 				case KEY_UP | CTRL:
 				case KEY_I  | CTRLALT: {
 					input.mouseMarkActive = false;
@@ -2609,7 +2581,7 @@ LoopBegin:
 					CodeBoxFocusMark(pCode);
 					break;
 				}
-				/* Move Down Keys */
+				/* Move Down One Char */
 				case KEY_DOWN:
 				case KEY_K | CTRL: {
 					input.mouseMarkActive = false;
@@ -2618,14 +2590,15 @@ LoopBegin:
 					CodeBoxFocusMark(pCode);
 					break;
 				}
+				/* Move Down One Word */
 				case KEY_DOWN | CTRL:
 				case KEY_K    | CTRLALT: {
 					input.mouseMarkActive = false;
 					// Search"\n\n" to find where there is a new line gap
 					int blockEndIndex   = TextFindTextForward(pText, mark.index, "\n\n");
 					int blockStartIndex = TextNegateFindCharForward(pText, blockEndIndex, '\n');
-					blockStartIndex = TextNegateFindCharForward(pText, blockStartIndex, ' ');
-					blockStartIndex = TextNegateFindCharForward(pText, blockStartIndex, '\t');
+					blockStartIndex     = TextNegateFindCharForward(pText, blockStartIndex, ' ');
+					blockStartIndex     = TextNegateFindCharForward(pText, blockStartIndex, '\t');
 					int newCaretIndex   = blockStartIndex;
 					CodeSetMarkIndex(pCode, newCaretIndex);
 					CodeSyncCaretToMarkRow(pCode, 0);
@@ -2760,68 +2733,67 @@ LoopBegin:
 				}
 				/* Delete Char */
 				case KEY_DELETE: {
-					CodeBoxDeleteChar(pCode); 
+					CodeBoxDeleteCharAtCaret(pCode, (CodePos){ .col = caret.col, .row = caret.row, .index = caret.index+1 });
 					break;
 				}
 				case KEY_BACKSPACE: {
-					CodeBoxDeleteChar(pCode);
+					CodeBoxDeleteCharAtCaret(pCode, caret);
 					CodeSetMarkIndex(pCode, mark.index - 1);
 					CodeSyncCaretToMark(pCode, 0);
 					break;
 				}
 				/* Insert Char */
 				case KEY_ENTER: {
-					CodeBoxInsertNewLine(pCode);
+					CodeBoxInsertNewlineAtCaret(pCode, caret);
+					CodeSetMarkIndex(pCode, mark.index + 1);
+					CodeSyncCaretToMark(pCode, 0);
 					break;
 				}
-				case KEY_SPACE: CodeBoxInsertChar(pCode, ' ');  break;
-				case KEY_TAB:   CodeBoxInsertChar(pCode, '\t'); break;
-				case 'A' ... 'Z': CodeBoxInsertChar(pCode, 'a' + (currentKey - KEY_A)); break;
-				case (SHIFT | 'A') ... (SHIFT | 'Z'): CodeBoxInsertChar(pCode, currentKey); break;
-				case KEY_KP_0 ... KEY_KP_9: CodeBoxInsertChar(pCode, '0' + (currentKey - KEY_KP_0)); break;
-				case '0' ... '9': CodeBoxInsertChar(pCode, currentKey); break;
-				case SHIFT | '1':  CodeBoxInsertChar(pCode, '!'); break;
-				case SHIFT | '2':  CodeBoxInsertChar(pCode, '@'); break;
-				case SHIFT | '3':  CodeBoxInsertChar(pCode, '#'); break;
-				case SHIFT | '4':  CodeBoxInsertChar(pCode, '$'); break;
-				case SHIFT | '5':  CodeBoxInsertChar(pCode, '%'); break;
-				case SHIFT | '6':  CodeBoxInsertChar(pCode, '^'); break;
-				case SHIFT | '7':  CodeBoxInsertChar(pCode, '&'); break;
-				case SHIFT | '8':  CodeBoxInsertChar(pCode, '*'); break;
-				case SHIFT | '9':  CodeBoxInsertChar(pCode, '('); break;
-				case SHIFT | '0':  CodeBoxInsertChar(pCode, ')'); break;
-				case '`':  CodeBoxInsertChar(pCode, currentKey); break;
-				case '-':  CodeBoxInsertChar(pCode, currentKey); break;
-				case '=':  CodeBoxInsertChar(pCode, currentKey); break;
-				case '[':  CodeBoxInsertChar(pCode, currentKey); break;
-				case ']':  CodeBoxInsertChar(pCode, currentKey); break;
-				case '\\': CodeBoxInsertChar(pCode, currentKey); break;
-				case ';':  CodeBoxInsertChar(pCode, currentKey); break;
-				case '\'': CodeBoxInsertChar(pCode, currentKey); break;
-				case ',':  CodeBoxInsertChar(pCode, currentKey); break;
-				case '.':  CodeBoxInsertChar(pCode, currentKey); break;
-				case '/':  CodeBoxInsertChar(pCode, currentKey); break;
-				case SHIFT | '`':  CodeBoxInsertChar(pCode, '~'); break;
-				case SHIFT | '-':  CodeBoxInsertChar(pCode, '_'); break;
-				case SHIFT | '=':  CodeBoxInsertChar(pCode, '+'); break;
-				case SHIFT | '[':  CodeBoxInsertChar(pCode, '{'); break;
-				case SHIFT | ']':  CodeBoxInsertChar(pCode, '}'); break;
-				case SHIFT | '\\': CodeBoxInsertChar(pCode, '|'); break;
-				case SHIFT | ';':  CodeBoxInsertChar(pCode, ':'); break;
-				case SHIFT | '\'': CodeBoxInsertChar(pCode, '"'); break;
-				case SHIFT | ',':  CodeBoxInsertChar(pCode, '<'); break;
-				case SHIFT | '.':  CodeBoxInsertChar(pCode, '>'); break;
-				case SHIFT | '/':  CodeBoxInsertChar(pCode, '?'); break;
-
+				case KEY_SPACE: modifiedKey = ' ';  goto InsertChar;
+				case KEY_TAB:   modifiedKey = '\t'; goto InsertChar;
+				case KEY_KP_0 ... KEY_KP_9: modifiedKey = '0' + (currentKey - KEY_KP_0); goto InsertChar;
+				case '1'  | SHIFT: modifiedKey = '!'; goto InsertChar;
+				case '2'  | SHIFT: modifiedKey = '@'; goto InsertChar;
+				case '3'  | SHIFT: modifiedKey = '#'; goto InsertChar;
+				case '4'  | SHIFT: modifiedKey = '$'; goto InsertChar;
+				case '5'  | SHIFT: modifiedKey = '%'; goto InsertChar;
+				case '6'  | SHIFT: modifiedKey = '^'; goto InsertChar;
+				case '7'  | SHIFT: modifiedKey = '&'; goto InsertChar;
+				case '8'  | SHIFT: modifiedKey = '*'; goto InsertChar;
+				case '9'  | SHIFT: modifiedKey = '('; goto InsertChar;
+				case '0'  | SHIFT: modifiedKey = ')'; goto InsertChar;
+				case '`'  | SHIFT: modifiedKey = '~'; goto InsertChar;
+				case '-'  | SHIFT: modifiedKey = '_'; goto InsertChar;
+				case '='  | SHIFT: modifiedKey = '+'; goto InsertChar;
+				case '['  | SHIFT: modifiedKey = '{'; goto InsertChar;
+				case ']'  | SHIFT: modifiedKey = '}'; goto InsertChar;
+				case '\\' | SHIFT: modifiedKey = '|'; goto InsertChar;
+				case ';'  | SHIFT: modifiedKey = ':'; goto InsertChar;
+				case '\'' | SHIFT: modifiedKey = '"'; goto InsertChar;
+				case ','  | SHIFT: modifiedKey = '<'; goto InsertChar;
+				case '.'  | SHIFT: modifiedKey = '>'; goto InsertChar;
+				case '/'  | SHIFT: modifiedKey = '?'; goto InsertChar;
+				case 'A' ... 'Z': modifiedKey = 'a' + (currentKey - KEY_A); goto InsertChar;
+				case 'A' | SHIFT ... 'Z' | SHIFT:
+				case '0' ... '9':
+				case '`' :
+				case '-' :
+				case '=' :
+				case '[' :
+				case ']' :
+				case '\\':
+				case ';' :
+				case '\'':
+				case ',' :
+				case '.' :
+				case '/' : modifiedKey = currentKey;
+				InsertChar: {
+					CodeBoxInsertCharAtCaret(pCode, caret, modifiedKey);
+					CodeSetMarkIndex(pCode, mark.index + 1);
+					CodeSyncCaretToMark(pCode, 0);
+					break;
+				}
 				/* Jump Forward To Char */
-				case ('A' | SHIFT | ALT) ... ('Z' | SHIFT | ALT): {
-					modifiedKey = currentKey; 
-					goto JumpForwardToChar;
-				}
-				case ('A' | ALT) ... ('Z' | ALT): {
-					modifiedKey = 'a' + (currentKey - KEY_A); 
-					goto JumpForwardToChar;
-				}
 				case KEY_ENTER    | ALT: modifiedKey = '\n'; goto JumpForwardToChar;
 				case '1'  | SHIFT | ALT: modifiedKey = '!';  goto JumpForwardToChar;
 				case '2'  | SHIFT | ALT: modifiedKey = '@';  goto JumpForwardToChar;
@@ -2844,7 +2816,9 @@ LoopBegin:
 				case ','  | SHIFT | ALT: modifiedKey = '<';  goto JumpForwardToChar;
 				case '.'  | SHIFT | ALT: modifiedKey = '>';  goto JumpForwardToChar;
 				case '/'  | SHIFT | ALT: modifiedKey = '?';  goto JumpForwardToChar;
-				case ('0' | ALT) ... ('9' | ALT): 
+				case 'A'  | ALT ... 'Z' | ALT: modifiedKey = 'a' + (currentKey - KEY_A); goto JumpForwardToChar;
+				case 'A'  | SHIFT | ALT ... 'Z' | SHIFT | ALT:
+				case '0'  | ALT ... '9' | ALT: 
 				case '`'  | ALT:                
 				case '-'  | ALT:
 				case '='  | ALT:
@@ -2866,14 +2840,6 @@ LoopBegin:
 					break;
 				}
 				/* Jump Backward To Char */
-				case ('A' | SHIFT | ALTCTRL) ... ('Z' | SHIFT | ALTCTRL): {
-					modifiedKey = currentKey; 
-					goto JumpBackwardToChar;
-				}
-				case ('A' | ALTCTRL) ... ('Z' | ALTCTRL): {
-					modifiedKey = 'a' + (currentKey - KEY_A); 
-					goto JumpBackwardToChar;
-				}
 				case KEY_ENTER    | ALTCTRL: modifiedKey = '\n'; goto JumpBackwardToChar;
 				case '1'  | SHIFT | ALTCTRL: modifiedKey = '!';  goto JumpBackwardToChar;
 				case '2'  | SHIFT | ALTCTRL: modifiedKey = '@';  goto JumpBackwardToChar;
@@ -2896,7 +2862,9 @@ LoopBegin:
 				case ','  | SHIFT | ALTCTRL: modifiedKey = '<';  goto JumpBackwardToChar;
 				case '.'  | SHIFT | ALTCTRL: modifiedKey = '>';  goto JumpBackwardToChar;
 				case '/'  | SHIFT | ALTCTRL: modifiedKey = '?';  goto JumpBackwardToChar;
-				case ('0' | ALTCTRL) ... ('9' | ALTCTRL): 
+				case 'A'  | ALTCTRL ... 'Z' | ALTCTRL: modifiedKey = 'a' + (currentKey - KEY_A); goto JumpBackwardToChar;
+				case 'A'  | SHIFT | ALTCTRL ... 'Z' | SHIFT | ALTCTRL:
+				case '0'  | ALTCTRL ... '9' | ALTCTRL: 
 				case '`'  | ALTCTRL:                
 				case '-'  | ALTCTRL:
 				case '='  | ALTCTRL:
@@ -2981,10 +2949,10 @@ LoopBegin:
 		const int       count = pCode->textCount;
 		const char*     pText = pCode->pText;
 		const TextMeta* pMeta = pCode->pTextMeta;
-		const CodeRow*  pRows = pCode->pTextRows;
 		const int boxRowCount = pCode->boxRowCount;
 		const int boxColCount = pCode->boxColCount;
 		const int focusStartRow = pCode->focusStartRow;
+		const int focusStartRowIndex = pCode->focusStartRowIndex;
 
 		const int fontXSpacingHalf = (fontXSpacing / 2);
 		const int fontYSpacingHalf = (fontYSpacing / 2);
@@ -2992,7 +2960,7 @@ LoopBegin:
 		const CodePos  mainCaret = pCode->pCarets[0];
 		const char     caretChar = pText[mainCaret.index];
 		const TextMeta caretMeta = pMeta[mainCaret.index];
-		const CodeRow  caretRow  = pRows[mainCaret.index];
+		const CodeRow  caretRow  = CodeRowFromIndex(pText, mainCaret.index);
 
 		Vector2 scanFoundPosition = { -1, -1}; // TODO compute deterministically
 
@@ -3004,8 +2972,9 @@ LoopBegin:
 			int iHoverBoxRow = hoverBoxPos.y / fontYSpacing;
 			mark.col = iHoverBoxCol;
 			mark.row = focusStartRow + iHoverBoxRow;
-			CodeRow markRow = pRows[mark.row];
-			mark.index = MIN(markRow.startIndex + iHoverBoxCol, markRow.endIndex);
+			int markRowStartIndex = TextFindCharSkipForward(pText, focusStartRowIndex, '\n', iHoverBoxRow);
+			int markRowEndIndex   = TextFindCharForward(pText, markRowStartIndex, '\n');
+			mark.index = MIN(markRowStartIndex + iHoverBoxCol, markRowEndIndex);
 			markPress = input.lMouse;
 		}
 
@@ -3047,7 +3016,7 @@ LoopBegin:
 					for (int iHighlightRow = iLScopeRow, iHighlightBoxRow = iHighlightRow - focusStartRow;
 							iHighlightRow <= iRScopeRow && iHighlightBoxRow <= boxRowCount;
 							++iHighlightRow, iHighlightBoxRow = iHighlightRow - focusStartRow) {
-						CodeRow highlightRow = pRows[iHighlightRow];
+						CodeRow highlightRow  = CodeRowFromIndex(pText, iStartChar);
 						int iStartCol = iStartChar - highlightRow.startIndex;
 						int iEndCol   = MIN(iRScope - highlightRow.startIndex, highlightRow.endIndex - highlightRow.startIndex);
 						Vector2 startBoxPos = (Vector2){ (iStartCol   * fontXSpacing), (iHighlightBoxRow * fontYSpacing) };
@@ -3071,7 +3040,7 @@ LoopBegin:
 		}
 
 		/* Draw Text */
-		int iText = pCode->focusStartRowIndex;
+		int iText = focusStartRowIndex;
 		for (int iRow = 0; iRow < boxRowCount; ++iRow) {
 			Vector2 charPos = (Vector2){ leftMarginRect.x, leftMarginRect.y + (fontYSpacing * iRow) };
 			static char leftMarginText[LEFT_MARGIN_CAPACITY];
@@ -3124,7 +3093,6 @@ LoopBegin:
 						currentColor = TOK_KIND_COLOR[currentMeta.tok.kind];
 						if (caretMeta.tok.val == currentMeta.tok.val  && currentMeta.tokOffset.iStart == 0 &&
 							caretMeta.tok.kind != TOK_KIND_IDENTIFIER && caretMeta.tok.kind != TOK_KIND_NUMBER) {
-							CodeRow currentRow = pRows[iRow + focusStartRow];
 							int iEndCol = iCol + currentMeta.tokOffset.iEnd;
 							Vector2 startBoxPos = (Vector2){ (iCol        * fontXSpacing), (iRow * fontYSpacing) };
 							Vector2 endBoxPos   = (Vector2){ ((iEndCol+1) * fontXSpacing), (iRow * fontYSpacing) };
