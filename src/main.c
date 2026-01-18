@@ -326,6 +326,13 @@ typedef unsigned char utf8;
 	_valA > _valB ? _valA : _valB;\
 })
 
+#define ABS(_a)\
+({\
+	typeof(_a) _valA = (_a);\
+	_valA > 0 ? _valA : -_valA;\
+})
+
+
 #define FILL(_arr, _value, _count)\
 	for (typeof(_count) i = 0; i < (_count); ++i) { (_arr)[i] = (_value); }
 
@@ -1630,7 +1637,6 @@ typedef struct CodeBox {
 	int textRowCount;
 	int textCount;
 	char*     pText;
-	CodeRow*  pTextRows;
 	TextMeta* pTextMeta;
 
 	char* path;
@@ -2096,6 +2102,15 @@ static bool TextFindCountCharBackward(const char* pText, char searchChar, char c
 	return true;
 }
 
+
+static CodeRow CodeRowFromIndex(const char *pText, int index)
+{
+	return (CodeRow){
+		.startIndex = TextFindCharBackward(pText, index, '\n')+1,
+		.endIndex   = TextFindCharForward(pText, index, '\n'),
+	};
+}
+
 /* Set size rect of CodeBox. */
 static void CodeBoxSetRect(CodeBox *pCode, Rectangle rect)
 {
@@ -2169,6 +2184,15 @@ static void CodeSetMarkIndex(CodeBox* pCode, int newMarkIndex)
 	assert(pCode->mark.col   >= 0);
 }
 
+static void CodeSetMarkRow(CodeBox* pCode, int newMarkRow)
+{
+	const char* pText = pCode->pText;
+	pCode->mark.row   = newMarkRow;
+	int markRowStartIndex = TextFindCharSkipForward(pText, 0, '\n', newMarkRow);
+	int markRowEndIndex   = TextFindCharForward(pText, markRowStartIndex, '\n');
+	pCode->mark.index = MIN(markRowStartIndex + pCode->mark.col, markRowEndIndex);
+}
+
 static void CodeSyncMarkToCaret(CodeBox* pCode, u8 iCaret)
 {
 	memcpy(&pCode->mark, pCode->pCarets + iCaret, sizeof(CodePos));
@@ -2184,7 +2208,7 @@ static void CodeSyncCaretToMark(CodeBox* pCode, u8 iCaret)
 static void CodeSyncCaretToMarkRow(CodeBox* pCode, u8 iCaret)
 {
 	CodePos mark = pCode->mark;
-	CodeRow row  = pCode->pTextRows[mark.row];
+	CodeRow row  = CodeRowFromIndex(pCode->pText, mark.index);
 	int newCol = MIN(row.endIndex - row.startIndex, mark.col);
 	int newIndex = row.startIndex + newCol;
 	CodePos* pCaret = pCode->pCarets + iCaret;
@@ -2197,20 +2221,10 @@ static void CodeSyncCaretToMarkRow(CodeBox* pCode, u8 iCaret)
 static void CodeBoxInsertNewlineAtCaret(CodeBox* pCode, CodePos caret)
 {
 	memmove(pCode->pText + caret.index + 1,   pCode->pText + caret.index,   (pCode->textCount - caret.index - 1)  * sizeof(char));
-	memmove(pCode->pTextRows + caret.row + 1, pCode->pTextRows + caret.row, (pCode->textRowCount - caret.row - 1) * sizeof(CodeRow));
 	pCode->dirty = true;
 	pCode->pText[caret.index] = '\n';
 	pCode->textCount++;
 	pCode->textRowCount++;
-
-	// TODO should I really keep this updated like this? Maybe simpler and not expensive to determine rowStart each time?
-	pCode->pTextRows[caret.row].endIndex = caret.index;
-	pCode->pTextRows[caret.row+1].startIndex = caret.index+1;
-	pCode->pTextRows[caret.row+1].endIndex++;
-	for (int i = caret.row+2; i < pCode->textRowCount; ++i) {
-		pCode->pTextRows[i].startIndex++;
-		pCode->pTextRows[i].endIndex++;
-	}
 
 	// TODO this needs to run incrementally
 	CodeBoxProcessMeta(pCode);
@@ -2223,13 +2237,6 @@ static void CodeBoxInsertCharAtCaret(CodeBox* pCode, CodePos caret, char c)
 	pCode->pText[caret.index] = c;
 	pCode->textCount++;
 
-	// TODO should I really keep this updated like this? Maybe simpler and not expensive to determine rowStart each time?
-	pCode->pTextRows[caret.row].endIndex++;
-	for (int i = caret.row + 1; i < pCode->textRowCount; ++i) {
-		pCode->pTextRows[i].startIndex++;
-		pCode->pTextRows[i].endIndex++;
-	}
-
 	// TODO this needs to run incrementally
 	CodeBoxProcessMeta(pCode);
 }
@@ -2237,16 +2244,7 @@ static void CodeBoxInsertCharAtCaret(CodeBox* pCode, CodePos caret, char c)
 static void CodeBoxDeleteNewlineAtCaret(CodeBox* pCode, CodePos caret)
 {
 	if (pCode->textCount == 0) return;
-
-	// TODO should I really keep this updated like this? Maybe simpler and not expensive to determine rowStart each time?
-	pCode->pTextRows[caret.row-1].endIndex = pCode->pTextRows[caret.row].endIndex-1;
-	for (int i = caret.row; i < pCode->textRowCount; ++i) {
-		pCode->pTextRows[i].startIndex--;
-		pCode->pTextRows[i].endIndex--;
-	}
-
 	memmove(pCode->pText + caret.index-1, pCode->pText + caret.index, (pCode->textCount - caret.index)  * sizeof(char));
-	memmove(pCode->pTextRows + caret.row, pCode->pTextRows + caret.row+1, (pCode->textRowCount - caret.row) * sizeof(CodeRow));
 	pCode->dirty = true;
 	pCode->textCount--;
 	pCode->textRowCount--;
@@ -2268,23 +2266,8 @@ static void CodeBoxDeleteCharAtCaret(CodeBox* pCode, CodePos caret)
 	memmove(pCode->pText + caret.index - 1, pCode->pText + caret.index, pCode->textCount - caret.index);
 	pCode->textCount--;
 
-	// TODO should I really keep this updated like this? Maybe simpler and not expensive to determine rowStart each time?
-	pCode->pTextRows[caret.row].endIndex--;
-	for (int i = caret.row + 1; i < pCode->textRowCount; ++i) {
-		pCode->pTextRows[i].startIndex--;
-		pCode->pTextRows[i].endIndex--;
-	}
-
 	// TODO this needs to run incrementally
 	CodeBoxProcessMeta(pCode);
-}
-
-static CodeRow CodeRowFromIndex(const char *pText, int index)
-{
-	return (CodeRow){
-		.startIndex = TextFindCharBackward(pText, index, '\n')+1,
-		.endIndex   = TextFindCharForward(pText, index, '\n'),
-	};
 }
 
 static void CommandFinish(CodeBox* pCode, Command* pCommand)
@@ -2348,6 +2331,7 @@ int main(void)
 		bool mouseMarkActive;
 		Vector2 mousePos;
 		float scrollMouse;
+		float scrollMouseMultiplier;
 		bool  lMouse;
 		bool  Shift;
 		bool  Ctrl;
@@ -2373,7 +2357,6 @@ int main(void)
 	/* File Load */
 	{
 		pCode->pText     = XCALLOC(TEXT_BUFFER_CAPACITY, char);
-		pCode->pTextRows = XCALLOC(TEXT_BUFFER_CAPACITY, CodeRow);
 		pCode->pTextMeta = XCALLOC(TEXT_BUFFER_CAPACITY, TextMeta);
 
 		pCode->path = "./src/main.c";
@@ -2381,11 +2364,8 @@ int main(void)
 		int index = 0;
 		int rowIndex = 0;
 		int startIndex = 0;
-		CodeRow* pTextRows = pCode->pTextRows;
 		while (loadedFile[index] != '\0') {
 			if (loadedFile[index] == '\n') {
-				pTextRows[rowIndex].startIndex = startIndex;
-				pTextRows[rowIndex].endIndex = index;
 				startIndex = index + 1;
 				rowIndex++;
 			}
@@ -2407,6 +2387,7 @@ int main(void)
  */
 LoopBegin:
 
+	float frameTime = GetFrameTime();
 	framesCounter++;
 
 	if (IsWindowResized() && !IsWindowFullscreen())
@@ -2425,7 +2406,7 @@ LoopBegin:
 			input.mouseMarkActive = true;
 			input.mousePos = newMousePos;
 		}
-		input.scrollMouse = GetMouseWheelMove();
+		input.scrollMouse = GetMouseWheelMove() * 2;
 		input.lMouse      = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
 		input.Shift   = IsKeyDown(KEY_LEFT_SHIFT)   | IsKeyDown(KEY_RIGHT_SHIFT);
@@ -2563,7 +2544,7 @@ LoopBegin:
 				case KEY_UP:
 				case KEY_I | CTRL:{
 					input.mouseMarkActive = false;
-					pMark->row--;
+					CodeSetMarkRow(pCode, mark.row - 1);
 					CodeSyncCaretToMarkRow(pCode, 0);
 					CodeBoxFocusMark(pCode);
 					break;
@@ -2585,7 +2566,7 @@ LoopBegin:
 				case KEY_DOWN:
 				case KEY_K | CTRL: {
 					input.mouseMarkActive = false;
-					pMark->row++;
+					CodeSetMarkRow(pCode, mark.row + 1);
 					CodeSyncCaretToMarkRow(pCode, 0);
 					CodeBoxFocusMark(pCode);
 					break;
