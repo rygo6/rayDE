@@ -1605,10 +1605,10 @@ typedef struct PACKED TextMeta {
 	u8 parenLevel;
 } TextMeta;
 
-typedef struct Highlight {
-	int startIndex;
-	int endIndex;
-} Highlight;
+typedef struct CodeCommand {
+
+
+} CodeCommand;
 
 typedef struct CodeRow {
 	int startIndex;
@@ -1622,14 +1622,15 @@ typedef struct CodePos {
 } CodePos;
 
 typedef struct CodeBox {
+	bool dirty;
+
 	Rectangle rect;
 	int focusStartRowIndex;
 	int focusStartRow;
 
 	int 	 caretCount;
-	CodePos* pCarets;
-
-	CodePos mark;
+	CodePos *pCarets;
+	CodePos  mark;
 
 	int boxRowCount;
 	int boxColCount;
@@ -1638,9 +1639,7 @@ typedef struct CodeBox {
 	int textCount;
 	char*     pText;
 	TextMeta* pTextMeta;
-
-	char* path;
-	bool dirty;
+	char*     pTextPath;
 } CodeBox;
 
 typedef struct Command {
@@ -2106,8 +2105,8 @@ static bool TextFindCountCharBackward(const char* pText, char searchChar, char c
 static CodeRow CodeRowFromIndex(const char *pText, int index)
 {
 	return (CodeRow){
-		.startIndex = TextFindCharBackward(pText, index, '\n')+1,
-		.endIndex   = TextFindCharForward(pText, index, '\n'),
+		.startIndex = TextFindCharBackward(pText, index-1, '\n')+1,
+		.endIndex   = TextFindCharForward(pText,  index,   '\n'),
 	};
 }
 
@@ -2359,8 +2358,8 @@ int main(void)
 		pCode->pText     = XCALLOC(TEXT_BUFFER_CAPACITY, char);
 		pCode->pTextMeta = XCALLOC(TEXT_BUFFER_CAPACITY, TextMeta);
 
-		pCode->path = "./src/main.c";
-		char* loadedFile = LoadFileText(pCode->path);
+		pCode->pTextPath = "./src/main.c";
+		char* loadedFile = LoadFileText(pCode->pTextPath);
 		int index = 0;
 		int rowIndex = 0;
 		int startIndex = 0;
@@ -2529,7 +2528,8 @@ LoopBegin:
 					if (caret.index >= pCode->textCount) break;
 					int newIndex = CARET_INVALID;
 					switch(pText[mark.index]){
-						case ' ':  newIndex = TextNegateFindCharForward(pText, mark.index, ' ');  break;
+						case ' ' : newIndex = TextNegateFindCharForward(pText, mark.index, ' ');  break;
+						case '\t': newIndex = TextNegateFindCharForward(pText, mark.index, '\t');  break;
 						case '\n': newIndex = TextNegateFindCharForward(pText, mark.index, '\n'); break;
 						default:   newIndex = TextFindCharsForward(pText, mark.index, " \n");     break;
 					}
@@ -2708,8 +2708,8 @@ LoopBegin:
 				}
 				/* Utility Keys */
 				case CTRL | KEY_S: {
-					LOG("Saving: %s", pCode->path);
-					SaveFileText(pCode->path, pCode->pText);
+					LOG("Saving: %s", pCode->pTextPath);
+					SaveFileText(pCode->pTextPath, pCode->pText);
 					break;
 				}
 				/* Delete Char */
