@@ -1563,7 +1563,7 @@ RESULT_SUCCESS:
 #define DEFAULT_HEIGHT 1024
 
 #define MAX_INPUT_CHARS      2048
-#define TEXT_BUFFER_CAPACITY 65536 * 2
+#define TEXT_BUFFER_CAPACITY 65536 * 4
 
 #define CASE_EITHER(_key, _a, _b) case _key | _a | _b: case _key | _a: case _key | _b
 #define TO_LOWER_C(_c) 'a' + (_c - 'A')
@@ -1578,9 +1578,9 @@ const char availableChars[] = "·¬ abcdefghijklmnopqrstuvwxyzABDCEFGHIJKLMNOPQR
 #define CARET_MAX_CAPACITY 8
 #define CARET_INVALID INT_MIN
             
-//                   0b0000111122223333
-#define MASK_ASCII   0b0000000011111111
-#define MASK_KEYS    0b0000001111111111
+//                    0b0000111122223333
+#define MASK_ASCII    0b0000000011111111
+#define MASK_KEYS     0b0000001111111111
 #define MASK_SHIFT    0b1000000000000000
 #define MASK_ALT      0b0100000000000000
 #define MASK_CTRL     0b0010000000000000
@@ -1605,11 +1605,6 @@ typedef struct PACKED TextMeta {
 	u8 parenLevel;
 } TextMeta;
 
-typedef struct CodeCommand {
-
-
-} CodeCommand;
-
 typedef struct CodeRow {
 	int startIndex;
 	int endIndex;
@@ -1621,6 +1616,43 @@ typedef struct CodePos {
 	int col;
 } CodePos;
 
+typedef u8 queue_i;
+#define CODE_CMD_CAPACITY UMAX(queue_i)
+#define DEF_CODE_CMD(DEF)\
+	DEF(CODE_CMD_NONE)\
+	DEF(CODE_CMD_MOVE_MARK)\
+	DEF(CODE_CMD_MOVE_MARK_ROW)\
+	DEF(CODE_CMD_INSERT_MARK)\
+	DEF(CODE_CMD_DELETE_MARK)\
+	DEF(CODE_CMD_COUNT)
+DEF_ENUM(CODE_CMD);	
+
+typedef struct PACKED CodeCmdData {
+	CODE_CMD cmd;
+	union {
+		struct PACKED {
+			int     fromMarkIndex;
+			int     toMarkIndex;
+			u8      caretIndex;
+		} moveMark;
+		struct PACKED {
+			int     fromMarkRow;
+			int     toMarkRow;
+			u8      caretIndex;
+		} moveMarkRow;
+		struct PACKED {
+			int insertIndex;
+			char c;
+		} insertCharMark;
+		struct PACKED {
+			int  deleteIndex;
+			int  markIndex;
+			char c;
+		} deleteCharMark;
+	};
+} CodeCmdData;
+
+#define CODE_CARET_CAPCITY 16
 typedef struct CodeBox {
 	bool dirty;
 
@@ -1628,18 +1660,22 @@ typedef struct CodeBox {
 	int focusStartRowIndex;
 	int focusStartRow;
 
-	int 	 caretCount;
-	CodePos *pCarets;
 	CodePos  mark;
+	int 	 caretCount;
+	CodePos  carets[CODE_CARET_CAPCITY];
 
 	int boxRowCount;
 	int boxColCount;
 
+	int textCapacity;
 	int textRowCount;
 	int textCount;
 	char*     pText;
 	TextMeta* pTextMeta;
 	char*     pTextPath;
+
+	queue_i      cmdCount;
+	CodeCmdData  cmdQueue[CODE_CMD_CAPACITY];
 } CodeBox;
 
 typedef struct Command {
@@ -2101,8 +2137,7 @@ static bool TextFindCountCharBackward(const char* pText, char searchChar, char c
 	return true;
 }
 
-
-static CodeRow CodeRowFromIndex(const char *pText, int index)
+static inline CodeRow CodeRowFromIndex(const char *pText, int index)
 {
 	return (CodeRow){
 		.startIndex = TextFindCharBackward(pText, index-1, '\n')+1,
@@ -2157,13 +2192,6 @@ static void CodeBoxIncrementFocusRow(CodeBox* pCode, int increment)
 	pCode->focusStartRowIndex = TextFindCharSkipForward(pCode->pText, 0, '\n', pCode->focusStartRow);
 }
 
-/* Focus on a given character index. */
-static inline void CodeBoxFocusIndex(CodeBox* pCode, int toIndex)
-{
-	int toRow = CodeBoxIndexRow(pCode, toIndex);
-	CodeBoxFocusRow(pCode, toRow);
-}
-
 /* Focus on Mark */
 static inline void CodeBoxFocusMark(CodeBox* pCode)
 {
@@ -2183,24 +2211,29 @@ static void CodeSetMarkIndex(CodeBox* pCode, int newMarkIndex)
 	assert(pCode->mark.col   >= 0);
 }
 
+static int CodeMarkIndexForRow(CodeBox* pCode, int row)
+{
+	int markRowStartIndex = TextFindCharSkipForward(pCode->pText, 0, '\n', row);
+	int markRowEndIndex   = TextFindCharForward(pCode->pText, markRowStartIndex, '\n');
+	return MIN(markRowStartIndex + pCode->mark.col, markRowEndIndex);
+}
+
+/* Update Mark Row. Index will be line end. Collumn may not align with index. */
 static void CodeSetMarkRow(CodeBox* pCode, int newMarkRow)
 {
-	const char* pText = pCode->pText;
 	pCode->mark.row   = newMarkRow;
-	int markRowStartIndex = TextFindCharSkipForward(pText, 0, '\n', newMarkRow);
-	int markRowEndIndex   = TextFindCharForward(pText, markRowStartIndex, '\n');
-	pCode->mark.index = MIN(markRowStartIndex + pCode->mark.col, markRowEndIndex);
+	pCode->mark.index = CodeMarkIndexForRow(pCode, newMarkRow);
 }
 
 static void CodeSyncMarkToCaret(CodeBox* pCode, u8 iCaret)
 {
-	memcpy(&pCode->mark, pCode->pCarets + iCaret, sizeof(CodePos));
+	memcpy(&pCode->mark, pCode->carets + iCaret, sizeof(CodePos));
 }
 
 /* Sync Current Mark To Specified Caret  */
 static void CodeSyncCaretToMark(CodeBox* pCode, u8 iCaret)
 {
-	memcpy(pCode->pCarets + iCaret, &pCode->mark, sizeof(CodePos));
+	memcpy(pCode->carets + iCaret, &pCode->mark, sizeof(CodePos));
 }
 
 /* Sync Specified Caret to Current Mark Row */
@@ -2208,20 +2241,20 @@ static void CodeSyncCaretToMarkRow(CodeBox* pCode, u8 iCaret)
 {
 	CodePos mark = pCode->mark;
 	CodeRow row  = CodeRowFromIndex(pCode->pText, mark.index);
-	int newCol = MIN(row.endIndex - row.startIndex, mark.col);
+	int newCol   = MIN(row.endIndex - row.startIndex, mark.col);
 	int newIndex = row.startIndex + newCol;
-	CodePos* pCaret = pCode->pCarets + iCaret;
+	CodePos* pCaret = pCode->carets + iCaret;
 	pCaret->index = newIndex;
 	pCaret->col   = newCol;
 	pCaret->row   = mark.row;
 	pCode->mark.index = newIndex;
 }
 
-static void CodeBoxInsertNewlineAtCaret(CodeBox* pCode, CodePos caret)
+static void CodeInsertNewlineAtCaret(CodeBox* pCode, int index)
 {
-	memmove(pCode->pText + caret.index + 1,   pCode->pText + caret.index,   (pCode->textCount - caret.index - 1)  * sizeof(char));
+	memmove(pCode->pText + index+1,   pCode->pText + index,   (pCode->textCount - index-1)  * sizeof(char));
 	pCode->dirty = true;
-	pCode->pText[caret.index] = '\n';
+	pCode->pText[index] = '\n';
 	pCode->textCount++;
 	pCode->textRowCount++;
 
@@ -2229,21 +2262,30 @@ static void CodeBoxInsertNewlineAtCaret(CodeBox* pCode, CodePos caret)
 	CodeBoxProcessMeta(pCode);
 }
 
-static void CodeBoxInsertCharAtCaret(CodeBox* pCode, CodePos caret, char c)
+static void CodeInsertChar(CodeBox* pCode, int index, char c)
 {
-	memmove(pCode->pText + caret.index + 1, pCode->pText + caret.index, pCode->textCount - caret.index - 1);
+	if (index >= pCode->textCapacity-1) {
+		TraceLog(LOG_WARNING, "Cannot Insert. Text Capacity Reached. %d", pCode->dirty);
+		return;
+	} 
+	if (c == '\n') {
+		CodeInsertNewlineAtCaret(pCode, index);
+		return;
+	}
+
+	memmove(pCode->pText + index + 1, pCode->pText + index, pCode->textCount - index - 1);
 	pCode->dirty = true;
-	pCode->pText[caret.index] = c;
+	pCode->pText[index] = c;
 	pCode->textCount++;
 
 	// TODO this needs to run incrementally
 	CodeBoxProcessMeta(pCode);
 }
 
-static void CodeBoxDeleteNewlineAtCaret(CodeBox* pCode, CodePos caret)
+static void CodeDeleteNewline(CodeBox* pCode, int index)
 {
 	if (pCode->textCount == 0) return;
-	memmove(pCode->pText + caret.index-1, pCode->pText + caret.index, (pCode->textCount - caret.index)  * sizeof(char));
+	memmove(pCode->pText + index-1, pCode->pText + index, (pCode->textCount - index)  * sizeof(char));
 	pCode->dirty = true;
 	pCode->textCount--;
 	pCode->textRowCount--;
@@ -2252,27 +2294,122 @@ static void CodeBoxDeleteNewlineAtCaret(CodeBox* pCode, CodePos caret)
 	CodeBoxProcessMeta(pCode);
 }
 
-static void CodeBoxDeleteCharAtCaret(CodeBox* pCode, CodePos caret)
+static void CodeDeleteChar(CodeBox* pCode, int index)
 {
-	if (pCode->textCount == 0) return;
-	if (caret.index == 0) return;
-	if (pCode->pText[caret.index - 1] == '\n') {
+	if (pCode->textCount == 0 || index >= pCode->textCount-1) return;
+	if (pCode->pText[index - 1] == '\n') {
 		// TODO don't like this?
-		CodeBoxDeleteNewlineAtCaret(pCode, caret);
+		CodeDeleteNewline(pCode, index);
 		return;
 	}
 
-	memmove(pCode->pText + caret.index - 1, pCode->pText + caret.index, pCode->textCount - caret.index);
+	char deletedChar = pCode->pText[index];
+	memmove(pCode->pText + index, pCode->pText + index+1, pCode->textCount - index);
 	pCode->textCount--;
 
 	// TODO this needs to run incrementally
 	CodeBoxProcessMeta(pCode);
 }
 
+/*
+ * CodeBox Commands
+ */
+ 
+static void CodeCmdMoveMark(CodeBox* pCode, int caretIndex, int newMarkIndex)
+{
+	CodeSetMarkIndex(pCode, newMarkIndex);
+	CodeSyncCaretToMarkRow(pCode, caretIndex);
+	CodeBoxFocusMark(pCode);
+}
+
+static void CodeCmdMoveMarkRow(CodeBox* pCode, int caretIndex, int newMarkRow)
+{
+	CodeSetMarkRow(pCode, newMarkRow);
+	CodeSyncCaretToMarkRow(pCode, caretIndex);
+	CodeBoxFocusMark(pCode);
+}
+static void CodeCmdInsertCharAtMark(CodeBox* pCode, int insertIndex, int markIndex, char c)
+{
+	CodeInsertChar(pCode, insertIndex, c);
+	CodeSetMarkIndex(pCode, markIndex);
+	CodeSyncCaretToMark(pCode, 0);
+}
+
+static void CodeCmdDeleteCharAtMark(CodeBox* pCode, int deleteIndex)
+{
+	CodeDeleteChar(pCode, deleteIndex); 
+	CodeSetMarkIndex(pCode, deleteIndex);
+	CodeSyncCaretToMark(pCode, 0);
+}
+
+static void CodeApplyForwardCmd(CodeBox* pCode, CodeCmdData cmd)
+{
+	switch (cmd.cmd) {
+		case CODE_CMD_NONE: break;
+		case CODE_CMD_MOVE_MARK: 
+			CodeCmdMoveMark(pCode, cmd.moveMark.caretIndex, cmd.moveMark.toMarkIndex);
+			break;
+		case CODE_CMD_MOVE_MARK_ROW: 
+			CodeCmdMoveMarkRow(pCode, cmd.moveMarkRow.caretIndex, cmd.moveMarkRow.toMarkRow);
+			break;
+		case CODE_CMD_INSERT_MARK: 
+			CodeCmdInsertCharAtMark(pCode, cmd.insertCharMark.insertIndex, cmd.insertCharMark.insertIndex+1, cmd.insertCharMark.c); 
+			break;	
+		case CODE_CMD_DELETE_MARK: 
+			CodeCmdDeleteCharAtMark(pCode, cmd.deleteCharMark.deleteIndex); 
+			break;
+		default: PANIC("CodeCmd Unknown!");
+	}
+}
+
+static void CodeApplyBackwardCmd(CodeBox* pCode, CodeCmdData cmd)
+{
+	switch (cmd.cmd) {
+		case CODE_CMD_NONE: break;
+		case CODE_CMD_MOVE_MARK: 
+			CodeCmdMoveMark(pCode, cmd.moveMark.caretIndex, cmd.moveMark.fromMarkIndex);
+			break;
+		case CODE_CMD_MOVE_MARK_ROW: 
+			CodeCmdMoveMarkRow(pCode, cmd.moveMarkRow.caretIndex, cmd.moveMarkRow.fromMarkRow);
+			break;
+		case CODE_CMD_INSERT_MARK: 
+			CodeCmdDeleteCharAtMark(pCode, cmd.insertCharMark.insertIndex); 
+			break;	
+		case CODE_CMD_DELETE_MARK: 
+			CodeCmdInsertCharAtMark(pCode,  cmd.deleteCharMark.deleteIndex, cmd.deleteCharMark.markIndex, cmd.deleteCharMark.c); 
+			break;
+		default: PANIC("CodeCmd Unknown!");
+	}
+}
+
+static void CodePushCmd(CodeBox* pCode, CodeCmdData cmd)
+{
+	pCode->cmdQueue[pCode->cmdCount++] = cmd;
+	// Ensure next command is zeroed. CODE_CMD_NONE is used to prevent wrapping.
+	ZERO(&pCode->cmdQueue[pCode->cmdCount]);
+	CodeApplyForwardCmd(pCode, cmd);
+}
+
+static void CodeCmdUndo(CodeBox* pCode) 
+{
+	CodeCmdData cmd = pCode->cmdQueue[(u8)(pCode->cmdCount-1)];
+	if (cmd.cmd == CODE_CMD_NONE) return;
+	pCode->cmdCount--;
+	CodeApplyBackwardCmd(pCode, cmd);
+}
+
+static void CodeCmdRedo(CodeBox* pCode) 
+{
+	CodeCmdData cmd = pCode->cmdQueue[(u8)(pCode->cmdCount+1)];
+	if (cmd.cmd == CODE_CMD_NONE) return;
+	pCode->cmdCount++;
+	CodeApplyForwardCmd(pCode, cmd);
+}
+
 static void CommandFinish(CodeBox* pCode, Command* pCommand)
 {
 	CodeSetMarkIndex(pCode, pCommand->scanFoundIndex);
-	CodeBoxFocusRow(pCode, pCode->pCarets[0].row);
+	CodeBoxFocusRow(pCode, pCode->carets[0].row);
 	pCommand->scanFoundIndex  = 0;
 	pCommand->bufferCount     = 0;
 	pCommand->enabled         = false;
@@ -2324,6 +2461,7 @@ int main(void)
 	SetTextLineSpacing(0);
 
 	/* State */
+	LOG("Command Queue Size: %llu array: %llu\n", sizeof(CodeCmdData), CODE_CMD_CAPACITY * sizeof(CodeCmdData));
 	CodeBox* pCode = &rayde.codeboxes[0];
 
 	struct {
@@ -2347,14 +2485,12 @@ int main(void)
 	u16 currentKey    = 0; // todo move into input
 	u16 priorKey      = 0;
 
-	#define CODEBOX_ROW_CAPACITY 1024
-	#define CODEBOX_CARET_CAPACITY 128
-	pCode->pCarets    = XCALLOC(CODEBOX_CARET_CAPACITY, CodePos);
 	pCode->caretCount = 1;
 	CodeBoxSetRect(pCode, (Rectangle){ 0, 0, rayde.windowSize.x, rayde.windowSize.y });
 
 	/* File Load */
 	{
+		pCode->textCapacity = TEXT_BUFFER_CAPACITY;
 		pCode->pText     = XCALLOC(TEXT_BUFFER_CAPACITY, char);
 		pCode->pTextMeta = XCALLOC(TEXT_BUFFER_CAPACITY, TextMeta);
 
@@ -2362,12 +2498,8 @@ int main(void)
 		char* loadedFile = LoadFileText(pCode->pTextPath);
 		int index = 0;
 		int rowIndex = 0;
-		int startIndex = 0;
 		while (loadedFile[index] != '\0') {
-			if (loadedFile[index] == '\n') {
-				startIndex = index + 1;
-				rowIndex++;
-			}
+			if (loadedFile[index] == '\n') rowIndex++;
 			index++;
 		}
 		pCode->textRowCount = rowIndex;
@@ -2477,8 +2609,8 @@ LoopBegin:
 		int iCaret = 0;
 		CodePos  mark   =  pCode->mark;
 		CodePos *pMark  = &pCode->mark;
-		CodePos  caret  =  pCode->pCarets[iCaret];
-		CodePos *pCaret = &pCode->pCarets[iCaret];
+		CodePos  caret  =  pCode->carets[iCaret];
+		CodePos *pCaret = &pCode->carets[iCaret];
 		char*    pText  =  pCode->pText;
 		while (currentKey > 0) {
 			ASSERTMSG(currentKey < MASK_KEYS, "Input key %d should not be greater than %d!", currentKey, MASK_KEYS);
@@ -2489,26 +2621,33 @@ LoopBegin:
 				case KEY_LEFT:
 				case KEY_J | CTRL: {
 					input.mouseMarkActive = false;
-					if (caret.index <= 0) break;
-					CodeSetMarkIndex(pCode, mark.index - 1);
-					CodeSyncCaretToMark(pCode, 0);
+					if (mark.index <= 0) break;
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_MOVE_MARK, 
+						.moveMark.caretIndex    = iCaret,
+						.moveMark.fromMarkIndex = mark.index,  
+						.moveMark.toMarkIndex   = mark.index-1,  
+					});
 					break;
 				}
 				/* Move Left One Word */
 				case KEY_LEFT | CTRL:
 				case KEY_J    | CTRLALT: {
 					input.mouseMarkActive = false;
-					if (caret.index <= 0) break;
+					if (mark.index <= 0) break;
 					int newIndex = CARET_INVALID;
-					switch(pText[mark.index - 1]){
+					switch(pText[mark.index-1]){
 						case ' ':  newIndex = TextNegateFindCharBackward(pText, mark.index - 1, ' ');  break;
 						case '\n': newIndex = TextNegateFindCharBackward(pText, mark.index - 1, '\n'); break;
 						default:   newIndex = TextFindCharsBackward(pText, mark.index - 1, " \n");     break;
 					}
 					if (newIndex != CARET_INVALID) {
-						CodeSetMarkIndex(pCode, newIndex + 1);
-						CodeSyncCaretToMarkRow(pCode, 0);
-						CodeBoxFocusMark(pCode);
+						CodePushCmd(pCode, (CodeCmdData){ 
+							.cmd = CODE_CMD_MOVE_MARK, 
+							.moveMark.caretIndex    = iCaret,
+							.moveMark.fromMarkIndex = mark.index,  
+							.moveMark.toMarkIndex   = newIndex,  
+						});
 					}
 					break;
 				}
@@ -2516,16 +2655,20 @@ LoopBegin:
 				case KEY_RIGHT:
 				case KEY_L | CTRL: {
 					input.mouseMarkActive = false;
-					if (caret.index >= pCode->textCount) break;
-					CodeSetMarkIndex(pCode, mark.index + 1);
-					CodeSyncCaretToMark(pCode, 0);
+					if (mark.index >= pCode->textCount-1) break;
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_MOVE_MARK, 
+						.moveMark.caretIndex    = iCaret,
+						.moveMark.fromMarkIndex = mark.index,  
+						.moveMark.toMarkIndex   = mark.index+1,  
+					});
 					break;
 				}
 				/* Move Right One Word */
 				case KEY_RIGHT | CTRL:
 				case KEY_L     | CTRLALT: {
 					input.mouseMarkActive = false;
-					if (caret.index >= pCode->textCount) break;
+					if (mark.index >= pCode->textCount-1) break;
 					int newIndex = CARET_INVALID;
 					switch(pText[mark.index]){
 						case ' ' : newIndex = TextNegateFindCharForward(pText, mark.index, ' ');  break;
@@ -2534,9 +2677,12 @@ LoopBegin:
 						default:   newIndex = TextFindCharsForward(pText, mark.index, " \n");     break;
 					}
 					if (newIndex != CARET_INVALID) {
-						CodeSetMarkIndex(pCode, newIndex);
-						CodeSyncCaretToMarkRow(pCode, 0);
-						CodeBoxFocusMark(pCode);
+						CodePushCmd(pCode, (CodeCmdData){ 
+							.cmd = CODE_CMD_MOVE_MARK, 
+							.moveMark.caretIndex    = iCaret,
+							.moveMark.fromMarkIndex = mark.index,  
+							.moveMark.toMarkIndex   = newIndex,  
+						});
 					}
 					break;
 				}
@@ -2544,46 +2690,60 @@ LoopBegin:
 				case KEY_UP:
 				case KEY_I | CTRL:{
 					input.mouseMarkActive = false;
-					CodeSetMarkRow(pCode, mark.row - 1);
-					CodeSyncCaretToMarkRow(pCode, 0);
-					CodeBoxFocusMark(pCode);
+					if (mark.row <= 0) break;
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_MOVE_MARK_ROW, 
+						.moveMarkRow.caretIndex    = iCaret,
+						.moveMarkRow.fromMarkRow = mark.row,  
+						.moveMarkRow.toMarkRow   = mark.row-1,  
+					});
 					break;
 				}
 				/* Move Up One Word */
 				case KEY_UP | CTRL:
 				case KEY_I  | CTRLALT: {
 					input.mouseMarkActive = false;
+					if (mark.row <= 0) break;
 					int startIndex      = pText[mark.index] == '\n' ? mark.index - endCharLength : mark.index;
 					int blockStartIndex = TextFindTextBackward(pText, startIndex, "\n\n");
 					int blockEndIndex   = TextNegateFindCharBackward(pText, blockStartIndex, '\n');
-					int newCaretIndex   = blockEndIndex + 1;
-					CodeSetMarkIndex(pCode, newCaretIndex);
-					CodeSyncCaretToMarkRow(pCode, 0);
-					CodeBoxFocusMark(pCode);
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_MOVE_MARK, 
+						.moveMark.caretIndex    = iCaret,
+						.moveMark.fromMarkIndex = mark.index,  
+						.moveMark.toMarkIndex   = blockEndIndex+1,  
+					});
 					break;
 				}
 				/* Move Down One Char */
 				case KEY_DOWN:
 				case KEY_K | CTRL: {
 					input.mouseMarkActive = false;
-					CodeSetMarkRow(pCode, mark.row + 1);
-					CodeSyncCaretToMarkRow(pCode, 0);
-					CodeBoxFocusMark(pCode);
+					if (mark.row >= pCode->textRowCount-1) break;
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_MOVE_MARK_ROW, 
+						.moveMarkRow.caretIndex    = iCaret,
+						.moveMarkRow.fromMarkRow = mark.row,  
+						.moveMarkRow.toMarkRow   = mark.row+1,  
+					});
 					break;
 				}
 				/* Move Down One Word */
 				case KEY_DOWN | CTRL:
 				case KEY_K    | CTRLALT: {
 					input.mouseMarkActive = false;
+					if (mark.row >= pCode->textRowCount-1) break;
 					// Search"\n\n" to find where there is a new line gap
 					int blockEndIndex   = TextFindTextForward(pText, mark.index, "\n\n");
 					int blockStartIndex = TextNegateFindCharForward(pText, blockEndIndex, '\n');
 					blockStartIndex     = TextNegateFindCharForward(pText, blockStartIndex, ' ');
 					blockStartIndex     = TextNegateFindCharForward(pText, blockStartIndex, '\t');
-					int newCaretIndex   = blockStartIndex;
-					CodeSetMarkIndex(pCode, newCaretIndex);
-					CodeSyncCaretToMarkRow(pCode, 0);
-					CodeBoxFocusMark(pCode);
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_MOVE_MARK, 
+						.moveMark.caretIndex    = iCaret,
+						.moveMark.fromMarkIndex = mark.index,  
+						.moveMark.toMarkIndex   = blockStartIndex,  
+					});
 					break;
 				}
 				/* Command Keys */
@@ -2707,6 +2867,14 @@ LoopBegin:
 					break;
 				}
 				/* Utility Keys */
+				case KEY_Z | CTRL: {
+					CodeCmdUndo(pCode);
+					break;
+				}
+				case KEY_Z | CTRL | SHIFT: {
+					CodeCmdRedo(pCode);
+					break;
+				}
 				case CTRL | KEY_S: {
 					LOG("Saving: %s", pCode->pTextPath);
 					SaveFileText(pCode->pTextPath, pCode->pText);
@@ -2714,22 +2882,25 @@ LoopBegin:
 				}
 				/* Delete Char */
 				case KEY_DELETE: {
-					CodeBoxDeleteCharAtCaret(pCode, (CodePos){ .col = caret.col, .row = caret.row, .index = caret.index+1 });
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_DELETE_MARK, 
+						.deleteCharMark.c = pText[caret.index],
+						.deleteCharMark.deleteIndex = mark.index,
+						.deleteCharMark.markIndex   = mark.index,
+					});
 					break;
 				}
 				case KEY_BACKSPACE: {
-					CodeBoxDeleteCharAtCaret(pCode, caret);
-					CodeSetMarkIndex(pCode, mark.index - 1);
-					CodeSyncCaretToMark(pCode, 0);
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_DELETE_MARK, 
+						.deleteCharMark.c = pText[caret.index-1],
+						.deleteCharMark.deleteIndex = mark.index-1,
+						.deleteCharMark.markIndex   = mark.index,
+					});
 					break;
 				}
 				/* Insert Char */
-				case KEY_ENTER: {
-					CodeBoxInsertNewlineAtCaret(pCode, caret);
-					CodeSetMarkIndex(pCode, mark.index + 1);
-					CodeSyncCaretToMark(pCode, 0);
-					break;
-				}
+				case KEY_ENTER: modifiedKey = '\n'; goto InsertChar;
 				case KEY_SPACE: modifiedKey = ' ';  goto InsertChar;
 				case KEY_TAB:   modifiedKey = '\t'; goto InsertChar;
 				case KEY_KP_0 ... KEY_KP_9: modifiedKey = '0' + (currentKey - KEY_KP_0); goto InsertChar;
@@ -2769,9 +2940,11 @@ LoopBegin:
 				case '.' :
 				case '/' : modifiedKey = currentKey;
 				InsertChar: {
-					CodeBoxInsertCharAtCaret(pCode, caret, modifiedKey);
-					CodeSetMarkIndex(pCode, mark.index + 1);
-					CodeSyncCaretToMark(pCode, 0);
+					CodePushCmd(pCode, (CodeCmdData){ 
+						.cmd = CODE_CMD_INSERT_MARK, 
+						.insertCharMark.c = modifiedKey,
+						.insertCharMark.insertIndex = mark.index,
+					});
 					break;
 				}
 				/* Jump Forward To Char */
@@ -2885,7 +3058,7 @@ LoopBegin:
 	 */
 	BeginDrawing();
 	{
-		/* window */
+		/* Window */
 		ClearBackground(RAYWHITE);
 
 		/* Background Fill */
@@ -2938,7 +3111,7 @@ LoopBegin:
 		const int fontXSpacingHalf = (fontXSpacing / 2);
 		const int fontYSpacingHalf = (fontYSpacing / 2);
 
-		const CodePos  mainCaret = pCode->pCarets[0];
+		const CodePos  mainCaret = pCode->carets[0];
 		const char     caretChar = pText[mainCaret.index];
 		const TextMeta caretMeta = pMeta[mainCaret.index];
 		const CodeRow  caretRow  = CodeRowFromIndex(pText, mainCaret.index);
@@ -3125,7 +3298,7 @@ LoopBegin:
 		}
 
 		/* Caret */
-		Vector2 caretBoxPos = (Vector2){ (pCode->pCarets[0].col * fontXSpacing), ((pCode->pCarets[0].row - pCode->focusStartRow) * fontYSpacing) };
+		Vector2 caretBoxPos = (Vector2){ (pCode->carets[0].col * fontXSpacing), ((pCode->carets[0].row - pCode->focusStartRow) * fontYSpacing) };
 		Vector2 caretPos    = GetBoxLocalToWorld(caretBoxPos, codeRect);
 		{
 			DrawLineEx(
@@ -3139,7 +3312,8 @@ LoopBegin:
 			#define STATUS_TEXT_CAPACITY 1024
 			static char statusText[STATUS_TEXT_CAPACITY];
 			snprintf(statusText, STATUS_TEXT_CAPACITY, "caret0: index:%-4i icol:%-4i irow:%-4i lrow:%-4i rrow:%-4i token: %s %s start: %d end: %d brace: %d bracket: %d paren: %d\n",
-				mainCaret.index, mainCaret.col, mainCaret.row, caretRow.startIndex, caretRow.endIndex, string_TOK(caretMeta.tok.val), string_TOK_KIND(caretMeta.tok.kind), caretMeta.tokOffset.iStart, caretMeta.tokOffset.iEnd, caretMeta.braceLevel, caretMeta.bracketLevel, caretMeta.parenLevel),
+				mainCaret.index, mainCaret.col, mainCaret.row, caretRow.startIndex, caretRow.endIndex, string_TOK(caretMeta.tok.val), string_TOK_KIND(caretMeta.tok.kind), 
+				caretMeta.tokOffset.iStart, caretMeta.tokOffset.iEnd, caretMeta.braceLevel, caretMeta.bracketLevel, caretMeta.parenLevel),
 			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, COLOR_COMMENT);
 		}
 
