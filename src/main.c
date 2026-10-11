@@ -1,176 +1,42 @@
-static char _Test0() {
-	{
-		{
-			{ { { }}}
-		}
-	}
-	return '0';
-}
-
-#define C(abcd0_) #abcd0_ abcd0_#abcd0_ abcd0_## abcd0 # abcd0_
-
-#define RESULT_TEST0_TESTA
-#define RESULT_TESTA
-#define TESTA
-
-struct STR0{
-	int t;
-};
-inline int T1(struct STR0 AB10)
-{
-	return AB10.t;
-}
-
-
-#ifdef A
-#endif
-
-void a(){
-	int b=1<<!1;
-	b<<=!1;
-}
-
-double T() {
-	char *str = "Hello\n\x01!\\";
-	int a0 = 1<<!0x10;
-	a0 <<=+1<<+1<+10;
-	do {a0++;} while (a0<10);
-	int b = a0-a0 - 1- 2 -3;
-	int*x;
-	a0--;
-	return 0;
-}
-
-//0123456789
-
-
-static double Test(int input) {
-	static const int  x;
-	float* number;
-	const char * str = "Hello\n01234\\";
-	char tick = 'a';
-	int output = input;
-	int vala = output*output+2;
-	int valb = 10 / 2;
-	if (vala-->=0)
-		vala>>=vala;
-	return output;
-}
-
-/*
- * Test
- */
-
-#define HELLO { \
-	int o = 1; \
-	int i = 0; /* Test */ \
-}
-
 /*
 	rayDE - Raylib Development Enviornment
 
 +---------------------------+------------------------------------------------+
 | Shortcut                  | Action                                         |
 +---------------------------+------------------------------------------------+
-| FILE OPERATIONS                                                            |
+| FILE                                                                       |
 +---------------------------+------------------------------------------------+
-| Ctrl+N                    | New file                                       |
-| Ctrl+O                    | Open file                                      |
 | Ctrl+S                    | Save                                           |
-| Ctrl+Shift+S              | Save As                                        |
-| Ctrl+W                    | Close current tab/file                         |
 +---------------------------+------------------------------------------------+
-| BASIC EDITING                                                              |
+| EDITING                                                                    |
 +---------------------------+------------------------------------------------+
 | Ctrl+Z                    | Undo                                           |
-| Ctrl+Y (or Ctrl+Shift+Z)  | Redo                                           |
-| Ctrl+A                    | Select all                                     |
-| Ctrl+L                    | Select entire current line                     |
-| Ctrl+R                    | Delete character                               |
-| Ctrl+Shift+R              | Delete line                                    |
-| Ctrl+D                    | Duplikinde line below                           |
-| Ctrl+Shift+D              | Duplikinde line above                           |
-| Ctrl+Enter                | Insert line below without moving cursor        |
-| Ctrl+Shift+Enter          | Insert line above                              |
-| Tab                       | Indent                                         |
-| Shift+Tab                 | Unindent                                       |
-| Ctrl+/                    | Toggle line comment                            |
+| Ctrl+Shift+Z              | Redo                                           |
+| Backspace                 | Delete character before mark                   |
+| Delete                    | Delete character at mark                       |
+| Enter / Space / Tab       | Insert newline / space / tab                   |
 +---------------------------+------------------------------------------------+
 | NAVIGATION                                                                 |
 +---------------------------+------------------------------------------------+
-| Home                      | Go to beginning of line                        |
-| End                       | Go to end of line                              |
-| Ctrl+Home                 | Go to beginning of document                    |
-| Ctrl+End                  | Go to end of document                          |
+| Left/Right                | Move one character                             |
+| Ctrl+J/L                  | Move one character                             |
+| Up/Down                   | Move one row                                   |
+| Ctrl+I/K                  | Move one row                                   |
 | Ctrl+Left/Right           | Word jump                                      |
-| Ctrl+Alt+J/L              | Word jump                                      |
-| Ctrl+Up/Down              | Block jump                                     |
-| Ctrl+Alt+I/K              | Block jump                                     |
-| Up/Down/Left/Right        | Move                                           |
-| Alt+I/J/K/L               | Move Alt                                       |
-| Ctrl+G                    | Go to line number                              |
-| Ctrl+M                    | Go to matching bracket                         |
-| Alt Toggle                | Command Mode                                   |
+| Ctrl then Alt+J/L         | Word jump                                      |
+| Ctrl+Up/Down              | Block jump (to blank line gap)                 |
+| Ctrl then Alt+I/K         | Block jump (to blank line gap)                 |
+| Alt+<char>                | Jump forward to next <char>                    |
+| Alt+Enter                 | Jump forward to next line                      |
+| Alt then Ctrl+<char>      | Jump backward to previous <char>               |
+| Alt then Ctrl+Enter       | Jump backward to previous line                 |
 +---------------------------+------------------------------------------------+
-| SELECTION                                                                  |
+| MOUSE                                                                      |
 +---------------------------+------------------------------------------------+
-| Shift+Left/Right          | Select character                               |
-| Shift+Up/Down             | Select line up/down                            |
-| Shift+Home                | Select to beginning of line                    |
-| Shift+End                 | Select to end of line                          |
-| Ctrl+Shift+Left/Right     | Select word jump                               |
-| Ctrl+Shift+Alt+J/L        | Select word jump                               |
-| Ctrl+Shift+Up/Down        | Block select / Multi-cursor                    |
-| Ctrl+Shift+Alt+I/K        | Block select / Multi-cursor                    |
-| Ctrl+Shift+Mouse Drag     | Block select                                   |
-| Mouse Double Click        | Select word                                    |
-| Mouse Triple Click        | Select line                                    |
+| Mouse Move                | Preview mark under mouse cursor                |
+| Left Click                | Move mark to clicked position                  |
+| Mouse Wheel               | Scroll                                         |
 +---------------------------+------------------------------------------------+
-| MULTI-CURSOR & FIND/REPLACE                                                |
-+---------------------------+------------------------------------------------+
-| Ctrl+Shift+N              | Select next occurrence (multi-cursor)          |
-| Ctrl+Shift+B              | Select previous occurrence                     |
-// I think this should be command?
-// I need command drawer you can click on
-| Ctrl+F                    | Find                                           |
-| Ctrl+H                    | Find and replace                               |
-| F3                        | Find next                                      |
-| Shift+F3                  | Find previous                                  |
-+---------------------------+------------------------------------------------+
-| MOVEMENT                                                                   |
-+---------------------------+------------------------------------------------+
-| Ctrl+E                    | Expand selection (to word, to scope)           |
-| Ctrl+Shift+E              | Shrink selection                               |
-| Alt+Shift+Up/Down         | Move line up/down                              |
-| Alt+Shift+Left/Right      | Move selection left/right                      |
-+---------------------------+------------------------------------------------+
-| CODE ASSISTANCE                                                            |
-+---------------------------+------------------------------------------------+
-| Ctrl+Space                | Autocomplete menu                              |
-| Ctrl+Shift+Space          | Parameter info                                 |
-+---------------------------+------------------------------------------------+
-| TEXT WRAPPING                                                              |
-+---------------------------+------------------------------------------------+
-| Ctrl+Shift+{ }            | Wrap with braces                               |
-| Ctrl+[ ]                  | Wrap with brackets                             |
-| Ctrl+Shift+( )            | Wrap with parentheses                          |
-| Ctrl+'                    | Wrap with single quotes                        |
-| Ctrl+Shift+"              | Wrap with double quotes                        |
-| Ctrl+`                    | Wrap with backticks                            |
-+---------------------------+------------------------------------------------+
-| WORD OPERATIONS                                                            |
-+---------------------------+------------------------------------------------+
-| Ctrl+Backspace            | Delete word backwards                          |
-| Ctrl+Delete               | Delete word forwards                           |
-+---------------------------+------------------------------------------------+
-
-GOOD IDEA
-Alt + { - Jump to Nearest, then next
-Alt + } - ...
-Alt + [ - ...
-Alt + ] - ...
-Alt + " - ...
-
 */
 
 #include <stdio.h>
@@ -1577,7 +1443,7 @@ const char availableChars[] = "·¬ abcdefghijklmnopqrstuvwxyzABDCEFGHIJKLMNOPQR
 
 #define CARET_MAX_CAPACITY 8
 #define CARET_INVALID INT_MIN
-            
+
 //                    0b0000111122223333
 #define MASK_ASCII    0b0000000011111111
 #define MASK_KEYS     0b0000001111111111
@@ -1625,7 +1491,7 @@ typedef u8 queue_i;
 	DEF(CODE_CMD_INSERT_MARK)\
 	DEF(CODE_CMD_DELETE_MARK)\
 	DEF(CODE_CMD_COUNT)
-DEF_ENUM(CODE_CMD);	
+DEF_ENUM(CODE_CMD);
 
 typedef struct PACKED CodeCmdData {
 	CODE_CMD cmd;
@@ -1750,8 +1616,8 @@ static RESULT CodeBoxProcessMeta(CodeBox* pCode)
 	const int  textCount = pCode->textCount;
 	char	  *pText     = pCode->pText;
 	TextMeta  *pMeta     = pCode->pTextMeta;
-	
-	// Base dispatch is the foundational lex mode and is associated with a frie. Base dispatch can be 
+
+	// Base dispatch is the foundational lex mode and is associated with a frie. Base dispatch can be
 	// temporarily overriden by dispatch and will use the same frie as base dispatch.
 	// i.e Base dispatch and base frie is C11 code lex and can be overriden by number or quote dispatch
 	// for recognizing identifiers or numbers in the code. Whereas quotes and comments fully switch
@@ -2274,7 +2140,7 @@ static void CodeInsertChar(CodeBox* pCode, int index, char c)
 	if (index >= pCode->textCapacity-1) {
 		TraceLog(LOG_WARNING, "Cannot Insert. Text Capacity Reached. %d", pCode->dirty);
 		return;
-	} 
+	}
 	if (c == '\n') {
 		CodeInsertNewlineAtCaret(pCode, index);
 		return;
@@ -2321,7 +2187,7 @@ static void CodeDeleteChar(CodeBox* pCode, int index)
 /*
  * CodeBox Commands
  */
- 
+
 static void CodeCmdMoveMark(CodeBox* pCode, int caretIndex, int newMarkIndex)
 {
 	CodeSetMarkIndex(pCode, newMarkIndex);
@@ -2344,7 +2210,7 @@ static void CodeCmdInsertCharAtMark(CodeBox* pCode, int insertIndex, int markInd
 
 static void CodeCmdDeleteCharAtMark(CodeBox* pCode, int deleteIndex)
 {
-	CodeDeleteChar(pCode, deleteIndex); 
+	CodeDeleteChar(pCode, deleteIndex);
 	CodeSetMarkIndex(pCode, deleteIndex);
 	CodeSyncCaretToMark(pCode, 0);
 }
@@ -2353,17 +2219,17 @@ static void CodeApplyForwardCmd(CodeBox* pCode, CodeCmdData cmd)
 {
 	switch (cmd.cmd) {
 		case CODE_CMD_NONE: break;
-		case CODE_CMD_MOVE_MARK: 
+		case CODE_CMD_MOVE_MARK:
 			CodeCmdMoveMark(pCode, cmd.moveMark.caretIndex, cmd.moveMark.toMarkIndex);
 			break;
-		case CODE_CMD_MOVE_MARK_ROW: 
+		case CODE_CMD_MOVE_MARK_ROW:
 			CodeCmdMoveMarkRow(pCode, cmd.moveMarkRow.caretIndex, cmd.moveMarkRow.toMarkRow);
 			break;
-		case CODE_CMD_INSERT_MARK: 
-			CodeCmdInsertCharAtMark(pCode, cmd.insertCharMark.insertIndex, cmd.insertCharMark.insertIndex+1, cmd.insertCharMark.c); 
-			break;	
-		case CODE_CMD_DELETE_MARK: 
-			CodeCmdDeleteCharAtMark(pCode, cmd.deleteCharMark.deleteIndex); 
+		case CODE_CMD_INSERT_MARK:
+			CodeCmdInsertCharAtMark(pCode, cmd.insertCharMark.insertIndex, cmd.insertCharMark.insertIndex+1, cmd.insertCharMark.c);
+			break;
+		case CODE_CMD_DELETE_MARK:
+			CodeCmdDeleteCharAtMark(pCode, cmd.deleteCharMark.deleteIndex);
 			break;
 		default: PANIC("CodeCmd Unknown!");
 	}
@@ -2373,17 +2239,17 @@ static void CodeApplyBackwardCmd(CodeBox* pCode, CodeCmdData cmd)
 {
 	switch (cmd.cmd) {
 		case CODE_CMD_NONE: break;
-		case CODE_CMD_MOVE_MARK: 
+		case CODE_CMD_MOVE_MARK:
 			CodeCmdMoveMark(pCode, cmd.moveMark.caretIndex, cmd.moveMark.fromMarkIndex);
 			break;
-		case CODE_CMD_MOVE_MARK_ROW: 
+		case CODE_CMD_MOVE_MARK_ROW:
 			CodeCmdMoveMarkRow(pCode, cmd.moveMarkRow.caretIndex, cmd.moveMarkRow.fromMarkRow);
 			break;
-		case CODE_CMD_INSERT_MARK: 
-			CodeCmdDeleteCharAtMark(pCode, cmd.insertCharMark.insertIndex); 
-			break;	
-		case CODE_CMD_DELETE_MARK: 
-			CodeCmdInsertCharAtMark(pCode,  cmd.deleteCharMark.deleteIndex, cmd.deleteCharMark.markIndex, cmd.deleteCharMark.c); 
+		case CODE_CMD_INSERT_MARK:
+			CodeCmdDeleteCharAtMark(pCode, cmd.insertCharMark.insertIndex);
+			break;
+		case CODE_CMD_DELETE_MARK:
+			CodeCmdInsertCharAtMark(pCode,  cmd.deleteCharMark.deleteIndex, cmd.deleteCharMark.markIndex, cmd.deleteCharMark.c);
 			break;
 		default: PANIC("CodeCmd Unknown!");
 	}
@@ -2397,7 +2263,7 @@ static void CodePushCmd(CodeBox* pCode, CodeCmdData cmd)
 	CodeApplyForwardCmd(pCode, cmd);
 }
 
-static void CodeCmdUndo(CodeBox* pCode) 
+static void CodeCmdUndo(CodeBox* pCode)
 {
 	CodeCmdData cmd = pCode->cmdQueue[(u8)(pCode->cmdCount-1)];
 	if (cmd.cmd == CODE_CMD_NONE) return;
@@ -2405,7 +2271,7 @@ static void CodeCmdUndo(CodeBox* pCode)
 	CodeApplyBackwardCmd(pCode, cmd);
 }
 
-static void CodeCmdRedo(CodeBox* pCode) 
+static void CodeCmdRedo(CodeBox* pCode)
 {
 	CodeCmdData cmd = pCode->cmdQueue[(u8)(pCode->cmdCount+1)];
 	if (cmd.cmd == CODE_CMD_NONE) return;
@@ -2622,18 +2488,18 @@ LoopBegin:
 		while (currentKey > 0) {
 			ASSERTMSG(currentKey < MASK_KEYS, "Input key %d should not be greater than %d!", currentKey, MASK_KEYS);
 			int modifiedKey = currentKey;
-			switch (currentKey | input.modifierCombination) 
+			switch (currentKey | input.modifierCombination)
 			{
 				/* Move Left One Char */
 				case KEY_LEFT:
 				case KEY_J | CTRL: {
 					input.mouseMarkActive = false;
 					if (mark.index <= 0) break;
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_MOVE_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_MOVE_MARK,
 						.moveMark.caretIndex    = iCaret,
-						.moveMark.fromMarkIndex = mark.index,  
-						.moveMark.toMarkIndex   = mark.index-1,  
+						.moveMark.fromMarkIndex = mark.index,
+						.moveMark.toMarkIndex   = mark.index-1,
 					});
 					break;
 				}
@@ -2649,11 +2515,11 @@ LoopBegin:
 						default:   newIndex = TextFindCharsBackward(pText, mark.index - 1, " \n");     break;
 					}
 					if (newIndex != CARET_INVALID) {
-						CodePushCmd(pCode, (CodeCmdData){ 
-							.cmd = CODE_CMD_MOVE_MARK, 
+						CodePushCmd(pCode, (CodeCmdData){
+							.cmd = CODE_CMD_MOVE_MARK,
 							.moveMark.caretIndex    = iCaret,
-							.moveMark.fromMarkIndex = mark.index,  
-							.moveMark.toMarkIndex   = newIndex,  
+							.moveMark.fromMarkIndex = mark.index,
+							.moveMark.toMarkIndex   = newIndex,
 						});
 					}
 					break;
@@ -2663,11 +2529,11 @@ LoopBegin:
 				case KEY_L | CTRL: {
 					input.mouseMarkActive = false;
 					if (mark.index >= pCode->textCount-1) break;
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_MOVE_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_MOVE_MARK,
 						.moveMark.caretIndex    = iCaret,
-						.moveMark.fromMarkIndex = mark.index,  
-						.moveMark.toMarkIndex   = mark.index+1,  
+						.moveMark.fromMarkIndex = mark.index,
+						.moveMark.toMarkIndex   = mark.index+1,
 					});
 					break;
 				}
@@ -2684,11 +2550,11 @@ LoopBegin:
 						default:   newIndex = TextFindCharsForward(pText, mark.index, " \n");     break;
 					}
 					if (newIndex != CARET_INVALID) {
-						CodePushCmd(pCode, (CodeCmdData){ 
-							.cmd = CODE_CMD_MOVE_MARK, 
+						CodePushCmd(pCode, (CodeCmdData){
+							.cmd = CODE_CMD_MOVE_MARK,
 							.moveMark.caretIndex    = iCaret,
-							.moveMark.fromMarkIndex = mark.index,  
-							.moveMark.toMarkIndex   = newIndex,  
+							.moveMark.fromMarkIndex = mark.index,
+							.moveMark.toMarkIndex   = newIndex,
 						});
 					}
 					break;
@@ -2698,11 +2564,11 @@ LoopBegin:
 				case KEY_I | CTRL:{
 					input.mouseMarkActive = false;
 					if (mark.row <= 0) break;
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_MOVE_MARK_ROW, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_MOVE_MARK_ROW,
 						.moveMarkRow.caretIndex    = iCaret,
-						.moveMarkRow.fromMarkRow = mark.row,  
-						.moveMarkRow.toMarkRow   = mark.row-1,  
+						.moveMarkRow.fromMarkRow = mark.row,
+						.moveMarkRow.toMarkRow   = mark.row-1,
 					});
 					break;
 				}
@@ -2714,11 +2580,11 @@ LoopBegin:
 					int startIndex      = pText[mark.index] == '\n' ? mark.index - endCharLength : mark.index;
 					int blockStartIndex = TextFindTextBackward(pText, startIndex, "\n\n");
 					int blockEndIndex   = TextNegateFindCharBackward(pText, blockStartIndex, '\n');
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_MOVE_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_MOVE_MARK,
 						.moveMark.caretIndex    = iCaret,
-						.moveMark.fromMarkIndex = mark.index,  
-						.moveMark.toMarkIndex   = blockEndIndex+1,  
+						.moveMark.fromMarkIndex = mark.index,
+						.moveMark.toMarkIndex   = blockEndIndex+1,
 					});
 					break;
 				}
@@ -2727,11 +2593,11 @@ LoopBegin:
 				case KEY_K | CTRL: {
 					input.mouseMarkActive = false;
 					if (mark.row >= pCode->textRowCount-1) break;
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_MOVE_MARK_ROW, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_MOVE_MARK_ROW,
 						.moveMarkRow.caretIndex    = iCaret,
-						.moveMarkRow.fromMarkRow = mark.row,  
-						.moveMarkRow.toMarkRow   = mark.row+1,  
+						.moveMarkRow.fromMarkRow = mark.row,
+						.moveMarkRow.toMarkRow   = mark.row+1,
 					});
 					break;
 				}
@@ -2745,132 +2611,12 @@ LoopBegin:
 					int blockStartIndex = TextNegateFindCharForward(pText, blockEndIndex, '\n');
 					blockStartIndex     = TextNegateFindCharForward(pText, blockStartIndex, ' ');
 					blockStartIndex     = TextNegateFindCharForward(pText, blockStartIndex, '\t');
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_MOVE_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_MOVE_MARK,
 						.moveMark.caretIndex    = iCaret,
-						.moveMark.fromMarkIndex = mark.index,  
-						.moveMark.toMarkIndex   = blockStartIndex,  
+						.moveMark.fromMarkIndex = mark.index,
+						.moveMark.toMarkIndex   = blockStartIndex,
 					});
-					break;
-				}
-				/* Command Keys */
-				// case ALT | KEY_RIGHT_ALT:
-				// case ALT | KEY_LEFT_ALT:
-				// 	if (!command.enabled) {
-				// 		LOG("Command Begin\n");
-				// 		command.enabled = true;
-				// 		command.scanFoundIndex = pCode->pActiveCaret->index;
-				// 		LOG("%d\n", command.scanFoundIndex);
-				// 		break;
-				// 	}
-
-				// 	if (command.enabled && command.toggled ) {
-				// 		LOG("Command Toggle Off\n");
-				// 		command.enabled = false;
-				// 		command.toggled = false;
-				// 		break;
-				// 	}
-
-				// 	break;
-
-				// case ALT | CTRL | KEY_LEFT_CONTROL:
-				// 	break;
-
-				// case ALT | KEY_ENTER:
-				// 	if (!command.enabled)
-				// 		break;
-
-				// 	LOG("Command Finish\n");
-				// 	CommandFinish(pCode, &command);
-
-				// 	break;
-
-				// case ALT | SHIFT | KEY_TAB:
-
-				// 	break;
-
-				// case ALT | KEY_TAB:
-				// 	if (!command.enabled)
-				// 		break;
-
-				// 	LOG("%d %d\n", pCode->pActiveCaret->index, command.scanFoundIndex);
-
-				// 	command.scanFoundIndex = TextFindTextForward(pCode->pText, command.scanFoundIndex + 1, command.pText);
-				// 	if (command.scanFoundIndex > 0) {
-				// 		int scanFoundLine = TextCountCharForward(pCode->pText, pCode->pActiveCaret->index, command.scanFoundIndex, '\n') + pCode->pActiveCaret->row;
-				// 		CodeBoxFocusRow(pCode, scanFoundLine);
-				// 		LOG("%d \n", scanFoundLine);
-				// 	}
-
-				// 	break;
-
-				// case '`'  | ALT:
-				// case '-'  | ALT:
-				// case '='  | ALT:
-				// case '['  | ALT:
-				// case ']'  | ALT:
-				// case '\\' | ALT:
-				// case ';'  | ALT:
-				// case '\'' | ALT:
-				// case ','  | ALT:
-				// case '.'  | ALT:
-				// case '/'  | ALT:
-
-				// case (ALT | '0') ... (ALT | '9'):
-				// 	goto UpdateCommandKey;
-
-				// case '1'  | ALT | SHIFT: modifiedKey = '!'; goto UpdateCommandKey;
-				// case '2'  | ALT | SHIFT: modifiedKey = '@'; goto UpdateCommandKey;
-				// case '3'  | ALT | SHIFT: modifiedKey = '#'; goto UpdateCommandKey;
-				// case '4'  | ALT | SHIFT: modifiedKey = '$'; goto UpdateCommandKey;
-				// case '5'  | ALT | SHIFT: modifiedKey = '%'; goto UpdateCommandKey;
-				// case '6'  | ALT | SHIFT: modifiedKey = '^'; goto UpdateCommandKey;
-				// case '7'  | ALT | SHIFT: modifiedKey = '&'; goto UpdateCommandKey;
-				// case '8'  | ALT | SHIFT: modifiedKey = '*'; goto UpdateCommandKey;
-				// case '9'  | ALT | SHIFT: modifiedKey = '('; goto UpdateCommandKey;
-				// case '0'  | ALT | SHIFT: modifiedKey = ')'; goto UpdateCommandKey;
-				// case '`'  | ALT | SHIFT: modifiedKey = '~'; goto UpdateCommandKey;
-				// case '-'  | ALT | SHIFT: modifiedKey = '_'; goto UpdateCommandKey;
-				// case '='  | ALT | SHIFT: modifiedKey = '+'; goto UpdateCommandKey;
-				// case '['  | ALT | SHIFT: modifiedKey = '{'; goto UpdateCommandKey;
-				// case ']'  | ALT | SHIFT: modifiedKey = '}'; goto UpdateCommandKey;
-				// case '\\' | ALT | SHIFT: modifiedKey = '|'; goto UpdateCommandKey;
-				// case ';'  | ALT | SHIFT: modifiedKey = ':'; goto UpdateCommandKey;
-				// case '\'' | ALT | SHIFT: modifiedKey = '"'; goto UpdateCommandKey;
-				// case ','  | ALT | SHIFT: modifiedKey = '<'; goto UpdateCommandKey;
-				// case '.'  | ALT | SHIFT: modifiedKey = '>'; goto UpdateCommandKey;
-				// case '/'  | ALT | SHIFT: modifiedKey = '?'; goto UpdateCommandKey;
-
-				// case (ALT | 'A') ... (ALT | 'Z'):
-				// 	modifiedKey = TO_LOWER_C(currentKey);
-				// 	goto UpdateCommandKey;
-
-				// case (ALT | SHIFT | 'A') ... (ALT | SHIFT | 'Z'):
-				// 	goto UpdateCommandKey;
-
-				// case ALT | KEY_BACKSPACE:
-				// case ALT | SHIFT | KEY_BACKSPACE:
-				// 	command.firstKeyPressed = true;
-				// 	if (command.bufferCount > 0) command.bufferCount--;
-				// 	goto UpdateCommandScan;
-
-				// case ALT | CTRL | KEY_BACKSPACE:
-				// case ALT | CTRL | SHIFT | KEY_BACKSPACE:
-				// case ALT | KEY_DELETE:
-				// 	command.firstKeyPressed = true;
-				// 	command.bufferCount = 0;
-				// 	command.scanFoundIndex = 0;
-				// 	command.buffer[command.bufferCount] = '\0';
-				// 	break;
-
-				UpdateCommandKey: {
-					if (!command.firstKeyPressed) command.firstKeyPressed = true;
-					command.buffer[command.bufferCount++] = modifiedKey;
-					command.buffer[command.bufferCount] = '\0';
-				}
-				UpdateCommandScan: {
-					LOG("%d\n", command.scanFoundIndex);
-					command.scanFoundIndex = TextFindTextForward(pText, mark.index, command.buffer);
 					break;
 				}
 				/* Utility Keys */
@@ -2889,8 +2635,8 @@ LoopBegin:
 				}
 				/* Delete Char */
 				case KEY_DELETE: {
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_DELETE_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_DELETE_MARK,
 						.deleteCharMark.c = pText[caret.index],
 						.deleteCharMark.deleteIndex = mark.index,
 						.deleteCharMark.markIndex   = mark.index,
@@ -2898,8 +2644,8 @@ LoopBegin:
 					break;
 				}
 				case KEY_BACKSPACE: {
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_DELETE_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_DELETE_MARK,
 						.deleteCharMark.c = pText[caret.index-1],
 						.deleteCharMark.deleteIndex = mark.index-1,
 						.deleteCharMark.markIndex   = mark.index,
@@ -2947,8 +2693,8 @@ LoopBegin:
 				case '.' :
 				case '/' : modifiedKey = currentKey;
 				InsertChar: {
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_INSERT_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_INSERT_MARK,
 						.insertCharMark.c = modifiedKey,
 						.insertCharMark.insertIndex = mark.index,
 					});
@@ -2979,8 +2725,8 @@ LoopBegin:
 				case '/'  | SHIFT | ALT: modifiedKey = '?';  goto JumpForwardToChar;
 				case 'A'  | ALT ... 'Z' | ALT: modifiedKey = 'a' + (currentKey - KEY_A); goto JumpForwardToChar;
 				case 'A'  | SHIFT | ALT ... 'Z' | SHIFT | ALT:
-				case '0'  | ALT ... '9' | ALT: 
-				case '`'  | ALT:                
+				case '0'  | ALT ... '9' | ALT:
+				case '`'  | ALT:
 				case '-'  | ALT:
 				case '='  | ALT:
 				case '['  | ALT:
@@ -2995,11 +2741,11 @@ LoopBegin:
 					input.mouseMarkActive = false;
 					if (caret.index >= pCode->textCount) break;
 					int newIndex = TextFindCharForward(pText, mark.index+1, modifiedKey);
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_MOVE_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_MOVE_MARK,
 						.moveMark.caretIndex    = iCaret,
-						.moveMark.fromMarkIndex = mark.index,  
-						.moveMark.toMarkIndex   = newIndex,  
+						.moveMark.fromMarkIndex = mark.index,
+						.moveMark.toMarkIndex   = newIndex,
 					});
 					break;
 				}
@@ -3028,8 +2774,8 @@ LoopBegin:
 				case '/'  | SHIFT | ALTCTRL: modifiedKey = '?';  goto JumpBackwardToChar;
 				case 'A'  | ALTCTRL ... 'Z' | ALTCTRL: modifiedKey = 'a' + (currentKey - KEY_A); goto JumpBackwardToChar;
 				case 'A'  | SHIFT | ALTCTRL ... 'Z' | SHIFT | ALTCTRL:
-				case '0'  | ALTCTRL ... '9' | ALTCTRL: 
-				case '`'  | ALTCTRL:                
+				case '0'  | ALTCTRL ... '9' | ALTCTRL:
+				case '`'  | ALTCTRL:
 				case '-'  | ALTCTRL:
 				case '='  | ALTCTRL:
 				case '['  | ALTCTRL:
@@ -3044,11 +2790,11 @@ LoopBegin:
 					input.mouseMarkActive = false;
 					if (caret.index <= 0) break;
 					int newIndex = TextFindCharBackward(pText, mark.index-2, modifiedKey) + 1;
-					CodePushCmd(pCode, (CodeCmdData){ 
-						.cmd = CODE_CMD_MOVE_MARK, 
+					CodePushCmd(pCode, (CodeCmdData){
+						.cmd = CODE_CMD_MOVE_MARK,
 						.moveMark.caretIndex    = iCaret,
-						.moveMark.fromMarkIndex = mark.index,  
-						.moveMark.toMarkIndex   = newIndex,  
+						.moveMark.fromMarkIndex = mark.index,
+						.moveMark.toMarkIndex   = newIndex,
 					});
 					break;
 				}
@@ -3200,11 +2946,11 @@ LoopBegin:
 			}
 
 			if (markPress) {
-				CodePushCmd(pCode, (CodeCmdData){ 
-					.cmd = CODE_CMD_MOVE_MARK, 
+				CodePushCmd(pCode, (CodeCmdData){
+					.cmd = CODE_CMD_MOVE_MARK,
 					.moveMark.caretIndex    = iCaret,
-					.moveMark.fromMarkIndex = pCode->mark.index,  
-					.moveMark.toMarkIndex   = mark.index,  
+					.moveMark.fromMarkIndex = pCode->mark.index,
+					.moveMark.toMarkIndex   = mark.index,
 				});
 			}
 		}
@@ -3328,7 +3074,7 @@ LoopBegin:
 			#define STATUS_TEXT_CAPACITY 1024
 			static char statusText[STATUS_TEXT_CAPACITY];
 			snprintf(statusText, STATUS_TEXT_CAPACITY, "caret0: index:%-4i icol:%-4i irow:%-4i lrow:%-4i rrow:%-4i token: %s %s start: %d end: %d brace: %d bracket: %d paren: %d\n",
-				mainCaret.index, mainCaret.col, mainCaret.row, caretRow.startIndex, caretRow.endIndex, string_TOK(caretMeta.tok.val), string_TOK_KIND(caretMeta.tok.kind), 
+				mainCaret.index, mainCaret.col, mainCaret.row, caretRow.startIndex, caretRow.endIndex, string_TOK(caretMeta.tok.val), string_TOK_KIND(caretMeta.tok.kind),
 				caretMeta.tokOffset.iStart, caretMeta.tokOffset.iEnd, caretMeta.braceLevel, caretMeta.bracketLevel, caretMeta.parenLevel),
 			DrawTextEx(rayde.font, statusText, (Vector2){ statusMarginRect.x, statusMarginRect.y }, fontSize, 0, COLOR_COMMENT);
 		}
