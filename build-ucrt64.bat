@@ -1,5 +1,5 @@
 :: How to statically link SDL3 to raylib on UCRT64
-:: mingw32-make.exe PLATFORM=PLATFORM_DESKTOP_SDL RAYLIB_LIBTYPE=SHARED GRAPHICS=GRAPHICS_API_OPENGL_33 LDFLAGS="-L. -L../src -L/ucrt64/lib -static-libgcc -Wl,--allow-multiple-definition -Wl,-Bstatic -lSDL3 -Wl,-Bdynamic -lopengl32 -lgdi32 -lwinmm -lole32 -loleaut32 -luuid -lsetupapi -lversion -limm32"
+:: mingw32-make.exe PLATFORM=PLATFORM_DESKTOP_SDL RAYLIB_LIBTYPE=SHARED GRAPHICS=GRAPHICS_API_OPENGL_33 SDL_INCLUDE_PATH=/ucrt64/include SDL_LIBRARY_PATH=/ucrt64/lib SDL_LIBRARIES= CUSTOM_CFLAGS=-DUSING_SDL3_PROJECT LDFLAGS="-L. -L../src -L/ucrt64/lib -static-libgcc -Wl,--allow-multiple-definition -Wl,-Bstatic -lSDL3 -liconv -Wl,-Bdynamic -lopengl32 -lgdi32 -lwinmm -lole32 -loleaut32 -luuid -lsetupapi -lversion -limm32"
 
 @echo off
 
