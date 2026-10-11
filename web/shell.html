@@ -92,7 +92,7 @@
 
 	<div id="toolbar">
 		<button id="download" title="Download the edited file (Ctrl+S saves it first)">Download main.c</button>
-		<a href="https://github.com/rygo6/raymacs" target="_blank" rel="noopener">GitHub</a>
+		<a href="https://github.com/rygo6/rayDE" target="_blank" rel="noopener">GitHub</a>
 	</div>
 
 	<script>
@@ -112,6 +112,17 @@
 		}, true);
 		// Alt alone toggles the menu bar in some browsers.
 		window.addEventListener('keyup', (e) => { if (e.key === 'Alt') e.preventDefault(); }, true);
+
+		// Emscripten's GLFW only maps the Firefox semicolon keyCode (59), not the
+		// Chrome/Edge/Safari one (186), so ; never reaches raylib there. Remap it
+		// before GLFW's listener sees the event.
+		const remapKeyCodes = { 186: 59 };
+		for (const type of ['keydown', 'keyup']) {
+			window.addEventListener(type, (e) => {
+				const mapped = remapKeyCodes[e.keyCode];
+				if (mapped !== undefined) Object.defineProperty(e, 'keyCode', { value: mapped });
+			}, true);
+		}
 
 		document.getElementById('download').addEventListener('click', () => {
 			const data = Module.FS.readFile('src/main.c');

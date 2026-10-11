@@ -2125,7 +2125,7 @@ static void CodeSyncCaretToMarkRow(CodeBox* pCode, u8 iCaret)
 
 static void CodeInsertNewlineAtCaret(CodeBox* pCode, int index)
 {
-	memmove(pCode->pText + index+1,   pCode->pText + index,   (pCode->textCount - index-1)  * sizeof(char));
+	memmove(pCode->pText + index+1,   pCode->pText + index,   (pCode->textCount - index + 1)  * sizeof(char)); // + 1 includes null terminator
 	pCode->dirty = true;
 	pCode->pText[index] = '\n';
 	pCode->textCount++;
@@ -2146,7 +2146,7 @@ static void CodeInsertChar(CodeBox* pCode, int index, char c)
 		return;
 	}
 
-	memmove(pCode->pText + index + 1, pCode->pText + index, pCode->textCount - index - 1);
+	memmove(pCode->pText + index + 1, pCode->pText + index, pCode->textCount - index + 1); // + 1 includes null terminator
 	pCode->dirty = true;
 	pCode->pText[index] = c;
 	pCode->textCount++;
